@@ -66,9 +66,13 @@ const headerHeight = header.offsetHeight; // ارتفاع الشريط
 const scrollThreshold = 50; // الحد الأدنى للتمرير لإخفاء/إظهار الشريط
 
 // ================================
-// 5. الفئات (من الإعدادات)
+// 5. الفئات (من Firebase أولاً ثم من الإعدادات كنسخة احتياطية)
 // ================================
-const categories = (() => {
+// ملاحظة: سيتم تحديث هذا المصفوفة ديناميكياً بعد جلب الفئات من Firestore
+let categories = [{ value: 'all', label: 'جميع المنتجات' }];
+
+// إعداد الفئات الافتراضية من APP_SETTINGS (احتياطي)
+function loadFallbackCategoriesFromSettings() {
   const fromSettings = (window.APP_SETTINGS && Array.isArray(window.APP_SETTINGS.CATEGORIES))
     ? window.APP_SETTINGS.CATEGORIES.map(c => ({ value: String(c.key), label: String(c.label) }))
     : [
@@ -80,8 +84,59 @@ const categories = (() => {
         { value: "frozen", label: "المجمدات" },
         { value: "canned", label: "المعلبات" }
       ];
-  return [{ value: 'all', label: 'جميع المنتجات' }, ...fromSettings];
-})();
+  categories = [{ value: 'all', label: 'جميع المنتجات' }, ...fromSettings];
+}
+
+// جلب الفئات من Firestore (لوحة التحكم)
+async function fetchCategoriesFromFirestore() {
+  try {
+    if (!window.firebase || !window.firebaseFirestore || !window.firebase.firestore) {
+      throw new Error('Firebase Firestore غير مهيأ.');
+    }
+
+    const db = window.firebase.firestore();
+    const colRef = window.firebaseFirestore.collection(db, 'categories');
+    const snap = await window.firebaseFirestore.getDocs(colRef);
+
+    const fetchedCategories = snap.docs
+      .map(doc => {
+        const data = doc.data() || {};
+        return {
+          id: doc.id,
+          name: data.name || '',
+          order: data.order || 0
+        };
+      })
+      .filter(c => c.name);
+
+    if (fetchedCategories.length === 0) {
+      throw new Error('لا توجد فئات في قاعدة البيانات');
+    }
+
+    // ترتيب حسب order ثم الاسم احتياطياً
+    fetchedCategories.sort((a, b) => {
+      if (a.order === b.order) {
+        return a.name.localeCompare(b.name, 'ar');
+      }
+      return a.order - b.order;
+    });
+
+    // تحويل لفورمات واجهة المتجر
+    categories = [
+      { value: 'all', label: 'جميع المنتجات' },
+      ...fetchedCategories.map(c => ({
+        value: String(c.id),   // نستخدم ID من Firestore ليتوافق مع categoryId في المنتجات
+        label: String(c.name)
+      }))
+    ];
+
+    console.log(`تم تحميل الفئات من Firestore (${fetchedCategories.length} فئة)`);
+  } catch (error) {
+    console.warn('تعذر تحميل الفئات من Firestore، سيتم استخدام الإعدادات المحلية:', error);
+    // في حالة الفشل نستخدم الإعدادات المحلية كنسخة احتياطية
+    loadFallbackCategoriesFromSettings();
+  }
+}
 
 // ================================
 // 6. أحداث تحميل الصفحة
@@ -91,10 +146,21 @@ document.addEventListener('DOMContentLoaded', () => {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
         document.body.classList.add('touch-device');
     }
-    // تحميل المنتجات
-    loadProducts();
-    // تعبئة الفئات
-    populateCategoryFilter();
+    // تحميل الفئات من Firestore أولاً ثم تحميل المنتجات
+    // هذا يضمن أن الفلاتر والأيقونات مبنية على نفس البيانات الموجودة في لوحة التحكم
+    fetchCategoriesFromFirestore()
+        .then(() => {
+            // بعد جلب الفئات، نقوم بتعبئة الفلتر وأيقونات الأقسام
+            populateCategoryFilter();
+            // ثم تحميل المنتجات التي تعتمد على حقل category / categoryId من Firestore
+            loadProducts();
+        })
+        .catch(() => {
+            // في حالة أي خطأ غير متوقع، نستخدم الإعدادات المحلية كاحتياطي
+            loadFallbackCategoriesFromSettings();
+            populateCategoryFilter();
+            loadProducts();
+        });
     // تفعيل الأحداث
     setupEventListeners();
     handleMobileMenu();
