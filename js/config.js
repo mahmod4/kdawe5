@@ -13,12 +13,13 @@
 // 4. استخدام Firebase App Check
 
 const firebaseConfig = {
-    apiKey: "AIzaSyBBo0T68WHTINwU8VET_Zm1Nc6eLGSd1u0",
-    authDomain: "hibr-2e6f7.firebaseapp.com",
-    projectId: "hibr-2e6f7",
-    storageBucket: "hibr-2e6f7.firebasestorage.app",
-    messagingSenderId: "38236776445",
-    appId: "1:38236776445:web:94d5c7112933a6084fdb94"
+    apiKey: "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
+    authDomain: "dashboard-27bc8.firebaseapp.com",
+    projectId: "dashboard-27bc8",
+    storageBucket: "dashboard-27bc8.firebasestorage.app",
+    messagingSenderId: "707339591256",
+    appId: "1:707339591256:web:dcc2649182e97249a2742d",
+    measurementId: "G-K8FNNYH4S1"
 };
 
 // إعدادات إضافية للموقع
