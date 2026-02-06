@@ -218,6 +218,39 @@
     try {
       if (window.firebase && window.firebaseFirestore) {
         const db = window.firebase.firestore();
+        const now = new Date();
+
+        // تحديث/إنشاء مستند المستخدم في Collection users لصفحة إدارة المستخدمين
+        try {
+          if (window.firebase.auth) {
+            const auth = window.firebase.auth();
+            const user = auth.currentUser;
+            if (user) {
+              const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
+              const userSnap = await window.firebaseFirestore.getDoc(userRef);
+
+              const baseData = {
+                name: (extra && extra.customer && extra.customer.name) || user.displayName || null,
+                email: user.email || null,
+                phone: (extra && extra.customer && extra.customer.phone) || user.phoneNumber || null,
+                active: true,
+                updatedAt: now
+              };
+
+              if (userSnap.exists()) {
+                await window.firebaseFirestore.updateDoc(userRef, baseData);
+              } else {
+                await window.firebaseFirestore.setDoc(userRef, {
+                  ...baseData,
+                  createdAt: now
+                });
+              }
+            }
+          }
+        } catch (userError) {
+          console.error('خطأ في تحديث بيانات المستخدم في users (صفحة السلة):', userError);
+        }
+
         const orderData = {
           // لتوافق كامل مع لوحة التحكم (orders.js + dashboard.js)
           userId: userId,
@@ -228,8 +261,8 @@
           note: extra && extra.note ? extra.note : '',
           customer: extra && extra.customer ? extra.customer : null,
           status: 'pending',
-          createdAt: new Date(),
-          orderDate: new Date(),
+          createdAt: now,
+          orderDate: now,
           timestamp: Date.now()
         };
         
