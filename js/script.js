@@ -1119,11 +1119,15 @@ async function saveOrderToFirebase(userId, cartItems, total) {
         if (window.firebase && window.firebaseFirestore) {
             const db = window.firebase.firestore();
             const orderData = {
+                // لتوافق كامل مع لوحة التحكم (orders.js + dashboard.js)
                 userId: userId,
+                customerId: userId,
                 items: cartItems,
                 total: total,
-                orderDate: new Date(),
-                status: 'pending'
+                status: 'pending',
+                createdAt: new Date(),     // تستخدمها لوحة التحكم للترتيب والإحصائيات
+                orderDate: new Date(),     // احتفاظ بالاسم القديم للتوافق العكسي
+                timestamp: Date.now()
             };
             
             await window.firebaseFirestore.addDoc(

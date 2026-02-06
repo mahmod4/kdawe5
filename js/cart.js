@@ -219,14 +219,18 @@
       if (window.firebase && window.firebaseFirestore) {
         const db = window.firebase.firestore();
         const orderData = {
+          // لتوافق كامل مع لوحة التحكم (orders.js + dashboard.js)
           userId: userId,
+          customerId: userId,
           items: cartItems,
           total: total,
           paymentMethod: extra && extra.paymentMethod ? extra.paymentMethod : 'cash',
           note: extra && extra.note ? extra.note : '',
           customer: extra && extra.customer ? extra.customer : null,
+          status: 'pending',
+          createdAt: new Date(),
           orderDate: new Date(),
-          status: 'pending'
+          timestamp: Date.now()
         };
         
         await window.firebaseFirestore.addDoc(
