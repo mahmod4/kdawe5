@@ -854,8 +854,8 @@ function updateFilteredProductsCount(count) {
 // 15. إضافة منتج للسلة
 // ================================
 function addToCart(e) {
-    const productId = parseInt(e.target.getAttribute('data-id'));
-    const product = products.find(p => p.id === productId);
+    const productId = e.target.getAttribute('data-id');
+    const product = products.find(p => String(p.id) === String(productId));
     
     // التحقق من توفر المنتج في المخزون
     if (product.stock === false) {
@@ -1174,7 +1174,8 @@ async function fetchProductsFromFirestore() {
             const data = doc.data();
             // تحويل البيانات من Firestore إلى تنسيق المتجر
             return {
-                id: parseInt(doc.id) || doc.id, // استخدام ID كرقم إذا أمكن
+                // نحتفظ بـ ID النصي كما هو من Firestore ليتوافق مع أزرار السلة
+                id: String(doc.id),
                 name: data.name || '',
                 category: data.category || data.categoryId || '',
                 image: data.image || '',
