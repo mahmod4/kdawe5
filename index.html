@@ -120,7 +120,7 @@
       // استيراد مكتبات المصادقة (تسجيل الدخول بجوجل)
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       // استيراد مكتبات قاعدة البيانات Firestore
-      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       
       // ================================
       // إعدادات مشروع Firebase
@@ -176,7 +176,9 @@
           query,
           where,
           orderBy,
-          getDocs
+          getDocs,
+          doc,
+          getDoc
         };
         
         console.log('تم تهيئة Firebase بنجاح');
