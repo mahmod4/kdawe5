@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <!-- ================================
+         أسواق الخديوي - الصفحة الرئيسية
+         ================================ -->
+    <!-- هذا الملف يحتوي على:
+         - إعدادات Firebase للمصادقة
+         - واجهة المستخدم الرئيسية
+         - نظام تسجيل الدخول بجوجل
+         - عرض المنتجات والعروض
+         ================================ -->
+
+
+
+<!-- ================================
+     Google Analytics - تتبع الزوار
+     ================================ -->
+<!-- كود Google Analytics لتتبع زوار الموقع وإحصائيات الاستخدام -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-D9262X6WVK"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-D9262X6WVK');
+</script>
+
+
+
+
+<script type="text/javascript">
+	
+</script>
+
+
+
+    
+    <!-- ================================
+         إعدادات الصفحة الأساسية
+         ================================ -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>اسواق الخديوي</title>
+    
+    <!-- ================================
+         PWA - Progressive Web App
+         ================================ -->
+    <!-- إعدادات التطبيق التقدمي للويب لتحسين تجربة الهواتف المحمولة -->
+    <meta name="theme-color" content="#1a5f7a">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- ================================
+         SEO - تحسين محركات البحث
+         ================================ -->
+    <!-- وصف الموقع وكلمات مفتاحية لتحسين ظهوره في محركات البحث -->
+    <meta name="description" content="اسواق الخديوي: أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن من اسواق الخديوي.">
+    <meta name="keywords" content="اسواق الخديوي, خضراوات, فواكه, سوق, تسوق, طازج, توصيل, متجر إلكتروني, خضار, فاكهة, سوق الخديوي, al-kdawe, aswaq, aswaq al kdawe, grocery, fruits, vegetables, online store, delivery">
+    <meta name="author" content="اسواق الخديوي">
+    <!-- ================================
+         مكتبات CSS و JavaScript
+         ================================ -->
+    <!-- ملف التنسيقات الرئيسي -->
+    <link rel="stylesheet" href="../css/styles.css">
+    <!-- مكتبة Font Awesome للأيقونات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- مكتبة AOS للحركات والتأثيرات -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+    <!-- مكتبة Lucide للأيقونات -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- تحسين الموقع للهواتف المحمولة -->
+    <!--
+    تم استخدام الأكواد التالية لتحسين تجربة المستخدم على الهواتف المحمولة:
+    
+    1. meta name="viewport": يضبط عرض الصفحة لتناسب عرض الشاشة وإلغاء إمكانية التكبير
+       - width=device-width: جعل عرض الصفحة يساوي عرض الجهاز
+       - initial-scale=1.0: ضبط مستوى التكبير الأولي
+       - maximum-scale=1.0: منع المستخدم من التكبير (تحسين التجربة في التطبيقات)
+       - user-scalable=no: إلغاء إمكانية تغيير التكبير
+    
+    2. meta name="theme-color": تغيير لون شريط المتصفح على أجهزة أندرويد
+    
+    3. meta name="apple-mobile-web-app-status-bar-style": تغيير نمط شريط الحالة على أجهزة آيفون
+    
+    4. meta name="apple-mobile-web-app-capable" و meta name="mobile-web-app-capable":
+       تمكين عرض الموقع كتطبيق كامل الشاشة عند إضافته للشاشة الرئيسية
+    
+    5. تم استخدام link rel="dns-prefetch" لتسريع تحميل الموارد الخارجية مثل مكتبة Font Awesome
+    -->
+    <meta name="theme-color" content="#1a5f7a">
+    <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta property="og:title" content="سوبر ماركت الخديوي - تسوق خضراوات وفواكه طازجة">
+    <meta property="og:description" content="سوبر ماركت الخديوي: أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن من اسواق الخديوي.">
+    <meta property="og:image" content="../images/logo22.png">
+    <meta property="og:url" content="https://al-kdawe.netlify.app/">
+    <meta property="og:type" content="website">
+    <!-- تحسين الأداء -->
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    
+    <!-- إضافة رمز الموقع المختصر (favicon) -->
+    <link rel="icon" type="image/png" href="../images/logo22.png">
+    <link rel="shortcut icon" type="image/png" href="../images/logo22.png">
+    <link rel="apple-touch-icon" href="../images/logo22.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    
+    <!-- ================================
+         Firebase SDK - قاعدة البيانات والمصادقة
+         ================================ -->
+    <!-- إعداد Firebase للمصادقة وقاعدة البيانات -->
+    <script type="module">
+      // استيراد مكتبات Firebase الأساسية
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      // استيراد مكتبات المصادقة (تسجيل الدخول بجوجل)
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      // استيراد مكتبات قاعدة البيانات Firestore
+      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      
+      // ================================
+      // إعدادات مشروع Firebase
+      // ================================
+      // هذه الإعدادات تربط الموقع بمشروع Firebase الخاص بك
+      const firebaseConfig = {
+        apiKey: "AIzaSyCG1s3deiJmQVrvXCb_hSDj2STDYyXQXzM",
+        authDomain: "hibr-2e6f7.firebaseapp.com",
+        projectId: "hibr-2e6f7",
+        storageBucket: "hibr-2e6f7.firebasestorage.app",
+        messagingSenderId: "38236776445",
+        appId: "1:38236776445:web:94d5c7112933a6084fdb94"
+      };
+
+      // ================================
+      // تهيئة Firebase
+      // ================================
+      // إنشاء تطبيق Firebase وربطه بقاعدة البيانات والمصادقة
+      try {
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        
+        // ================================
+        // جعل Firebase متاحاً عالمياً
+        // ================================
+        // ربط Firebase بالكائنات العامة لاستخدامها في باقي الكود
+        window.firebase = {
+          app,
+          auth: () => auth,
+          firestore: () => db
+        };
+        
+        // ================================
+        // دوال المصادقة العامة
+        // ================================
+        // جعل دوال تسجيل الدخول متاحة في جميع أنحاء الموقع
+        window.firebaseAuth = {
+          GoogleAuthProvider,
+          signInWithPopup,
+          signOut,
+          onAuthStateChanged
+        };
+        
+        // ================================
+        // دوال قاعدة البيانات العامة
+        // ================================
+        // جعل دوال Firestore متاحة لقراءة وكتابة البيانات
+        window.firebaseFirestore = {
+          collection,
+          addDoc,
+          query,
+          where,
+          orderBy,
+          getDocs
+        };
+        
+        console.log('تم تهيئة Firebase بنجاح');
+        
+      } catch (error) {
+        console.error('خطأ في تهيئة Firebase:', error);
+      }
+    </script>
+    <!-- ================================
+         JavaScript - إدارة تسجيل الدخول
+         ================================ -->
+    <script>
+      // ================================
+      // دالة انتظار تهيئة Firebase
+      // ================================
+      // تنتظر حتى يتم تحميل Firebase بالكامل قبل المتابعة
+      function waitForFirebase() {
+        return new Promise((resolve) => {
+          if (window.firebase && window.firebaseAuth && window.firebase.auth) {
+            resolve();
+          } else {
+            setTimeout(() => waitForFirebase().then(resolve), 100);
+          }
+        });
+      }
+
+      // ================================
+      // متغيرات المصادقة
+      // ================================
+      let provider; // مزود المصادقة (جوجل)
+      
+      // ================================
+      // تهيئة الصفحة عند التحميل
+      // ================================
+      document.addEventListener('DOMContentLoaded', async function () {
+        try {
+          // انتظار تهيئة Firebase
+          await waitForFirebase();
+          console.log('Firebase جاهز للاستخدام');
+          
+          // ================================
+          // إعداد مزود المصادقة (جوجل)
+          // ================================
+          provider = new window.firebaseAuth.GoogleAuthProvider();
+          provider.addScope('email'); // طلب الوصول للإيميل
+          provider.addScope('profile'); // طلب الوصول للملف الشخصي
+
+          // ================================
+          // الحصول على عناصر واجهة المستخدم
+          // ================================
+          const userInfo = document.getElementById('user-info');
+          const userName = document.getElementById('user-name');
+          const loginBtnContainer = document.getElementById('login-btn-container');
+          
+          if (!userInfo || !userName || !loginBtnContainer) {
+            console.error('لم يتم العثور على عناصر تسجيل الدخول');
+            return;
+          }
+
+          // ================================
+          // مراقبة حالة تسجيل الدخول
+          // ================================
+          // مراقبة تغيير حالة المستخدم (دخول/خروج) وتحديث الواجهة
+          window.firebaseAuth.onAuthStateChanged(window.firebase.auth(), user => {
+            console.log('تغيير حالة تسجيل الدخول:', user ? 'مسجل دخول' : 'غير مسجل');
+            if (user) {
+              // المستخدم مسجل دخول - إظهار معلوماته وإخفاء زر تسجيل الدخول
+              userInfo.style.display = 'flex';
+              loginBtnContainer.style.display = 'none';
+              userName.textContent = user.displayName || user.email;
+              console.log('تم تسجيل الدخول:', user.displayName);
+            } else {
+              // المستخدم غير مسجل دخول - إخفاء معلوماته وإظهار زر تسجيل الدخول
+              userInfo.style.display = 'none';
+              loginBtnContainer.style.display = 'flex';
+              console.log('تم تسجيل الخروج');
+            }
+          });
+
+
+          
+        } catch (error) {
+          console.error('خطأ في تهيئة صفحة تسجيل الدخول:', error);
+        }
+      });
+    </script>
+    
+    <!-- ================================
+         CSS - تنسيقات تسجيل الدخول
+         ================================ -->
+    <style>
+      /* ================================
+         زر تسجيل الدخول
+         ================================ */
+      .auth-btn {
+        padding: 6px 12px;
+        border-radius: 20px;
+        border: 2px solid #4285F4;
+        background: #fff;
+        color: #4285F4;
+        font-weight: bold;
+        font-size: 0.9rem;
+        cursor: pointer;
+        margin-right: 8px;
+        transition: background 0.2s, color 0.2s, border 0.2s;
+        box-shadow: 0 2px 8px rgba(66,133,244,0.08);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+      .auth-btn:hover {
+        background: #4285F4;
+        color: #fff;
+        text-decoration: none;
+      }
+      
+      /* ================================
+         معلومات المستخدم
+         ================================ */
+      #user-info {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        margin-right: 8px;
+      }
+      #user-name {
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+      
+      /* ================================
+         تحسينات للهواتف المحمولة
+         ================================ */
+      /* شاشات متوسطة (تابلت) */
+      @media (max-width: 768px) {
+        .auth-btn {
+          padding: 4px 8px;
+          font-size: 0.8rem;
+          border-radius: 15px;
+          margin-right: 4px;
+        }
+        #user-name {
+          font-size: 0.8rem;
+        }
+        #user-info {
+          margin-right: 4px;
+        }
+      }
+      
+      /* شاشات صغيرة (هواتف) */
+      @media (max-width: 480px) {
+        .auth-btn {
+          padding: 3px 6px;
+          font-size: 0.75rem;
+          border-radius: 12px;
+          margin-right: 2px;
+        }
+        #user-name {
+          font-size: 0.75rem;
+        }
+        #user-info {
+          margin-right: 2px;
+        }
+      }
+    </style>
+</head>
+<body>
+    <!-- ================================
+         الهيدر - شريط التنقل الرئيسي
+         ================================ -->
+    <header>
+        <!-- شعار الموقع واسمه -->
+        <div class="logo-container">
+            <img src="../images/logo22.png" alt="شعار الخديوي" class="logo" width="60" height="60">
+            <h1>الخديوي</h1>
+        </div>
+        <!-- زر قائمة الجوال (هامبرجر) -->
+        <div class="main-menu-toggle">
+            <i data-lucide="menu"></i>
+        </div>
+        
+        <!-- القائمة الرئيسية -->
+        <nav class="main-menu" id="main-menu">
+            <ul>
+                <li><a href="#home" class="menu-item active"><i data-lucide="home"></i> الرئيسية</a></li>
+                <li><a href="#products" class="menu-item"><i data-lucide="shopping-bag"></i> المنتجات</a></li>
+                <li><a href="#daily-offers" class="menu-item"><i data-lucide="zap"></i> العروض اليومية</a></li>
+                <li><a href="contact.html" class="menu-item"><i data-lucide="store"></i> عن المتجر</a></li>
+                <li><a href="login.html" class="menu-item"><i data-lucide="log-in"></i> تسجيل الدخول</a></li>
+            </ul>
+            <!-- زر تحديث المنتجات -->
+            <button onclick="manualUpdate()" class="update-btn side-update-btn" title="تحديث المنتجات">
+                <i data-lucide="refresh-ccw"></i>
+                تحديث المنتجات
+            </button>
+        </nav>
+        <!-- سلة التسوق -->
+        <div class="navbar-cart">
+          <a href="cart.html" id="cart-icon-desktop"><i data-lucide="shopping-cart"></i><span>سلة التسوق</span><span id="cart-count-desktop">0</span></a>
+        </div>
+        
+        <!-- معلومات المستخدم (يظهر فقط إذا كان المستخدم مسجلاً الدخول) -->
+        <div id="user-info" style="display:none; align-items:center; gap:8px;">
+          <a href="login.html" class="auth-btn" style="text-decoration:none; margin-right:8px;">
+            <i data-lucide="user"></i>
+            <span id="user-name"></span>
+          </a>
+        </div>
+        
+        <!-- زر تسجيل الدخول (يظهر فقط إذا لم يكن المستخدم مسجلاً الدخول) -->
+        <div id="login-btn-container" style="display:none; align-items:center; gap:8px;">
+          <a href="login.html" class="auth-btn" style="text-decoration:none; margin-right:8px;">
+            <i data-lucide="log-in"></i>
+            تسجيل الدخول
+          </a>
+        </div>
+    </header>
+
+    <!-- ================================
+         قسم البطل - الصفحة الرئيسية
+         ================================ -->
+    <section class="hero" id="home" data-aos="fade-up" data-aos-duration="1200">
+        <div class="hero-content">
+            <h2>مرحبًا بكم في <span>الخديوي</span></h2>
+            <p>خضراوات وفواكه طازجة بأفضل الأسعار </p>
+	    <p>تشغيل تجريبي</p>
+            <a href="#products" class="btn">تسوق الآن <i data-lucide="arrow-left"></i></a>
+        </div>
+    </section>
+
+
+
+
+  <script type="text/javascript">
+	
+</script>
+
+
+
+
+  
+    <section id="categories" class="categories" data-aos="fade-up" data-aos-delay="200">
+        <h2>الأقسام <i data-lucide="grid"></i></h2>
+        <div id="category-icons-container" class="category-container">
+            <!-- سيتم تحميل الفئات ديناميكياً عبر JavaScript -->
+        </div>
+    </section>
+
+    <section id="products" class="products" data-aos="fade-up" data-aos-delay="300">
+        <h2>منتجاتنا <i data-lucide="shopping-bag"></i></h2>
+        <div class="products-header">
+            <button onclick="manualUpdate()" class="update-btn main-update-btn" title="تحديث المنتجات">
+                <i data-lucide="refresh-ccw"></i>
+                تحديث المنتجات
+            </button>
+            <div class="loading-spinner" id="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>جاري تحميل المنتجات...</span>
+            </div>
+        </div>
+        <div class="filter">
+            <select id="category-filter" aria-label="تصنيف المنتجات">
+                <option value="all">جميع المنتجات</option>
+                <!-- سيتم تحميل الفئات ديناميكياً عبر JavaScript -->
+            </select>
+            <input type="text" id="search-products" placeholder="ابحث عن منتج..." aria-label="بحث عن منتج">
+        </div>
+        <div class="product-container" id="product-container">
+            <!-- Products will be loaded dynamically with JavaScript -->
+            <div class="loading-spinner" id="loading-spinner">
+                <i class="fas fa-spinner fa-spin"></i>
+                <span>جاري تحميل المنتجات...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- قسم العروض المميزة تمت إزالته بناءً على طلب العميل -->
+
+    <section id="daily-offers" class="daily-offers" data-aos="fade-up" data-aos-delay="400">
+        <h2>العروض اليومية <i data-lucide="zap"></i></h2>
+        <div class="daily-offers-container" id="daily-offers-container">
+            <!-- سيتم تحميل العروض اليومية ديناميكياً -->
+        </div>
+    </section>
+
+
+
+
+
+	<script type="text/javascript">
+	
+</script>
+
+	
+    <div id="cart-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" aria-label="إغلاق">&times;</span>
+            <h2>سلة التسوق <i data-lucide="shopping-cart"></i></h2>
+            <div id="cart-items">
+                <!-- Cart items will be added dynamically -->
+            </div>
+            <div class="cart-total">
+                <p>المجموع: <span id="total-price">0</span> ج.م</p>
+            </div>
+            <a href="#" id="checkout" class="btn" style="display:inline-block; text-align:center;">إتمام الشراء <i class="fab fa-whatsapp"></i></a>
+        </div>
+    </div>
+
+
+
+
+
+
+<script type="text/javascript">
+	
+</script>
+
+
+
+
+	
+    <footer data-aos="fade-up" data-aos-delay="700">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <img src="../images/logo22.png" alt="شعار الخديوي" class="logo" width="80" height="80">
+                <h3>الخديوي</h3>
+            </div>
+            <div class="footer-links">
+                <h4>روابط سريعة</h4>
+                <ul>
+                    <li><a href="#home"><i data-lucide="home"></i> الرئيسية</a></li>
+                    <li><a href="#categories"><i data-lucide="grid"></i> الأقسام</a></li>
+                <li><a href="#daily-offers"><i data-lucide="percent"></i> العروض</a></li>
+                    <li><a href="contact.html"><i data-lucide="store"></i> عن المتجر</a></li>
+                    <li><a href="contact.html"><i data-lucide="mail"></i> اتصل بنا</a></li>
+                </ul>
+            </div>
+            <div class="footer-contact">
+                <h4>اتصل بنا</h4>
+              <div id="footer-phones"></div>
+                <p><i data-lucide="facebook"></i> <a href="https://www.facebook.com/share/1CizJTdEEc/" target="_blank" rel="noopener">صفحتنا على فيسبوك</a></p>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2025 اسواق الخديوي. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <div class="cart floating-cart">
+      <a href="cart.html" id="cart-icon-mobile">
+        <i data-lucide="shopping-cart"></i>
+        <span id="cart-count-mobile">0</span>
+      </a>
+    </div>
+
+    <script src="../js/settings.js"></script>
+    <script src="../js/products.js" type="module"></script>
+    <script src="../js/script.js"></script>
+  <!-- 🔔 بانر إضافة للموبايل -->
+  <div id="addToHome" style="display:none; position:fixed; bottom:20px; left:20px; right:20px; background:linear-gradient(135deg, #1a5f7a 0%, #42c5ea 100%); color:white; padding:15px; border-radius:15px; box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:9999; text-align:center; font-family:'Tajawal',sans-serif;">
+    📱 <strong>أضف اسواق الخديوي إلى الشاشة الرئيسية</strong><br />
+    <small style="opacity:0.9;">للوصول السريع والتحديثات التلقائية</small><br />
+    <div style="margin-top:10px;">
+      <button onclick="document.getElementById('addToHome').style.display='none'; localStorage.setItem('hideBanner', '1');" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:8px 16px; border-radius:20px; font-size:14px; cursor:pointer; margin:0 5px;">
+        إغلاق
+      </button>
+      <button onclick="document.getElementById('addToHome').style.display='none';" style="background:rgba(255,255,255,0.1); border:none; color:white; padding:8px 16px; border-radius:20px; font-size:14px; cursor:pointer; margin:0 5px;">
+        لاحقاً
+      </button>
+    </div>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (!localStorage.getItem('hideBanner')) {
+          document.getElementById('addToHome').style.display = 'block';
+        }
+      }, 3000);
+    });
+  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+  <script>AOS.init({ once: true, duration: 900 });</script>
+  <script>lucide.createIcons();</script>
+  
+  <!-- تسجيل Service Worker -->
+  <!-- ================================
+       نظام تسجيل الطلبات في Firebase
+       ================================ -->
+  <script>
+    // ================================
+    // دالة تسجيل الطلب في Firebase
+    // ================================
+    async function saveOrderToFirebase(cartItems, totalPrice) {
+      try {
+        console.log('بدء حفظ الطلب في Firebase...');
+        
+        // التحقق من تسجيل الدخول
+        const auth = window.firebase.auth();
+        const user = auth.currentUser;
+        console.log('حالة المستخدم:', user ? 'مسجل دخول' : 'غير مسجل');
+        
+        if (!user) {
+          throw new Error('يجب تسجيل الدخول أولاً');
+        }
+
+        // إعداد بيانات الطلب
+        const orderData = {
+          customerName: user.displayName || user.email,
+          customerEmail: user.email,
+          customerId: user.uid,
+          orderItems: cartItems,
+          totalPrice: totalPrice,
+          orderDate: new Date().toISOString(),
+          orderTime: new Date().toLocaleString('ar-EG', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          }),
+          status: 'pending',
+          timestamp: Date.now()
+        };
+
+        // حفظ الطلب في Firebase
+        console.log('بيانات الطلب:', orderData);
+        const db = window.firebase.firestore();
+        const ordersCollection = window.firebaseFirestore.collection(db, 'orders');
+        console.log('محاولة حفظ الطلب في مجموعة orders...');
+        
+        const docRef = await window.firebaseFirestore.addDoc(ordersCollection, orderData);
+
+        console.log('تم حفظ الطلب بنجاح! رقم الطلب:', docRef.id);
+        return docRef.id;
+
+      } catch (error) {
+        console.error('خطأ في حفظ الطلب:', error);
+        throw error;
+      }
+    }
+
+    // ================================
+    // دالة إتمام الشراء مع تسجيل الدخول الإجباري
+    // ================================
+    async function processCheckout() {
+      try {
+        console.log('بدء عملية إتمام الشراء...');
+        
+        // التحقق من تسجيل الدخول
+        const auth = window.firebase.auth();
+        const user = auth.currentUser;
+        console.log('حالة المستخدم في processCheckout:', user ? 'مسجل دخول' : 'غير مسجل');
+        
+        if (!user) {
+          // إظهار رسالة تسجيل الدخول
+          alert('يجب تسجيل الدخول أولاً لإتمام الطلب');
+          // توجيه المستخدم لصفحة تسجيل الدخول
+          window.location.href = 'login.html';
+          return;
+        }
+
+        // الحصول على عناصر السلة
+        const cartItems = JSON.parse(localStorage.getItem('cart') || '[]');
+        const totalPrice = parseFloat(document.getElementById('total-price').textContent) || 0;
+
+        if (cartItems.length === 0) {
+          alert('السلة فارغة');
+          return;
+        }
+
+        // إظهار رسالة التحميل
+        const checkoutBtn = document.getElementById('checkout');
+        const originalText = checkoutBtn.innerHTML;
+        checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري حفظ الطلب...';
+        checkoutBtn.style.pointerEvents = 'none';
+
+        // حفظ الطلب في Firebase
+        console.log('استدعاء دالة saveOrderToFirebase...');
+        const orderId = await saveOrderToFirebase(cartItems, totalPrice);
+        console.log('تم الحصول على رقم الطلب:', orderId);
+
+        // إعداد رسالة واتساب
+        let whatsappMessage = `مرحباً، أريد طلب من اسواق الخديوي:\n\n`;
+        whatsappMessage += `رقم الطلب: ${orderId}\n`;
+        whatsappMessage += `اسم العميل: ${user.displayName || user.email}\n\n`;
+        whatsappMessage += `تفاصيل الطلب:\n`;
+        
+        cartItems.forEach(item => {
+          whatsappMessage += `- ${item.name}: ${item.quantity} × ${item.price} ج.م = ${item.quantity * item.price} ج.م\n`;
+        });
+        
+        whatsappMessage += `\nالمجموع الكلي: ${totalPrice} ج.م\n`;
+        whatsappMessage += `تاريخ الطلب: ${new Date().toLocaleString('ar-EG')}`;
+
+        // إرسال رسالة واتساب
+        const phoneNumber = '201234567890'; // استبدل برقم الهاتف الفعلي
+        const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
+        
+        // فتح واتساب
+        window.open(whatsappUrl, '_blank');
+
+        // إظهار رسالة نجاح
+        alert('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.');
+
+        // مسح السلة
+        localStorage.removeItem('cart');
+        // تحديث عرض السلة
+        if (typeof updateCart === 'function') {
+          updateCart();
+        } else {
+          // تحديث عداد السلة يدوياً
+          document.getElementById('cart-count-desktop').textContent = '0';
+          document.getElementById('cart-count-mobile').textContent = '0';
+        }
+
+        // إغلاق المودال
+        document.getElementById('cart-modal').style.display = 'none';
+
+      } catch (error) {
+        console.error('خطأ في إتمام الطلب:', error);
+        alert('حدث خطأ في حفظ الطلب. يرجى المحاولة مرة أخرى.');
+      } finally {
+        // استعادة زر إتمام الشراء
+        const checkoutBtn = document.getElementById('checkout');
+        if (checkoutBtn) {
+          checkoutBtn.innerHTML = 'إتمام الشراء <i class="fab fa-whatsapp"></i>';
+          checkoutBtn.style.pointerEvents = 'auto';
+        }
+      }
+    }
+
+    // ================================
+    // دالة اختبار Firebase
+    // ================================
+    async function testFirebase() {
+      try {
+        console.log('اختبار Firebase...');
+        console.log('window.firebase:', window.firebase);
+        console.log('window.firebaseAuth:', window.firebaseAuth);
+        console.log('window.firebaseFirestore:', window.firebaseFirestore);
+        
+        if (window.firebase && window.firebase.firestore) {
+          const db = window.firebase.firestore();
+          console.log('قاعدة البيانات متاحة:', db);
+          
+          // اختبار بسيط لحفظ بيانات
+          const testData = {
+            test: true,
+            timestamp: new Date().toISOString(),
+            message: 'اختبار Firebase'
+          };
+          
+          const testCollection = window.firebaseFirestore.collection(db, 'test');
+          const testDoc = await window.firebaseFirestore.addDoc(testCollection, testData);
+          console.log('تم اختبار Firebase بنجاح! معرف المستند:', testDoc.id);
+        } else {
+          console.error('Firebase غير متاح!');
+        }
+      } catch (error) {
+        console.error('خطأ في اختبار Firebase:', error);
+      }
+    }
+
+    // ================================
+    // ربط دالة إتمام الشراء بالزر
+    // ================================
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('تم تحميل الصفحة، البحث عن زر إتمام الشراء...');
+      
+      // اختبار Firebase بعد تحميل الصفحة
+      setTimeout(() => {
+        testFirebase();
+      }, 2000);
+      
+      const checkoutBtn = document.getElementById('checkout');
+      if (checkoutBtn) {
+        console.log('تم العثور على زر إتمام الشراء، ربط الحدث...');
+        checkoutBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          console.log('تم الضغط على زر إتمام الشراء');
+          processCheckout();
+        });
+      } else {
+        console.error('لم يتم العثور على زر إتمام الشراء!');
+      }
+    });
+  </script>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+          navigator.serviceWorker.register('../js/sw.js')
+          .then(registration => {
+            console.log('تم تسجيل Service Worker بنجاح:', registration.scope);
+          })
+          .catch(error => {
+            console.log('فشل تسجيل Service Worker:', error);
+          });
+      });
+    }
+  </script>
+</body>
+</html>
+
