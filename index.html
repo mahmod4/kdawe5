@@ -586,14 +586,22 @@
         }
 
         // إعداد بيانات الطلب
+        const now = new Date();
         const orderData = {
+          // حقول لوحة التحكم
           customerName: user.displayName || user.email,
           customerEmail: user.email,
           customerId: user.uid,
+          userId: user.uid,
+          items: cartItems,
+          total: totalPrice,
+          status: 'pending',
+          createdAt: now,
+          // حقول إضافية للتوافق مع الكود السابق
           orderItems: cartItems,
           totalPrice: totalPrice,
-          orderDate: new Date().toISOString(),
-          orderTime: new Date().toLocaleString('ar-EG', {
+          orderDate: now.toISOString(),
+          orderTime: now.toLocaleString('ar-EG', {
             year: 'numeric',
             month: 'long',
             day: 'numeric',
@@ -601,7 +609,6 @@
             minute: '2-digit',
             second: '2-digit'
           }),
-          status: 'pending',
           timestamp: Date.now()
         };
 
