@@ -12,7 +12,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>تسجيل الدخول | اسواق الخديوي</title>
+    <title data-store-title>تسجيل الدخول | اسواق الخديوي</title>
     
     <!-- ================================
          PWA - Progressive Web App
@@ -21,7 +21,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="description" content="تسجيل الدخول إلى اسواق الخديوي وعرض مشترياتك السابقة">
+    <meta name="description" data-store-description content="تسجيل الدخول إلى اسواق الخديوي وعرض مشترياتك السابقة">
+    <meta name="keywords" data-store-keywords content="اسواق خديوي, تسجيل دخول, مشتريات, خضروات, فواكه">
+    <meta name="author" data-store-author content="اسواق الخديوي">
     
     <!-- ================================
          مكتبات CSS و JavaScript
@@ -31,9 +33,9 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     
     <!-- إضافة رمز الموقع المختصر (favicon) -->
-    <link rel="icon" type="image/png" href="../images/logo22.png">
-    <link rel="shortcut icon" type="image/png" href="../images/logo22.png">
-    <link rel="apple-touch-icon" href="../images/logo22.png">
+    <link rel="icon" type="image/png" data-store-favicon href="../images/logo22.png">
+    <link rel="shortcut icon" type="image/png" data-store-favicon href="../images/logo22.png">
+    <link rel="apple-touch-icon" data-store-favicon href="../images/logo22.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -727,3 +729,12 @@
 </body>
 </html>
 
+<!-- Google Analytics لتتبع زوار الموقع وإحصائيات الاستخدام -->
+<!-- سيتم جلب ID من لوحة التحكم -->
+<script async data-google-analytics-id src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'GA_MEASUREMENT_ID');
+</script>

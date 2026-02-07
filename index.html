@@ -2,13 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
     <!-- ================================
-         أسواق الخديوي - الصفحة الرئيسية
+         المتجر - الصفحة الرئيسية
          ================================ -->
     <!-- هذا الملف يحتوي على:
          - إعدادات Firebase للمصادقة
          - واجهة المستخدم الرئيسية
          - نظام تسجيل الدخول بجوجل
          - عرض المنتجات والعروض
+         - جميع البيانات ديناميكية من لوحة التحكم
          ================================ -->
 
 
@@ -17,13 +18,14 @@
      Google Analytics - تتبع الزوار
      ================================ -->
 <!-- كود Google Analytics لتتبع زوار الموقع وإحصائيات الاستخدام -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-D9262X6WVK"></script>
+<!-- سيتم جلب ID من لوحة التحكم -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'G-D9262X6WVK');
+  gtag('config', 'GA_MEASUREMENT_ID');
 </script>
 
 
@@ -41,7 +43,7 @@
          ================================ -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>اسواق الخديوي</title>
+    <title data-store-name>المتجر</title>
     
     <!-- ================================
          PWA - Progressive Web App
@@ -56,14 +58,14 @@
          SEO - تحسين محركات البحث
          ================================ -->
     <!-- وصف الموقع وكلمات مفتاحية لتحسين ظهوره في محركات البحث -->
-    <meta name="description" content="اسواق الخديوي: أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن من اسواق الخديوي.">
-    <meta name="keywords" content="اسواق الخديوي, خضراوات, فواكه, سوق, تسوق, طازج, توصيل, متجر إلكتروني, خضار, فاكهة, سوق الخديوي, al-kdawe, aswaq, aswaq al kdawe, grocery, fruits, vegetables, online store, delivery">
-    <meta name="author" content="اسواق الخديوي">
+    <meta name="description" data-store-description="متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن.">
+    <meta name="keywords" data-store-keywords="خضراوات, فواكه, سوق, تسوق, طازج, توصيل, متجر إلكتروني, خضار, فاكهة, grocery, fruits, vegetables, online store, delivery">
+    <meta name="author" data-store-author="">
     <!-- ================================
          مكتبات CSS و JavaScript
          ================================ -->
     <!-- ملف التنسيقات الرئيسي -->
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="../css/styles.css">  
     <!-- مكتبة Font Awesome للأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <!-- مكتبة AOS للحركات والتأثيرات -->
@@ -94,18 +96,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta property="og:title" content="سوبر ماركت الخديوي - تسوق خضراوات وفواكه طازجة">
-    <meta property="og:description" content="سوبر ماركت الخديوي: أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن من اسواق الخديوي.">
-    <meta property="og:image" content="../images/logo22.png">
-    <meta property="og:url" content="https://al-kdawe.netlify.app/">
+    <meta property="og:title" data-store-og-title="متجر إلكتروني - تسوق خضراوات وفواكه طازجة">
+    <meta property="og:description" data-store-og-description="أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن.">
+    <meta property="og:image" data-store-logo="../images/logo22.png">
     <meta property="og:type" content="website">
     <!-- تحسين الأداء -->
     <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
     
     <!-- إضافة رمز الموقع المختصر (favicon) -->
-    <link rel="icon" type="image/png" href="../images/logo22.png">
-    <link rel="shortcut icon" type="image/png" href="../images/logo22.png">
-    <link rel="apple-touch-icon" href="../images/logo22.png">
+    <link rel="icon" type="image/png" data-store-favicon="../images/logo22.png">
+    <link rel="shortcut icon" type="image/png" data-store-favicon="../images/logo22.png">
+    <link rel="apple-touch-icon" data-store-favicon="../images/logo22.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -354,8 +355,8 @@
     <header>
         <!-- شعار الموقع واسمه -->
         <div class="logo-container">
-            <img src="../images/logo22.png" alt="شعار الخديوي" class="logo" width="60" height="60">
-            <h1>الخديوي</h1>
+            <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
+            <h1 data-store-name>المتجر</h1>
         </div>
         <!-- زر قائمة الجوال (هامبرجر) -->
         <div class="main-menu-toggle">
@@ -404,7 +405,7 @@
          ================================ -->
     <section class="hero" id="home" data-aos="fade-up" data-aos-duration="1200">
         <div class="hero-content">
-            <h2>مرحبًا بكم في <span>الخديوي</span></h2>
+            <h2>مرحبًا بكم في <span data-store-name>المتجر</span></h2>
             <p>خضراوات وفواكه طازجة بأفضل الأسعار </p>
 	    <p>تشغيل تجريبي</p>
             <a href="#products" class="btn">تسوق الآن <i data-lucide="arrow-left"></i></a>
@@ -505,8 +506,8 @@
     <footer data-aos="fade-up" data-aos-delay="700">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src="../images/logo22.png" alt="شعار الخديوي" class="logo" width="80" height="80">
-                <h3>الخديوي</h3>
+                <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="80" height="80" data-store-logo>
+                <h3 data-store-name>المتجر</h3>
             </div>
             <div class="footer-links">
                 <h4>روابط سريعة</h4>
@@ -521,11 +522,11 @@
             <div class="footer-contact">
                 <h4>اتصل بنا</h4>
               <div id="footer-phones"></div>
-                <p><i data-lucide="facebook"></i> <a href="https://www.facebook.com/share/1CizJTdEEc/" target="_blank" rel="noopener">صفحتنا على فيسبوك</a></p>
+                <p><i data-lucide="facebook"></i> <a href="#" data-social-facebook target="_blank" rel="noopener">فيسبوك</a></p>
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2025 اسواق الخديوي. جميع الحقوق محفوظة.</p>
+            <p>&copy; 2025 <span data-store-name>المتجر</span>. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 
@@ -538,10 +539,14 @@
 
     <script src="../js/settings.js"></script>
     <script src="../js/products.js" type="module"></script>
+    <script src="js/settings-sync.js" type="module"></script>
+    <script src="js/whatsapp-sync.js" type="module"></script>
+    <script src="js/weight-cart.js"></script>
+    <script src="js/weight-products.js"></script>
     <script src="../js/script.js"></script>
   <!-- 🔔 بانر إضافة للموبايل -->
   <div id="addToHome" style="display:none; position:fixed; bottom:20px; left:20px; right:20px; background:linear-gradient(135deg, #1a5f7a 0%, #42c5ea 100%); color:white; padding:15px; border-radius:15px; box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:9999; text-align:center; font-family:'Tajawal',sans-serif;">
-    📱 <strong>أضف اسواق الخديوي إلى الشاشة الرئيسية</strong><br />
+        📱 <strong>أضف <span data-store-name>المتجر</span> إلى الشاشة الرئيسية</strong><br />
     <small style="opacity:0.9;">للوصول السريع والتحديثات التلقائية</small><br />
     <div style="margin-top:10px;">
       <button onclick="document.getElementById('addToHome').style.display='none'; localStorage.setItem('hideBanner', '1');" style="background:rgba(255,255,255,0.2); border:none; color:white; padding:8px 16px; border-radius:20px; font-size:14px; cursor:pointer; margin:0 5px;">
@@ -695,7 +700,7 @@
         console.log('تم الحصول على رقم الطلب:', orderId);
 
         // إعداد رسالة واتساب
-        let whatsappMessage = `مرحباً، أريد طلب من اسواق الخديوي:\n\n`;
+        let whatsappMessage = `مرحباً، أريد طلب من <span data-store-name>المتجر</span>:\n\n`;
         whatsappMessage += `رقم الطلب: ${orderId}\n`;
         whatsappMessage += `اسم العميل: ${user.displayName || user.email}\n\n`;
         whatsappMessage += `تفاصيل الطلب:\n`;
@@ -708,7 +713,13 @@
         whatsappMessage += `تاريخ الطلب: ${new Date().toLocaleString('ar-EG')}`;
 
         // إرسال رسالة واتساب
-        const phoneNumber = '201234567890'; // استبدل برقم الهاتف الفعلي
+        // جلب رقم الواتساب من الإعدادات
+        let phoneNumber = '201234567890'; // رقم افتراضي
+        
+        // محاولة جلب الرقم من الإعدادات
+        if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.storePhone) {
+            phoneNumber = window.siteSettings.store.storePhone.replace(/[^0-9]/g, '');
+        }
         const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
         
         // فتح واتساب
