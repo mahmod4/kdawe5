@@ -321,28 +321,11 @@ async function renderDailyOffers() {
             titleDiv.textContent = offer.name;
             offerDiv.appendChild(titleDiv);
             
-            // إضافة خيارات الوزن أو السعر
-            if (hasWeightOptions && offer.price) {
-                const weightSelect = document.createElement('select');
-                weightSelect.className = 'weight-select';
-                weightSelect.setAttribute('data-id', `daily-${offer.id}`);
-                weightSelect.setAttribute('aria-label', 'اختار الوزن');
-                
-                for (let w = 0.5; w <= 5; w += 0.5) {
-                    const price = (offer.price * w).toFixed(2);
-                    const option = document.createElement('option');
-                    option.value = w;
-                    option.setAttribute('data-price', price);
-                    option.textContent = `${w} كجم - ${price} ج.م`;
-                    weightSelect.appendChild(option);
-                }
-                offerDiv.appendChild(weightSelect);
-            } else {
-                const priceDiv = document.createElement('div');
-                priceDiv.className = 'daily-offer-price';
-                priceDiv.textContent = offer.price ? `${offer.price} ج.م` : '';
-                offerDiv.appendChild(priceDiv);
-            }
+            // السعر الأساسي - تم نقل خيارات الوزن إلى النظام الجديد
+            const priceDiv = document.createElement('div');
+            priceDiv.className = 'daily-offer-price';
+            priceDiv.textContent = `${offer.price} ج.م`;
+            offerDiv.appendChild(priceDiv);
             
             // إضافة زر الإضافة للسلة
             const addButton = document.createElement('button');
@@ -380,12 +363,7 @@ function addDailyOfferToCart(e, dailyOffers) {
     if (!offer) return;
     let selectedWeight = 1;
     let selectedPrice = offer.price;
-    const offerDiv = btn.closest('.daily-offer');
-    const weightSelect = offerDiv ? offerDiv.querySelector('.weight-select') : null;
-    if (weightSelect) {
-        selectedWeight = parseFloat(weightSelect.value);
-        selectedPrice = (offer.price * selectedWeight).toFixed(2);
-    }
+    // تم حذف نظام الوزن القديم - الآن يستخدم النظام الجديد
     // تحقق من وجود العنصر في السلة
     const existingItem = cart.find(item => String(item.id) === offerId && Number(item.selectedWeight) === Number(selectedWeight));
     if (existingItem) {
@@ -404,7 +382,7 @@ function addDailyOfferToCart(e, dailyOffers) {
     // إشعار إضافة
     const notification = document.createElement('div');
     notification.classList.add('notification');
-    notification.textContent = `تمت إضافة ${offer.name}${selectedWeight ? ' (' + selectedWeight + ' كجم)' : ''} إلى السلة`;
+    notification.textContent = `تمت إضافة ${offer.name} إلى السلة`;
     document.body.appendChild(notification);
     setTimeout(() => { notification.classList.add('show'); }, 10);
     setTimeout(() => {
@@ -627,6 +605,7 @@ function displayProducts(productsArray) {
     currentPageProducts.forEach(product => {
         const productElement = document.createElement('div');
         productElement.classList.add('product');
+        productElement.setAttribute('data-product-id', product.id);
         
         // إنشاء الصورة
         const img = document.createElement('img');
@@ -654,11 +633,12 @@ function displayProducts(productsArray) {
         title.textContent = product.name;
         productInfo.appendChild(title);
 
-        // سطر فرعي (مثلاً الوزن/القطعة)
-        if (product.weight) {
+        // سطر فرعي - تم نقل إلى نظام الوزن الجديد
+        // الآن يتم التحكم فيه من لوحة التحكم
+        if (product.soldByWeight) {
             const subtitle = document.createElement('p');
             subtitle.className = 'product-subtitle';
-            subtitle.textContent = 'متوفر بالوزن';
+            subtitle.textContent = 'يُباع بالوزن';
             productInfo.appendChild(subtitle);
         }
 
@@ -698,39 +678,16 @@ function displayProducts(productsArray) {
             addButton.title = 'غير متوفر في المخزون';
         }
 
-        // خيارات الوزن إن وجدت
-        if (product.weight && product.price) {
-            const weightSelect = document.createElement('select');
-            weightSelect.className = 'weight-select';
-            weightSelect.setAttribute('data-id', product.id);
-            weightSelect.setAttribute('aria-label', 'اختار الوزن');
-            
-            for (let w = 0.5; w <= 5; w += 0.5) {
-                const price = (product.price * w).toFixed(2);
-                const option = document.createElement('option');
-                option.value = w;
-                option.setAttribute('data-price', price);
-                option.textContent = `${w} كجم - ${price} ج.م`;
-                weightSelect.appendChild(option);
-            }
-            productInfo.appendChild(weightSelect);
-            // سعر افتراضي حسب أول خيار
-            const firstOption = weightSelect.options[0];
-            priceEl.textContent = `${firstOption ? firstOption.getAttribute('data-price') : product.price} ج.م`;
-            // حدث لتحديث السعر عند تغيير الوزن
-            weightSelect.addEventListener('change', () => {
-                const selected = weightSelect.selectedOptions[0];
-                const p = selected ? selected.getAttribute('data-price') : product.price;
-                priceEl.textContent = `${p} ج.م`;
-            });
-        } else {
-            priceEl.textContent = `${product.price} ج.م`;
-        }
+        // خيارات الوزن - تم نقلها إلى نظام الوزن الجديد
+        // الآن يتم التحكم فيها من لوحة التحكم عبر weight-products.js
+        
+        // السعر الأساسي
+        priceEl.textContent = `${product.price} ج.م`;
 
         footer.appendChild(priceEl);
         footer.appendChild(addButton);
+        productInfo.appendChild(footer);
         productElement.appendChild(productInfo);
-        productElement.appendChild(footer);
         fragment.appendChild(productElement);
     });
     
@@ -739,6 +696,38 @@ function displayProducts(productsArray) {
     document.querySelectorAll('.add-to-cart').forEach(button => {
         button.addEventListener('click', addToCart);
     });
+    
+    // تهيئة نظام الوزن بعد عرض المنتجات
+    if (window.weightProducts) {
+        setTimeout(() => {
+            weightProducts.initializeProducts();
+        }, 1000);
+        
+        // إعادة تهيئة عند تغيير الصفحة
+        document.addEventListener('productsUpdated', () => {
+            setTimeout(() => {
+                weightProducts.initializeProducts();
+            }, 500);
+        });
+        
+        // إعادة تهيئة عند البحث أو الفلترة
+        const originalDisplayProducts = window.displayProducts;
+        if (originalDisplayProducts) {
+            window.displayProducts = function(...args) {
+                const result = originalDisplayProducts.apply(this, args);
+                setTimeout(() => {
+                    if (window.weightProducts) {
+                        window.weightProducts.initializeProducts();
+                    }
+                }, 500);
+                return result;
+            };
+        }
+    }
+    
+    // إرسال حدث لتحديث المنتجات
+    const event = new CustomEvent('productsUpdated');
+    document.dispatchEvent(event);
 }
 
 // ================================
@@ -873,11 +862,12 @@ function addToCart(e) {
     
     let selectedWeight = 1;
     let selectedPrice = product.price;
-    // ابحث عن اختيار الوزن داخل بطاقة المنتج كاملة
+    
+    // البحث عن وزن من نظام الوزن الجديد
     const card = e.target.closest('.product');
-    const weightSelect = card ? card.querySelector('.weight-select') : null;
-    if (weightSelect) {
-        selectedWeight = parseFloat(weightSelect.value);
+    const weightInput = card ? card.querySelector('.weight-input') : null;
+    if (weightInput) {
+        selectedWeight = parseFloat(weightInput.value);
         selectedPrice = (product.price * selectedWeight).toFixed(2);
     }
     const existingItem = cart.find(item => String(item.id) === String(productId) && Number(item.selectedWeight) === Number(selectedWeight));
@@ -897,7 +887,7 @@ function addToCart(e) {
     // إشعار إضافة
     const notification = document.createElement('div');
     notification.classList.add('notification');
-    notification.textContent = `تمت إضافة ${product.name} (${selectedWeight} كجم) إلى السلة`;
+    notification.textContent = `تمت إضافة ${product.name} إلى السلة`;
     document.body.appendChild(notification);
     setTimeout(() => { notification.classList.add('show'); }, 10);
     setTimeout(() => {
@@ -935,8 +925,16 @@ function updateCart() {
         
         const title = document.createElement('h4');
         title.className = 'cart-item-title';
-        title.textContent = `${item.name} (${item.selectedWeight} كجم)`;
+        title.textContent = item.name;
         cartItemInfo.appendChild(title);
+        
+        // عرض الوزن إذا كان المنتج يُباع بالوزن
+        if (item.selectedWeight && item.selectedWeight !== 1) {
+            const weightInfo = document.createElement('p');
+            weightInfo.className = 'cart-item-weight';
+            weightInfo.textContent = `الوزن: ${item.selectedWeight} كجم`;
+            cartItemInfo.appendChild(weightInfo);
+        }
         
         const price = document.createElement('p');
         price.className = 'cart-item-price';
@@ -952,7 +950,6 @@ function updateCart() {
         const decreaseBtn = document.createElement('button');
         decreaseBtn.className = 'quantity-btn decrease';
         decreaseBtn.setAttribute('data-id', item.id);
-        decreaseBtn.setAttribute('data-weight', item.selectedWeight);
         decreaseBtn.textContent = '-';
         quantityDiv.appendChild(decreaseBtn);
         
@@ -1333,51 +1330,11 @@ function populateCategoryFilter() {
 }
 
 // ================================
-// عرض أيقونات الفئات
+// عرض أيقونات الفئات (تم نقله إلى settings-sync.js ليكون ديناميكياً)
 // ================================
 function renderCategoryIcons() {
-    const categoryIconsContainer = document.getElementById('category-icons-container');
-    if (!categoryIconsContainer) return;
-
-    const categoryIcons = {
-        'all': 'fa-store',
-        'dairy': 'fa-cheese',
-        'grocery': 'fa-shopping-basket',
-        'snacks': 'fa-cookie-bite',
-        'beverages': 'fa-wine-bottle',
-        'cleaning': 'fa-soap',
-        'frozen': 'fa-snowflake',
-        'canned': 'fa-box'
-    };
-
-    categoryIconsContainer.innerHTML = '';
-    categories.forEach(cat => {
-        const iconClass = categoryIcons[cat.value] || 'fa-tag';
-        const categoryElement = document.createElement('div');
-        categoryElement.className = 'category';
-        categoryElement.dataset.category = cat.value;
-        categoryElement.innerHTML = `
-            <i class="fas ${iconClass}"></i>
-            <h3>${cat.label}</h3>
-        `;
-        categoryElement.addEventListener('click', () => {
-            // إزالة التحديد من جميع الفئات
-            document.querySelectorAll('.category').forEach(el => el.classList.remove('selected'));
-            // إضافة التحديد للفئة الحالية
-            categoryElement.classList.add('selected');
-            
-            // تحديث القائمة المنسدلة وتفعيل الفلتر
-            categoryFilter.value = cat.value;
-            filterProducts();
-        });
-        categoryIconsContainer.appendChild(categoryElement);
-    });
-
-    // تحديد 'all' كفئة افتراضية
-    const allCategory = categoryIconsContainer.querySelector('[data-category="all"]');
-    if (allCategory) {
-        allCategory.classList.add('selected');
-    }
+    // هذه الدالة الآن يتم استدعاؤها من settings-sync.js بعد تحميل الأقسام من لوحة التحكم
+    console.log('Category icons will be rendered dynamically from dashboard settings');
 }
 
 // ================================
