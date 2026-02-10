@@ -126,8 +126,13 @@ function updateStoreElements() {
     
     // Update page title
     if (store.storeName) {
-        document.title = store.storeName;
-        console.log(`Updated page title to: ${store.storeName}`);
+        const currentTitle = (document.title || '').trim();
+        let baseTitle = currentTitle;
+        if (currentTitle.includes('|')) {
+            baseTitle = currentTitle.split('|')[0].trim();
+        }
+        document.title = baseTitle ? `${baseTitle} | ${store.storeName}` : store.storeName;
+        console.log(`Updated page title to: ${document.title}`);
     }
     
     // Update meta tags
@@ -152,6 +157,40 @@ function updateContentElements() {
     
     // Update footer content
     updateFooterContent(content);
+
+    applyContentBindings(content);
+}
+
+function applyContentBindings(content) {
+    const nodes = document.querySelectorAll('[data-content-key]');
+    if (!nodes || !nodes.length) return;
+
+    nodes.forEach((el) => {
+        const key = el.getAttribute('data-content-key');
+        if (!key) return;
+        const value = content ? content[key] : undefined;
+        if (typeof value === 'undefined' || value === null) return;
+
+        const tag = (el.tagName || '').toLowerCase();
+        if (tag === 'img') {
+            el.src = String(value);
+            el.style.display = 'block';
+            return;
+        }
+
+        if (tag === 'a') {
+            el.href = String(value);
+            el.style.display = 'inline';
+            return;
+        }
+
+        if (tag === 'input' || tag === 'textarea') {
+            el.value = String(value);
+            return;
+        }
+
+        el.textContent = String(value);
+    });
 }
 
 // Update categories in navigation and icons
