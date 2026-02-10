@@ -148,106 +148,116 @@
                 });
             });
         }
-        // توليد الفروع والأرقام من الإعدادات
-        try {
-            const S = window.APP_SETTINGS || {};
-            // الفروع
-            const branchesList = document.getElementById('branches-list');
-            const aboutBranches = document.getElementById('about-branches');
-            if (branchesList && Array.isArray(S.BRANCHES)) {
-                branchesList.innerHTML = '';
-                S.BRANCHES.filter(b => (b && (b.address || b.name))).forEach((b, idx) => {
-                    const p = document.createElement('p');
-                    const label = b.name ? `${b.name} : ` : '';
-                    const text = document.createTextNode(`${label}${b.address || ''} `);
-                    p.appendChild(text);
-                    if (b.mapsUrl) {
-                        const a = document.createElement('a');
-                        a.href = b.mapsUrl;
-                        a.target = '_blank';
-                        a.rel = 'noopener';
-                        a.textContent = 'خريطة جوجل';
-                        a.style.marginRight = '8px';
-                        p.appendChild(a);
+        function renderContactFromSettings() {
+            try {
+                const S = window.APP_SETTINGS || {};
+
+                // الفروع
+                const branchesList = document.getElementById('branches-list');
+                const aboutBranches = document.getElementById('about-branches');
+                if (branchesList && Array.isArray(S.BRANCHES)) {
+                    branchesList.innerHTML = '';
+                    S.BRANCHES.filter(b => (b && (b.address || b.name))).forEach((b) => {
+                        const p = document.createElement('p');
+                        const label = b.name ? `${b.name} : ` : '';
+                        const text = document.createTextNode(`${label}${b.address || ''} `);
+                        p.appendChild(text);
+                        if (b.mapsUrl) {
+                            const a = document.createElement('a');
+                            a.href = b.mapsUrl;
+                            a.target = '_blank';
+                            a.rel = 'noopener';
+                            a.textContent = 'خريطة جوجل';
+                            a.style.marginRight = '8px';
+                            p.appendChild(a);
+                        }
+                        branchesList.appendChild(p);
+                    });
+                }
+                if (aboutBranches && Array.isArray(S.BRANCHES)) {
+                    aboutBranches.innerHTML = '';
+                    S.BRANCHES.filter(b => (b && (b.address || b.name))).forEach((b) => {
+                        const p = document.createElement('p');
+                        const label = b.name ? `${b.name} : ` : '';
+                        p.appendChild(document.createTextNode(`${label}${b.address || ''} `));
+                        if (b.mapsUrl) {
+                            const a = document.createElement('a');
+                            a.href = b.mapsUrl;
+                            a.target = '_blank';
+                            a.rel = 'noopener';
+                            a.textContent = 'خريطة جوجل';
+                            a.style.marginRight = '8px';
+                            p.appendChild(a);
+                        }
+                        aboutBranches.appendChild(p);
+                    });
+                }
+
+                // أرقام الهواتف
+                const phonesList = document.getElementById('phones-list');
+                const footerPhones = document.getElementById('footer-phones');
+                const aboutPhones = document.getElementById('about-phones');
+                const phoneNumbers = Array.isArray(S.CONTACT_PHONES) ? S.CONTACT_PHONES : [];
+                const whatsappPhone = S.WHATSAPP_PHONE || '';
+                const renderPhoneLink = (num) => {
+                    const a = document.createElement('a');
+                    a.href = `https://wa.me/${whatsappPhone || '201013449050'}`;
+                    a.target = '_blank';
+                    a.rel = 'noopener';
+                    a.className = 'phone-link';
+                    a.textContent = num;
+                    const i = document.createElement('i');
+                    i.className = 'fab fa-whatsapp';
+                    i.style.marginRight = '6px';
+                    a.appendChild(document.createTextNode(' '));
+                    a.appendChild(i);
+                    return a;
+                };
+                if (phonesList) {
+                    phonesList.innerHTML = '';
+                    if (phoneNumbers.length) {
+                        phoneNumbers.forEach(num => {
+                            const p = document.createElement('p');
+                            p.appendChild(document.createTextNode('واتساب: '));
+                            p.appendChild(renderPhoneLink(num));
+                            phonesList.appendChild(p);
+                        });
                     }
-                    branchesList.appendChild(p);
-                });
-            }
-            if (aboutBranches && Array.isArray(S.BRANCHES)) {
-                aboutBranches.innerHTML = '';
-                S.BRANCHES.filter(b => (b && (b.address || b.name))).forEach((b) => {
-                    const p = document.createElement('p');
-                    const label = b.name ? `${b.name} : ` : '';
-                    p.appendChild(document.createTextNode(`${label}${b.address || ''} `));
-                    if (b.mapsUrl) {
-                        const a = document.createElement('a');
-                        a.href = b.mapsUrl;
-                        a.target = '_blank';
-                        a.rel = 'noopener';
-                        a.textContent = 'خريطة جوجل';
-                        a.style.marginRight = '8px';
-                        p.appendChild(a);
-                    }
-                    aboutBranches.appendChild(p);
-                });
-            }
-            // أرقام الهواتف
-            const phonesList = document.getElementById('phones-list');
-            const footerPhones = document.getElementById('footer-phones');
-            const aboutPhones = document.getElementById('about-phones');
-            const phoneNumbers = Array.isArray(S.CONTACT_PHONES) ? S.CONTACT_PHONES : [];
-            const whatsappPhone = S.WHATSAPP_PHONE || '';
-            const renderPhoneLink = (num) => {
-                const a = document.createElement('a');
-                a.href = `https://wa.me/${whatsappPhone || '201013449050'}`;
-                a.target = '_blank';
-                a.rel = 'noopener';
-                a.className = 'phone-link';
-                a.textContent = num;
-                const i = document.createElement('i');
-                i.className = 'fab fa-whatsapp';
-                i.style.marginRight = '6px';
-                a.appendChild(document.createTextNode(' '));
-                a.appendChild(i);
-                return a;
-            };
-            if (phonesList) {
-                phonesList.innerHTML = '';
-                if (phoneNumbers.length) {
+                }
+                if (footerPhones) {
+                    footerPhones.innerHTML = '';
                     phoneNumbers.forEach(num => {
                         const p = document.createElement('p');
-                        p.appendChild(document.createTextNode('واتساب: '));
+                        const i = document.createElement('i');
+                        i.className = 'fas fa-phone';
+                        p.appendChild(i);
+                        p.appendChild(document.createTextNode(' '));
                         p.appendChild(renderPhoneLink(num));
-                        phonesList.appendChild(p);
+                        footerPhones.appendChild(p);
                     });
                 }
-            }
-            if (footerPhones) {
-                footerPhones.innerHTML = '';
-                phoneNumbers.forEach(num => {
-                    const p = document.createElement('p');
-                    const i = document.createElement('i');
-                    i.className = 'fas fa-phone';
-                    p.appendChild(i);
-                    p.appendChild(document.createTextNode(' '));
-                    p.appendChild(renderPhoneLink(num));
-                    footerPhones.appendChild(p);
-                });
-            }
-            if (aboutPhones) {
-                aboutPhones.innerHTML = '';
-                if (phoneNumbers.length) {
-                    const p = document.createElement('p');
-                    const label = document.createTextNode('هاتف: ');
-                    p.appendChild(label);
-                    phoneNumbers.forEach((num, idx) => {
-                        p.appendChild(renderPhoneLink(num));
-                        if (idx !== phoneNumbers.length - 1) p.appendChild(document.createTextNode(' - '));
-                    });
-                    aboutPhones.appendChild(p);
+                if (aboutPhones) {
+                    aboutPhones.innerHTML = '';
+                    if (phoneNumbers.length) {
+                        const p = document.createElement('p');
+                        const label = document.createTextNode('هاتف: ');
+                        p.appendChild(label);
+                        phoneNumbers.forEach((num, idx) => {
+                            p.appendChild(renderPhoneLink(num));
+                            if (idx !== phoneNumbers.length - 1) p.appendChild(document.createTextNode(' - '));
+                        });
+                        aboutPhones.appendChild(p);
+                    }
                 }
+            } catch(e) {
+                console.warn('settings render error', e);
             }
-        } catch(e) { console.warn('settings render error', e); }
+        }
+
+        renderContactFromSettings();
+        window.addEventListener('appSettingsUpdated', () => {
+            renderContactFromSettings();
+        });
 
         // إرسال نموذج التواصل إلى واتساب
         const contactForm = document.querySelector('.contact-form');
