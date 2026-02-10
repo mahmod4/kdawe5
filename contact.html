@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>اتصل بنا | اسواق الخديوي</title>
+    <title>اتصل بنا</title>
     
     <!-- PWA Meta Tags -->
     <meta name="theme-color" content="#1a5f7a">
@@ -13,9 +13,9 @@
     <meta name="description" content="تواصل مع أسواق الشادر لأي استفسار أو مشكلة.">
     <link rel="stylesheet" href="../css/styles.css">
     <!-- إضافة رمز الموقع المختصر (favicon) -->
-    <link rel="icon" type="image/jpeg" href="../images/logo22">
-    <link rel="shortcut icon" type="image/jpeg" href="../images/logo22">
-    <link rel="apple-touch-icon" href="../images/logo22">
+    <link rel="icon" type="image/jpeg" data-store-favicon href="../images/default-logo.png">
+    <link rel="shortcut icon" type="image/jpeg" data-store-favicon href="../images/default-logo.png">
+    <link rel="apple-touch-icon" data-store-favicon href="../images/default-logo.png">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -30,8 +30,8 @@
     </div>
     <header>
         <div class="logo-container">
-            <img src="../images/logo22" alt="شعار الخديوي" class="logo" width="60" height="60">
-            <h1>الخديوي</h1>
+            <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
+            <h1 data-store-name>المتجر</h1>
         </div>
         <div class="main-menu-toggle">
             <i data-lucide="menu"></i>
@@ -61,7 +61,7 @@
                     </div>
                     <div class="contact-item">
                         <i class="fas fa-envelope"></i>
-                        <p>صفحتنا على فيسبوك: <a href="https://www.facebook.com/share/1CizJTdEEc/" target="_blank" rel="noopener">اضغط هنا</a></p>
+                        <p>صفحتنا على فيسبوك: <a href="#" data-social-facebook target="_blank" rel="noopener">اضغط هنا</a></p>
                     </div>
                 </div>
                 <form class="contact-form">
@@ -73,13 +73,13 @@
             </div>
         </section>
         <section id="about" class="about" style="margin-top:40px;">
-            <h2>عن اسواق الخديوي <i class="fas fa-store"></i></h2>
+            <h2>عن <span data-store-name>المتجر</span> <i class="fas fa-store"></i></h2>
             <div class="about-content">
-                <img src="../images/logo22" alt="شعار الخديوي" class="about-logo" width="150" height="150">
+                <img src="../images/default-logo.png" alt="شعار المتجر" class="about-logo" width="150" height="150" data-store-logo>
                 <div class="about-text" id="about-text">
                     <div id="about-phones"></div>
                     <div id="about-branches"></div>
-                    <p>اسواق الخديوي تقدم لكم أجود أنواع الخضراوات والفواكه الطازجة مع خدمة توصيل سريعة وجودة عالية.</p>
+                    <p data-content-key="aboutText"></p>
                 </div>
             </div>
         </section>
@@ -87,21 +87,22 @@
     <footer style="margin-top:40px;">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src="../images/logo22.jpg" alt="شعار الخديوي" class="logo" width="80" height="80">
-                <h3>الخديوي</h3>
+                <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="80" height="80" data-store-logo>
+                <h3 data-store-name>المتجر</h3>
             </div>
             <div class="footer-contact">
                 <h4>اتصل بنا</h4>
                     <div id="footer-phones"></div>
-                <p><i class="fab fa-facebook"></i> <a href="https://www.facebook.com/share/1CizJTdEEc/" target="_blank" rel="noopener">صفحتنا على فيسبوك</a></p>
+                <p><i class="fab fa-facebook"></i> <a href="#" data-social-facebook target="_blank" rel="noopener">صفحتنا على فيسبوك</a></p>
             </div>
         </div>
         <div class="copyright">
-            <p>&copy; 2025 اسواق الخديوي. جميع الحقوق محفوظة.</p>
+            <p>&copy; 2025 <span data-store-name>المتجر</span>. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="../js/settings.js"></script>
+    <script src="../js/settings-sync.js" type="module"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (window.lucide) lucide.createIcons();

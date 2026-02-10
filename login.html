@@ -385,8 +385,8 @@
 <body>
     <header>
         <div class="logo-container">
-            <img src="../images/logo22.png" alt="شعار الخديوي" class="logo" width="60" height="60">
-            <h1>الخديوي</h1>
+            <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
+            <h1 data-store-name>المتجر</h1>
         </div>
         <nav class="main-menu" id="main-menu">
             <ul>
@@ -407,7 +407,7 @@
         <div class="login-card">
             <div class="login-header">
                 <h1>تسجيل الدخول</h1>
-                <p>سجل دخولك لعرض مشترياتك السابقة في الخديوي</p> 
+                <p>سجل دخولك لعرض مشترياتك السابقة في <span data-store-name>المتجر</span></p> 
             </div>
             
             <div class="login-body">
@@ -726,6 +726,8 @@
             }
         });
     </script>
+    <script src="../js/settings.js"></script>
+    <script src="../js/settings-sync.js" type="module"></script>
 </body>
 </html>
 
