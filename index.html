@@ -121,7 +121,7 @@
       // استيراد مكتبات المصادقة (تسجيل الدخول بجوجل)
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
       // استيراد مكتبات قاعدة البيانات Firestore
-      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       
       // ================================
       // إعدادات مشروع Firebase
@@ -179,7 +179,9 @@
           orderBy,
           getDocs,
           doc,
-          getDoc
+          getDoc,
+          setDoc,
+          updateDoc
         };
         
         console.log('تم تهيئة Firebase بنجاح');
@@ -251,6 +253,27 @@
               loginBtnContainer.style.display = 'none';
               userName.textContent = user.displayName || user.email;
               console.log('تم تسجيل الدخول:', user.displayName);
+
+              // مزامنة المستخدم من Auth إلى Firestore (Collection users) لظهوره في لوحة التحكم
+              try {
+                const db = window.firebase.firestore();
+                const now = new Date();
+                const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
+                window.firebaseFirestore.setDoc(
+                  userRef,
+                  {
+                    name: user.displayName || null,
+                    email: user.email || null,
+                    phone: user.phoneNumber || null,
+                    active: true,
+                    updatedAt: now,
+                    createdAt: now
+                  },
+                  { merge: true }
+                );
+              } catch (e) {
+                console.warn('تعذر مزامنة المستخدم إلى Firestore:', e);
+              }
             } else {
               // المستخدم غير مسجل دخول - إخفاء معلوماته وإظهار زر تسجيل الدخول
               userInfo.style.display = 'none';
