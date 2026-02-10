@@ -146,6 +146,41 @@ function updateStoreElements() {
     
     // Update store logo
     updateStoreLogo(store);
+
+    // Sync APP_SETTINGS used by legacy pages/scripts
+    syncAppSettingsFromStore(store);
+}
+
+function syncAppSettingsFromStore(store) {
+    if (!window.APP_SETTINGS) return;
+
+    if (typeof store.shippingBaseCost !== 'undefined') {
+        const v = Number(store.shippingBaseCost);
+        if (!Number.isNaN(v)) window.APP_SETTINGS.DELIVERY_FEE = v;
+    }
+
+    const phones = [];
+    if (store.storePhone) phones.push(String(store.storePhone));
+    if (Array.isArray(store.contactPhones) && store.contactPhones.length) {
+        store.contactPhones.forEach(p => phones.push(String(p)));
+    }
+    if (phones.length) window.APP_SETTINGS.CONTACT_PHONES = phones;
+
+    if (store.socialWhatsapp) {
+        window.APP_SETTINGS.WHATSAPP_PHONE = String(store.socialWhatsapp)
+            .replace(/\s+/g, '')
+            .replace(/^\+/, '')
+            .replace(/[^0-9]/g, '');
+    }
+
+    if (Array.isArray(store.branches)) {
+        window.APP_SETTINGS.BRANCHES = store.branches;
+    }
+
+    try {
+        window.dispatchEvent(new CustomEvent('appSettingsUpdated', { detail: { store } }));
+    } catch (e) {
+    }
 }
 
 // Update content elements
@@ -569,6 +604,9 @@ export { siteSettings };
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', loadAllSettings);
+
+// Make available globally for non-module scripts
+window.siteSettings = siteSettings;
 
 // Make sure category icons are rendered after settings load
 document.addEventListener('DOMContentLoaded', function() {

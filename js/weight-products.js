@@ -11,6 +11,24 @@ class WeightProducts {
         this.loadWeightSettings();
     }
 
+    getWeightUnit(product) {
+        try {
+            if (product && product.weightUnit) return String(product.weightUnit);
+            if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightUnit) {
+                return String(window.siteSettings.store.weightUnit);
+            }
+        } catch (e) {
+        }
+        return 'كجم';
+    }
+
+    formatWeightValue(value) {
+        const n = Number(value);
+        if (Number.isNaN(n)) return '';
+        if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+        return String(n);
+    }
+
     // تحميل إعدادات الوزن
     async loadWeightSettings() {
         try {
@@ -32,15 +50,17 @@ class WeightProducts {
     displayProductWeight(product, productCard) {
         if (!product.soldByWeight) return;
 
+        const unit = this.getWeightUnit(product);
+
         const weightDisplay = document.createElement('div');
         weightDisplay.className = 'weight-display mt-2 p-2 bg-gray-50 rounded';
         weightDisplay.innerHTML = `
             <div class="flex items-center justify-between">
                 <span class="text-sm font-medium">الوزن:</span>
-                <span class="text-sm text-gray-600">${product.weight || this.weightSettings.min} كجم</span>
+                <span class="text-sm text-gray-600">${this.formatWeightValue(product.weight || this.weightSettings.min)} ${unit}</span>
             </div>
             <div class="text-xs text-gray-500 mt-1">
-                يُباع بالوزن • النطاق: ${this.weightSettings.min} - ${this.weightSettings.max} كجم
+                يُباع بالوزن • النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
             </div>
         `;
 
@@ -54,6 +74,8 @@ class WeightProducts {
     // إنشاء منتقي الوزن التفاعلي
     createWeightPicker(product, container) {
         if (!product.soldByWeight) return;
+
+        const unit = this.getWeightUnit(product);
 
         const picker = document.createElement('div');
         picker.className = 'weight-picker mt-3';
@@ -85,14 +107,14 @@ class WeightProducts {
                        max="${this.weightSettings.max}" 
                        step="${this.weightSettings.increment}"
                        data-product-id="${product.id}">
-                <span class="text-sm">كجم</span>
+                <span class="text-sm">${unit}</span>
                 <button type="button" class="weight-increase bg-gray-200 hover:bg-gray-300 rounded px-2 py-1" 
                         data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
                     <i class="fas fa-plus text-xs"></i>
                 </button>
             </div>
             <div class="text-xs text-gray-500 mt-1">
-                النطاق: ${this.weightSettings.min} - ${this.weightSettings.max} كجم
+                النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
             </div>
         `;
 
@@ -102,15 +124,16 @@ class WeightProducts {
 
     // الحصول على خيارات الوزن من الإعدادات
     getWeightOptions() {
+        const unit = this.getWeightUnit(null);
         const defaultOptions = [
-            { value: 0.125, label: '1/8 كجم' },
-            { value: 0.25, label: '1/4 كجم' },
-            { value: 0.375, label: '3/8 كجم' },
-            { value: 0.5, label: '1/2 كجم' },
-            { value: 0.625, label: '5/8 كجم' },
-            { value: 0.75, label: '3/4 كجم' },
-            { value: 0.875, label: '7/8 كجم' },
-            { value: 1, label: '1 كجم' }
+            { value: 0.125, label: `1/8 ${unit}` },
+            { value: 0.25, label: `1/4 ${unit}` },
+            { value: 0.375, label: `3/8 ${unit}` },
+            { value: 0.5, label: `1/2 ${unit}` },
+            { value: 0.625, label: `5/8 ${unit}` },
+            { value: 0.75, label: `3/4 ${unit}` },
+            { value: 0.875, label: `7/8 ${unit}` },
+            { value: 1, label: `1 ${unit}` }
         ];
 
         // إذا كانت هناك خيارات محددة من الإعدادات
@@ -203,10 +226,13 @@ class WeightProducts {
     updatePriceByWeight(productCard, weight, basePrice) {
         const priceElement = productCard.querySelector('.product-price');
         if (priceElement) {
+            const productId = productCard.dataset.productId;
+            const product = this.getProductData(productId);
+            const unit = this.getWeightUnit(product);
             const newPrice = basePrice * weight;
             priceElement.innerHTML = `
                 <span class="current-price">${newPrice.toFixed(2)} ج.م</span>
-                <small class="text-xs text-gray-500 block">${weight} كجم × ${basePrice} ج.م</small>
+                <small class="text-xs text-gray-500 block">${this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
             `;
         }
     }
@@ -215,9 +241,11 @@ class WeightProducts {
     displayCartWeightIndicator(cartItem, weight) {
         if (!cartItem.soldByWeight) return;
 
+        const unit = this.getWeightUnit(cartItem);
+
         const indicator = document.createElement('div');
         indicator.className = 'cart-weight-indicator text-xs text-gray-500 mt-1';
-        indicator.textContent = `الوزن: ${weight} كجم`;
+        indicator.textContent = `الوزن: ${this.formatWeightValue(weight)} ${unit}`;
 
         const nameElement = cartItem.querySelector('.item-name');
         if (nameElement) {

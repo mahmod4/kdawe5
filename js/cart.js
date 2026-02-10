@@ -3,7 +3,20 @@
 // ================================
 
 (function () {
-  const DELIVERY_FEE = (window.APP_SETTINGS && Number(window.APP_SETTINGS.DELIVERY_FEE)) || 20;
+  function getDeliveryFee() {
+    const v = window.APP_SETTINGS && Number(window.APP_SETTINGS.DELIVERY_FEE);
+    return Number.isFinite(v) && v >= 0 ? v : 20;
+  }
+
+  function getWeightUnit(item) {
+    try {
+      if (item && item.weightUnit) return String(item.weightUnit);
+      if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightUnit) {
+        return String(window.siteSettings.store.weightUnit);
+      }
+    } catch (e) {}
+    return 'كجم';
+  }
 
   /**
    * قراءة السلة من localStorage
@@ -108,10 +121,11 @@
     }
 
     const subtotal = cart.reduce((sum, it) => sum + it.price * it.quantity, 0);
-    const grand = subtotal + DELIVERY_FEE;
+    const deliveryFee = getDeliveryFee();
+    const grand = subtotal + deliveryFee;
 
     if (subtotalEl) subtotalEl.textContent = String(subtotal);
-    if (deliveryEl) deliveryEl.textContent = String(DELIVERY_FEE);
+    if (deliveryEl) deliveryEl.textContent = String(deliveryFee);
     if (grandEl) grandEl.textContent = String(grand);
 
     const totalItems = cart.reduce((s, it) => s + it.quantity, 0);
@@ -173,12 +187,15 @@
     let text = '🛒 *طلب جديد* 🛒\n\n';
     text += '📋 *تفاصيل الطلب:*\n';
     cart.forEach((item, idx) => {
-      text += `${idx + 1}. ${item.name} (${item.selectedWeight} كجم) - ${item.price} ج.م × ${item.quantity} = ${item.price * item.quantity} ج.م\n`;
+      const unit = getWeightUnit(item);
+      const weightLabel = typeof item.selectedWeight !== 'undefined' && item.selectedWeight !== null ? ` (${item.selectedWeight} ${unit})` : '';
+      text += `${idx + 1}. ${item.name}${weightLabel} - ${item.price} ج.م × ${item.quantity} = ${item.price * item.quantity} ج.م\n`;
     });
     const subtotal = cart.reduce((s, it) => s + it.price * it.quantity, 0);
-    const grand = subtotal + DELIVERY_FEE;
+    const deliveryFee = getDeliveryFee();
+    const grand = subtotal + deliveryFee;
     text += `\n💰 *المجموع:* ${subtotal} ج.م`;
-    text += `\n🚚 *التوصيل:* ${DELIVERY_FEE} ج.م`;
+    text += `\n🚚 *التوصيل:* ${deliveryFee} ج.م`;
     text += `\n📦 *الإجمالي:* ${grand} ج.م\n`;
     text += `\n💳 *طريقة الدفع:* ${paymentMethod === 'visa' ? 'فيزا' : 'كاش عند الاستلام'}`;
     text += `\n👤 *العميل:* ${firstName} ${lastName}`;
@@ -293,6 +310,12 @@
       });
     }
     render();
+
+    try {
+      window.addEventListener('appSettingsUpdated', () => {
+        render();
+      });
+    } catch (e) {}
   }
 
   if (document.readyState === 'loading') {

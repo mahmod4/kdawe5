@@ -435,32 +435,42 @@ function setupEventListeners() {
         });
     }
 
-    // توليد هواتف الفوتر من الإعدادات (إن وجدت)
+    function renderFooterPhonesFromSettings() {
+        try {
+            const footerPhones = document.getElementById('footer-phones');
+            const S = window.APP_SETTINGS || {};
+            const numbers = Array.isArray(S.CONTACT_PHONES) ? S.CONTACT_PHONES : [];
+            const whatsapp = S.WHATSAPP_PHONE || '201013449050';
+            if (footerPhones) {
+                footerPhones.innerHTML = '';
+                if (numbers.length) {
+                    numbers.forEach((num) => {
+                        const p = document.createElement('p');
+                        const icon = document.createElement('i');
+                        icon.setAttribute('data-lucide', 'phone');
+                        p.appendChild(icon);
+                        p.appendChild(document.createTextNode(' '));
+                        const a = document.createElement('a');
+                        a.href = `https://wa.me/${whatsapp}`;
+                        a.target = '_blank';
+                        a.rel = 'noopener';
+                        a.className = 'phone-link';
+                        a.textContent = num;
+                        p.appendChild(a);
+                        footerPhones.appendChild(p);
+                    });
+                }
+                if (window.lucide) { lucide.createIcons(); }
+            }
+        } catch (e) { /* noop */ }
+    }
+
+    renderFooterPhonesFromSettings();
     try {
-        const footerPhones = document.getElementById('footer-phones');
-        const S = window.APP_SETTINGS || {};
-        const numbers = Array.isArray(S.CONTACT_PHONES) ? S.CONTACT_PHONES : [];
-        const whatsapp = S.WHATSAPP_PHONE || '201013449050';
-        if (footerPhones && numbers.length) {
-            footerPhones.innerHTML = '';
-            numbers.forEach((num) => {
-                const p = document.createElement('p');
-                const icon = document.createElement('i');
-                icon.setAttribute('data-lucide', 'phone');
-                p.appendChild(icon);
-                p.appendChild(document.createTextNode(' '));
-                const a = document.createElement('a');
-                a.href = `https://wa.me/${whatsapp}`;
-                a.target = '_blank';
-                a.rel = 'noopener';
-                a.className = 'phone-link';
-                a.textContent = num;
-                p.appendChild(a);
-                footerPhones.appendChild(p);
-            });
-            if (window.lucide) { lucide.createIcons(); }
-        }
-    } catch (e) { /* noop */ }
+        window.addEventListener('appSettingsUpdated', () => {
+            renderFooterPhonesFromSettings();
+        });
+    } catch (e) {}
     // تمرير ناعم للروابط
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
