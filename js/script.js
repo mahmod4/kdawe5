@@ -598,6 +598,20 @@ function debounce(func, wait) {
     };
 }
 
+function normalizeArabic(text) {
+    return String(text || '')
+        .normalize('NFKD')
+        .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
+        .replace(/[إأآا]/g, 'ا')
+        .replace(/ى/g, 'ي')
+        .replace(/ؤ/g, 'و')
+        .replace(/ئ/g, 'ي')
+        .replace(/ة/g, 'ه')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .toLowerCase();
+}
+
 // ================================
 // 12. عرض المنتجات مع الصفحات
 // ================================
@@ -783,18 +797,18 @@ function createPaginationControls() {
 // ================================
 function filterProducts() {
     const category = categoryFilter.value.trim().toLowerCase();
-    const searchTerm = searchInput.value.trim().toLowerCase();
+    const searchTerm = normalizeArabic(searchInput.value);
     let filteredProducts = products;
     
     // فلترة حسب الفئة
     if (category !== 'all') {
         // البحث عن التصنيف المحدد للحصول على التسمية العربية
         const selectedCategoryObject = categories.find(c => c.value === category);
-        const categoryLabel = selectedCategoryObject ? selectedCategoryObject.label.trim().toLowerCase() : '';
+        const categoryLabel = selectedCategoryObject ? normalizeArabic(selectedCategoryObject.label) : '';
 
         filteredProducts = filteredProducts.filter(product => {
             if (!product.category) return false;
-            const productCategory = product.category.trim().toLowerCase();
+            const productCategory = normalizeArabic(product.category);
             // التحقق من التطابق مع القيمة الإنجليزية أو التسمية العربية
             return productCategory === category || productCategory === categoryLabel;
         });
@@ -803,9 +817,9 @@ function filterProducts() {
     // فلترة حسب البحث
     if (searchTerm !== '') {
         filteredProducts = filteredProducts.filter(product => 
-            product.name.toLowerCase().includes(searchTerm) ||
-            (product.description && product.description.toLowerCase().includes(searchTerm)) ||
-            (product.category && product.category.toLowerCase().includes(searchTerm))
+            normalizeArabic(product.name).includes(searchTerm) ||
+            (product.description && normalizeArabic(product.description).includes(searchTerm)) ||
+            (product.category && normalizeArabic(product.category).includes(searchTerm))
         );
     }
     
@@ -1208,7 +1222,10 @@ async function fetchProductsFromFirestore() {
                 category: data.category || data.categoryId || '',
                 image: data.image || '',
                 price: parseFloat(data.price) || 0,
-                weight: data.hasWeightOptions || false,
+                // نظام الوزن يعتمد على soldByWeight + weight (قيمة افتراضية)
+                soldByWeight: data.soldByWeight === true || data.hasWeightOptions === true,
+                weight: (typeof data.weight === 'number' ? data.weight : null),
+                weightUnit: data.weightUnit || null,
                 stock: data.available !== false, // افتراض متوفر إذا لم يحدد
                 description: data.description || '',
                 hasWeightOptions: data.hasWeightOptions || false,
@@ -1275,12 +1292,13 @@ async function fetchProductsFromSheet() {
                 
                 if (!productsMap[cleanId]) {
                     productsMap[cleanId] = {
-                        id: Number(cleanId),
+                        id: String(cleanId),
                         name: cleanName,
                         category: cleanCategory,
                         image: cleanImage,
                         price: cleanPrice,
-                        weight: cleanWeight,
+                        soldByWeight: cleanWeight,
+                        weight: null,
                         stock: cleanStock,
                         description: cleanDescription,
                         hasWeightOptions: cleanWeight
@@ -1409,7 +1427,22 @@ async function loadProducts() {
             localStorage.setItem(cacheKey, JSON.stringify(fetchedProducts));
             localStorage.setItem(cacheTimeKey, now.toString());
         }
-        products = fetchedProducts;
+        // Normalize products (especially when coming from old cache)
+        products = Array.isArray(fetchedProducts) ? fetchedProducts.map((p) => {
+            const soldByWeight = (p && (p.soldByWeight === true || p.hasWeightOptions === true)) || false;
+            return {
+                ...p,
+                id: p && p.id != null ? String(p.id) : '',
+                soldByWeight,
+                hasWeightOptions: p && p.hasWeightOptions === true ? true : soldByWeight,
+                weight: (p && typeof p.weight === 'number') ? p.weight : (p && p.weight === null ? null : null),
+                weightUnit: (p && p.weightUnit) ? p.weightUnit : null
+            };
+        }) : [];
+
+        // Expose globally so weight-products.js can read product data
+        window.products = products;
+        window.productsArray = products;
         displayProducts(products);
         renderDailyOffers();
         // تحديث الفئات بعد تحميل المنتجات
