@@ -44,6 +44,26 @@ if (localStorage.getItem('cart')) {
   }
 }
 
+function getCurrentUser() {
+    try {
+        if (window.firebase && typeof window.firebase.auth === 'function') {
+            return window.firebase.auth().currentUser;
+        }
+    } catch (e) {
+    }
+    return null;
+}
+
+function redirectToLoginForCheckout() {
+    try {
+        sessionStorage.setItem('postLoginRedirect', window.location.href);
+    } catch (e) {
+    }
+    alert('يجب تسجيل الدخول لإكمال الطلب');
+    // صفحات المتجر داخل نفس مجلد html
+    window.location.href = 'login.html';
+}
+
 // متغيرات إدارة المنتجات
 let products = []; // جميع المنتجات المحملة من قاعدة البيانات
 let currentPage = 1; // الصفحة الحالية في التصفح
@@ -421,7 +441,18 @@ function setupEventListeners() {
     // إغلاق السلة عند الضغط خارجها
     window.addEventListener('click', (e) => { if (e.target === cartModal) { cartModal.style.display = 'none'; } });
     // إتمام الشراء
-    checkoutBtn.addEventListener('click', () => { if (cart.length > 0) { sendOrderToWhatsApp(); } else { alert('سلة التسوق فارغة!'); } });
+    checkoutBtn.addEventListener('click', () => {
+        if (cart.length === 0) {
+            alert('سلة التسوق فارغة!');
+            return;
+        }
+        const user = getCurrentUser();
+        if (!user) {
+            redirectToLoginForCheckout();
+            return;
+        }
+        sendOrderToWhatsApp();
+    });
     // إرسال نموذج التواصل
     const contactForm = document.querySelector('.contact-form');
     if (contactForm) {
@@ -1082,6 +1113,11 @@ function updateLayoutOnOrientationChange() {
 // 21. إرسال الطلب إلى واتساب وحفظه في Firebase
 // ================================
 async function sendOrderToWhatsApp() {
+    const user = getCurrentUser();
+    if (!user) {
+        redirectToLoginForCheckout();
+        return;
+    }
     const deliveryFee = (window.APP_SETTINGS && Number(window.APP_SETTINGS.DELIVERY_FEE)) || 20;
     let orderText = "🛒 *طلب جديد* 🛒\n\n";
     orderText += "📋 *تفاصيل الطلب:*\n";
@@ -1098,10 +1134,7 @@ async function sendOrderToWhatsApp() {
     // حفظ الطلب في Firebase إذا كان المستخدم مسجل دخول
     try {
         if (window.firebase && window.firebase.auth) {
-            const user = window.firebase.auth().currentUser;
-            if (user) {
-                await saveOrderToFirebase(user.uid, cart, grandTotal);
-            }
+            await saveOrderToFirebase(user.uid, cart, grandTotal);
         }
     } catch (error) {
         console.error('خطأ في حفظ الطلب:', error);
