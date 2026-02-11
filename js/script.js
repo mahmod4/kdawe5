@@ -398,7 +398,15 @@ function setupEventListeners() {
     // فلترة المنتجات حسب الفئة
     categoryFilter.addEventListener('change', filterProducts);
     // البحث
-    searchInput.addEventListener('input', filterProducts);
+    searchInput.addEventListener('input', debounce(filterProducts, 150));
+    // ربط إضافة للسلة مرة واحدة (بدون إعادة ربط عند كل عرض للمنتجات)
+    if (productContainer) {
+        productContainer.addEventListener('click', (e) => {
+            const btn = e.target && e.target.closest ? e.target.closest('.add-to-cart') : null;
+            if (!btn) return;
+            addToCart({ target: btn });
+        });
+    }
     // فتح السلة عبر المودال فقط إذا كان الرابط '#'
     const cartIconDesktop = document.getElementById('cart-icon-desktop');
     const cartIconMobile = document.getElementById('cart-icon-mobile');
@@ -703,36 +711,14 @@ function displayProducts(productsArray) {
     
     productContainer.appendChild(fragment);
     createPaginationControls();
-    document.querySelectorAll('.add-to-cart').forEach(button => {
-        button.addEventListener('click', addToCart);
-    });
     
     // تهيئة نظام الوزن بعد عرض المنتجات
     if (window.weightProducts) {
         setTimeout(() => {
-            weightProducts.initializeProducts();
-        }, 1000);
-        
-        // إعادة تهيئة عند تغيير الصفحة
-        document.addEventListener('productsUpdated', () => {
-            setTimeout(() => {
-                weightProducts.initializeProducts();
-            }, 500);
-        });
-        
-        // إعادة تهيئة عند البحث أو الفلترة
-        const originalDisplayProducts = window.displayProducts;
-        if (originalDisplayProducts) {
-            window.displayProducts = function(...args) {
-                const result = originalDisplayProducts.apply(this, args);
-                setTimeout(() => {
-                    if (window.weightProducts) {
-                        window.weightProducts.initializeProducts();
-                    }
-                }, 500);
-                return result;
-            };
-        }
+            try {
+                window.weightProducts.initializeProducts();
+            } catch (e) { /* noop */ }
+        }, 250);
     }
     
     // إرسال حدث لتحديث المنتجات
