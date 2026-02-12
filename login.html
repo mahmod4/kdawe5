@@ -504,6 +504,17 @@
                 // تحميل الطلبات السابقة
                 loadUserOrders(user.uid);
 
+                // الرجوع للصفحة المطلوبة بعد تسجيل الدخول (إتمام الطلب)
+                try {
+                    const redirectUrl = sessionStorage.getItem('postLoginRedirect');
+                    if (redirectUrl) {
+                        sessionStorage.removeItem('postLoginRedirect');
+                        window.location.href = redirectUrl;
+                        return;
+                    }
+                } catch (e) {
+                }
+
                 // مزامنة المستخدم من Auth إلى Firestore (Collection users) لظهوره في لوحة التحكم
                 try {
                     const db = window.firebase.firestore();
@@ -640,36 +651,30 @@
                 
                 // الطريقة الثانية: جلب من collection العام (orders)
                 try {
-                    console.log('محاولة جلب المشتريات من collection العام (بالاستعلام)...');
-
+                    console.log('محاولة جلب المشتريات من collection العام...');
                     const ordersRef = window.firebaseFirestore.collection(db, 'orders');
-                    const query = window.firebaseFirestore.query;
-                    const where = window.firebaseFirestore.where;
 
-                    const snaps = [];
-                    try {
-                        snaps.push(await window.firebaseFirestore.getDocs(query(ordersRef, where('userId', '==', userId))));
-                    } catch (e) {
-                        console.warn('فشل query على userId:', e);
-                    }
-                    try {
-                        snaps.push(await window.firebaseFirestore.getDocs(query(ordersRef, where('customerId', '==', userId))));
-                    } catch (e) {
-                        console.warn('فشل query على customerId:', e);
-                    }
+                    // لا يمكن قراءة كل الطلبات مع الـ Rules (permission-denied)
+                    // لذلك نستخدم where على userId/customerId
+                    const q1 = window.firebaseFirestore.query(ordersRef, window.firebaseFirestore.where('userId', '==', userId));
+                    const q2 = window.firebaseFirestore.query(ordersRef, window.firebaseFirestore.where('customerId', '==', userId));
+
+                    const [snap1, snap2] = await Promise.all([
+                        window.firebaseFirestore.getDocs(q1),
+                        window.firebaseFirestore.getDocs(q2)
+                    ]);
 
                     const seen = new Set();
-                    snaps.forEach((ordersSnap) => {
-                        if (!ordersSnap) return;
-                        ordersSnap.forEach((doc) => {
-                            if (seen.has(doc.id)) return;
-                            seen.add(doc.id);
-                            const data = doc.data();
+                    [snap1, snap2].forEach((snap) => {
+                        snap.forEach((d) => {
+                            if (seen.has(d.id)) return;
+                            seen.add(d.id);
+                            const data = d.data();
                             userOrders.push({
-                                id: doc.id,
+                                id: d.id,
                                 items: data.items || [],
                                 total: data.total || 0,
-                                orderDate: data.orderDate || data.createdAt || data.orderDate,
+                                orderDate: data.orderDate,
                                 source: 'orders_collection'
                             });
                         });
