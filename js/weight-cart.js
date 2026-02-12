@@ -177,4 +177,5 @@ if (window.siteSettings) {
     }
 }
 
-export default weightCart;
+// ملاحظة: هذا الملف يتم تحميله كـ script عادي (ليس type="module")
+// لذلك نستخدم window.weightCart بدلاً من export.

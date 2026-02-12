@@ -3,11 +3,22 @@
 // ================================
 
 (function () {
+  // ================================
+  // هذا الملف مسؤول عن صفحة السلة:
+  // - قراءة/حفظ السلة من localStorage
+  // - عرض العناصر وحساب الإجماليات
+  // - تعديل الكميات والحذف
+  // - إرسال الطلب (واتساب) + حفظه في Firestore عند تسجيل الدخول
+  // - منع إتمام الطلب بدون تسجيل دخول (تحويل لصفحة login)
+  // ================================
+
+  // قراءة رسوم التوصيل من الإعدادات (مع قيمة افتراضية)
   function getDeliveryFee() {
     const v = window.APP_SETTINGS && Number(window.APP_SETTINGS.DELIVERY_FEE);
     return Number.isFinite(v) && v >= 0 ? v : 20;
   }
 
+  // تحديد وحدة الوزن (من عنصر السلة أو من إعدادات المتجر)
   function getWeightUnit(item) {
     try {
       if (item && item.weightUnit) return String(item.weightUnit);
@@ -40,6 +51,7 @@
    * تنسيق إنشاء عنصر السلة
    */
   function createCartItemElement(item) {
+    // بناء عنصر واجهة يمثل منتج داخل السلة
     const wrapper = document.createElement('div');
     wrapper.className = 'cart-item';
 
@@ -99,6 +111,7 @@
    * إعادة العرض
    */
   function render() {
+    // إعادة رسم السلة بالكامل بناءً على البيانات المخزنة
     const cart = readCart();
     const list = document.getElementById('cart-page-items');
     const subtotalEl = document.getElementById('subtotal-amount');
@@ -136,6 +149,7 @@
    * تغيير الكمية
    */
   function changeQty(targetItem, delta) {
+    // تعديل كمية عنصر داخل السلة (مع مراعاة الوزن المختار)
     const cart = readCart();
     const idx = cart.findIndex(
       (i) => String(i.id) === String(targetItem.id) && Number(i.selectedWeight) === Number(targetItem.selectedWeight)
@@ -151,6 +165,7 @@
    * إزالة عنصر
    */
   function removeItem(targetItem) {
+    // حذف عنصر من السلة (محدد بـ id + الوزن المختار)
     let cart = readCart();
     cart = cart.filter(
       (i) => !(String(i.id) === String(targetItem.id) && Number(i.selectedWeight) === Number(targetItem.selectedWeight))
@@ -163,6 +178,12 @@
    * إرسال الطلب إلى واتساب مع رسوم التوصيل وحفظه في Firebase
    */
   async function sendOrder() {
+    // إرسال الطلب:
+    // 1) التحقق من وجود عناصر
+    // 2) التحقق من تسجيل الدخول (إلزامي)
+    // 3) التحقق من بيانات العميل
+    // 4) إنشاء رسالة واتساب
+    // 5) حفظ الطلب في Firestore (إذا المستخدم مسجل)
     const cart = readCart();
     if (!cart.length) {
       alert('السلة فارغة!');
@@ -248,6 +269,8 @@
    * حفظ الطلب في Firebase
    */
   async function saveOrderToFirebase(userId, cartItems, total, extra) {
+    // حفظ الطلب داخل Firestore في Collection (orders)
+    // مع كتابة userId + customerId لتوافق القواعد ولوحة التحكم
     try {
       if (window.firebase && window.firebaseFirestore) {
         const db = window.firebase.firestore();
@@ -313,6 +336,7 @@
 
   // تهيئة الصفحة وربط الأحداث
   function initCartPage() {
+    // ربط الأحداث وتهيئة الصفحة
     const checkoutBtn = document.getElementById('checkout-btn');
     const continueBtn = document.getElementById('continue-details-btn');
     const detailsSection = document.getElementById('customer-details');

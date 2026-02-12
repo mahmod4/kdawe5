@@ -45,6 +45,7 @@ if (localStorage.getItem('cart')) {
 }
 
 function getCurrentUser() {
+    // جلب المستخدم الحالي من Firebase Auth (إن وجد)
     try {
         if (window.firebase && typeof window.firebase.auth === 'function') {
             return window.firebase.auth().currentUser;
@@ -55,6 +56,8 @@ function getCurrentUser() {
 }
 
 function redirectToLoginForCheckout() {
+    // إلزام تسجيل الدخول قبل إتمام الطلب:
+    // نحفظ الرابط الحالي في sessionStorage للعودة بعد تسجيل الدخول
     try {
         sessionStorage.setItem('postLoginRedirect', window.location.href);
     } catch (e) {
@@ -630,6 +633,7 @@ function debounce(func, wait) {
 }
 
 function normalizeArabic(text) {
+    // توحيد النص العربي للبحث (إزالة التشكيل وتوحيد الحروف الشائعة)
     return String(text || '')
         .normalize('NFKD')
         .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, '')
@@ -761,6 +765,7 @@ function displayProducts(productsArray) {
     if (window.weightProducts) {
         setTimeout(() => {
             try {
+                // نظام الوزن يحتاج عناصر المنتجات تكون مرسومة في DOM أولاً
                 window.weightProducts.initializeProducts();
             } catch (e) { /* noop */ }
         }, 250);
@@ -1473,7 +1478,7 @@ async function loadProducts() {
             };
         }) : [];
 
-        // Expose globally so weight-products.js can read product data
+        // إتاحة المنتجات عالميًا حتى يتمكن weight-products.js من قراءة بيانات المنتجات
         window.products = products;
         window.productsArray = products;
         displayProducts(products);

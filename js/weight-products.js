@@ -1,8 +1,15 @@
-// نظام عرض الوزن في صفحة المنتجات
-// يعرض معلومات الوزن ويتيح التحكم فيه
+// ================================
+// نظام البيع بالوزن (واجهة المتجر)
+// مسؤول عن:
+// - عرض معلومات الوزن للمنتجات التي soldByWeight = true
+// - إنشاء منتقي وزن (Buttons + Input)
+// - تحديث السعر بناءً على الوزن المختار
+// - قراءة إعدادات الوزن من siteSettings (min/max/increment/options)
+// ================================
 
 class WeightProducts {
     constructor() {
+        // إعدادات افتراضية (يتم استبدالها من siteSettings إن وُجدت)
         this.weightSettings = {
             min: 0.1,
             max: 10,
@@ -12,6 +19,7 @@ class WeightProducts {
     }
 
     getWeightUnit(product) {
+        // تحديد وحدة الوزن (من المنتج أو من إعدادات المتجر)
         try {
             if (product && product.weightUnit) return String(product.weightUnit);
             if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightUnit) {
@@ -23,6 +31,7 @@ class WeightProducts {
     }
 
     formatWeightValue(value) {
+        // تنسيق قيمة الوزن للعرض (بدون أصفار غير مهمة)
         const n = Number(value);
         if (Number.isNaN(n)) return '';
         if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
@@ -31,6 +40,7 @@ class WeightProducts {
 
     // تحميل إعدادات الوزن
     async loadWeightSettings() {
+        // قراءة إعدادات الوزن من siteSettings (إن كانت متاحة)
         try {
             if (window.siteSettings && window.siteSettings.store) {
                 const store = window.siteSettings.store;
@@ -48,7 +58,15 @@ class WeightProducts {
 
     // عرض معلومات الوزن في بطاقة المنتج
     displayProductWeight(product, productCard) {
+        // يعرض بلوك معلومات الوزن أسفل السعر داخل بطاقة المنتج
         if (!product.soldByWeight) return;
+
+        // منع التكرار عند إعادة التهيئة (search/filter/productsUpdated)
+        try {
+            const existing = productCard.querySelector('.weight-display');
+            if (existing) existing.remove();
+        } catch (e) {
+        }
 
         const unit = this.getWeightUnit(product);
 
@@ -73,7 +91,15 @@ class WeightProducts {
 
     // إنشاء منتقي الوزن التفاعلي
     createWeightPicker(product, container) {
+        // يبني عناصر اختيار الوزن ويحقنها داخل container
         if (!product.soldByWeight) return;
+
+        // منع تكرار المنتقي عند إعادة التهيئة
+        try {
+            const existingPicker = container.querySelector('.weight-picker');
+            if (existingPicker) existingPicker.remove();
+        } catch (e) {
+        }
 
         const unit = this.getWeightUnit(product);
 
@@ -351,4 +377,5 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-export default weightProducts;
+// ملاحظة: هذا الملف يتم تحميله كـ script عادي (ليس type="module")
+// لذلك نستخدم window.weightProducts بدلاً من export.
