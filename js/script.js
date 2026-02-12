@@ -49,9 +49,6 @@ function getCurrentUser() {
         if (window.firebase && typeof window.firebase.auth === 'function') {
             return window.firebase.auth().currentUser;
         }
-        if (window.firebaseAuth && typeof window.firebaseAuth.getAuth === 'function') {
-            return window.firebaseAuth.getAuth().currentUser;
-        }
     } catch (e) {
     }
     return null;

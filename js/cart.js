@@ -168,6 +168,22 @@
       alert('السلة فارغة!');
       return;
     }
+
+    try {
+      if (window.firebase && typeof window.firebase.auth === 'function') {
+        const user = window.firebase.auth().currentUser;
+        if (!user) {
+          try {
+            sessionStorage.setItem('postLoginRedirect', window.location.href);
+          } catch (e) {}
+          alert('يجب تسجيل الدخول لإكمال الطلب');
+          window.location.href = 'login.html';
+          return;
+        }
+      }
+    } catch (e) {
+    }
+
     const firstNameEl = document.getElementById('first-name');
     const lastNameEl = document.getElementById('last-name');
     const addressEl = document.getElementById('address');
