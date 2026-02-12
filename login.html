@@ -45,7 +45,7 @@
       // Import Firebase SDK
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-      import { getFirestore, collection, query, where, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
       
       // Firebase config - إعدادات مشروعك
        const firebaseConfig = {
@@ -84,7 +84,11 @@
           query,
           where,
           orderBy,
-          getDocs
+          getDocs,
+          doc,
+          getDoc,
+          setDoc,
+          updateDoc
         };
         
         console.log('تم تهيئة Firebase بنجاح في صفحة تسجيل الدخول');
@@ -499,6 +503,27 @@
                 
                 // تحميل الطلبات السابقة
                 loadUserOrders(user.uid);
+
+                // مزامنة المستخدم من Auth إلى Firestore (Collection users) لظهوره في لوحة التحكم
+                try {
+                    const db = window.firebase.firestore();
+                    const now = new Date();
+                    const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
+                    window.firebaseFirestore.setDoc(
+                        userRef,
+                        {
+                            name: user.displayName || null,
+                            email: user.email || null,
+                            phone: user.phoneNumber || null,
+                            active: true,
+                            updatedAt: now,
+                            createdAt: now
+                        },
+                        { merge: true }
+                    );
+                } catch (e) {
+                    console.warn('تعذر مزامنة المستخدم إلى Firestore:', e);
+                }
             } else {
                 // المستخدم غير مسجل دخول
                 document.getElementById('login-section').style.display = 'block';
@@ -615,26 +640,39 @@
                 
                 // الطريقة الثانية: جلب من collection العام (orders)
                 try {
-                    console.log('محاولة جلب المشتريات من collection العام...');
+                    console.log('محاولة جلب المشتريات من collection العام (بالاستعلام)...');
+
                     const ordersRef = window.firebaseFirestore.collection(db, 'orders');
-                    const ordersSnap = await window.firebaseFirestore.getDocs(ordersRef);
-                    
-                    console.log('عدد الطلبات الإجمالي في collection العام:', ordersSnap.size);
-                    
-                    ordersSnap.forEach((doc) => {
-                        const data = doc.data();
-                        console.log('طلب في collection العام:', doc.id, 'userId:', data.userId, 'المطلوب:', userId);
-                        
-                        // تحقق من أن الطلب يخص هذا المستخدم
-                        if (data.userId === userId) {
+                    const query = window.firebaseFirestore.query;
+                    const where = window.firebaseFirestore.where;
+
+                    const snaps = [];
+                    try {
+                        snaps.push(await window.firebaseFirestore.getDocs(query(ordersRef, where('userId', '==', userId))));
+                    } catch (e) {
+                        console.warn('فشل query على userId:', e);
+                    }
+                    try {
+                        snaps.push(await window.firebaseFirestore.getDocs(query(ordersRef, where('customerId', '==', userId))));
+                    } catch (e) {
+                        console.warn('فشل query على customerId:', e);
+                    }
+
+                    const seen = new Set();
+                    snaps.forEach((ordersSnap) => {
+                        if (!ordersSnap) return;
+                        ordersSnap.forEach((doc) => {
+                            if (seen.has(doc.id)) return;
+                            seen.add(doc.id);
+                            const data = doc.data();
                             userOrders.push({
                                 id: doc.id,
                                 items: data.items || [],
                                 total: data.total || 0,
-                                orderDate: data.orderDate,
+                                orderDate: data.orderDate || data.createdAt || data.orderDate,
                                 source: 'orders_collection'
                             });
-                        }
+                        });
                     });
                 } catch (ordersError) {
                     console.log('خطأ في جلب المشتريات من collection العام:', ordersError.code);
