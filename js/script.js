@@ -691,6 +691,57 @@ function getWeightMax(product) {
     return 1;
 }
 
+// دالة مساعدة: الحصول على خيارات الوزن للمنتج
+function getWeightOptionsForProduct(product) {
+    const unit = getWeightUnit(product);
+    const min = getWeightMin(product);
+    const max = getWeightMax(product);
+    
+    const defaultOptions = [
+        { value: 0.125, label: `⅛ ${unit}` },
+        { value: 0.25, label: `¼ ${unit}` },
+        { value: 0.375, label: `⅜ ${unit}` },
+        { value: 0.5, label: `½ ${unit}` },
+        { value: 0.625, label: `⅝ ${unit}` },
+        { value: 0.75, label: `¾ ${unit}` },
+        { value: 0.875, label: `⅞ ${unit}` },
+        { value: 1, label: `1 ${unit}` },
+        { value: 1.25, label: `1¼ ${unit}` },
+        { value: 1.5, label: `1½ ${unit}` },
+        { value: 2, label: `2 ${unit}` }
+    ];
+    
+    // فلترة الخيارات حسب النطاق المسموح
+    return defaultOptions.filter(option => 
+        option.value >= min && 
+        option.value <= max
+    );
+}
+
+// دالة مساعدة: تحديث وزن المنتج
+function updateProductWeight(productId, newWeight) {
+    // البحث عن المنتج في قائمة المنتجات وتحديث وزنه
+    if (window.products) {
+        const product = window.products.find(p => p.id === productId);
+        if (product) {
+            product.weight = newWeight;
+        }
+    }
+    
+    if (window.productsArray) {
+        const product = window.productsArray.find(p => p.id === productId);
+        if (product) {
+            product.weight = newWeight;
+        }
+    }
+    
+    // إرسال حدث مخصص لتغيير الوزن
+    const event = new CustomEvent('weightChanged', {
+        detail: { productId, weight: newWeight }
+    });
+    document.dispatchEvent(event);
+}
+
 // ================================
 // 12. عرض المنتجات مع الصفحات
 // ================================
@@ -738,17 +789,42 @@ function displayProducts(productsArray) {
         if (product.soldByWeight) {
             const weightInfo = document.createElement('div');
             weightInfo.className = 'product-weight-info';
+            
+            // إنشاء قائمة منسدلة للوزن
+            const weightOptions = getWeightOptionsForProduct(product);
+            const currentWeight = product.weight || getWeightMin(product);
+            
             weightInfo.innerHTML = `
                 <div class="weight-badge">
                     <i class="fas fa-weight"></i>
-                    <span>يُباع بالوزن</span>
+                    <span>اختر الوزن</span>
                 </div>
-                <div class="weight-details">
-                    <span class="weight-value">${formatWeightValue(product.weight || getWeightMin(product))} ${getWeightUnit(product)}</span>
-                    <span class="weight-range">(${getWeightMin(product)} - ${getWeightMax(product)})</span>
+                <div class="weight-selector">
+                    <select class="weight-dropdown" data-product-id="${product.id}">
+                        ${weightOptions.map(option => `
+                            <option value="${option.value}" ${option.value === currentWeight ? 'selected' : ''}>
+                                ${option.label}
+                            </option>
+                        `).join('')}
+                    </select>
+                    <div class="weight-display">
+                        <span class="current-weight">${formatWeightValue(currentWeight)} ${getWeightUnit(product)}</span>
+                        <span class="weight-range">(${getWeightMin(product)} - ${getWeightMax(product)})</span>
+                    </div>
                 </div>
             `;
             productElement.appendChild(weightInfo);
+            
+            // إضافة مستمع حدث للقائمة المنسدلة
+            const dropdown = weightInfo.querySelector('.weight-dropdown');
+            dropdown.addEventListener('change', (e) => {
+                const newWeight = parseFloat(e.target.value);
+                updateProductWeight(product.id, newWeight);
+                
+                // تحديث العرض
+                const display = weightInfo.querySelector('.current-weight');
+                display.textContent = `${formatWeightValue(newWeight)} ${getWeightUnit(product)}`;
+            });
         }
         
         // إنشاء معلومات المنتج
