@@ -676,7 +676,7 @@ function displayProducts(productsArray) {
         
         // إنشاء الصورة
         const img = document.createElement('img');
-        img.src = product.image || 'https://via.placeholder.com/200x200/e5e7eb/6b7280?text=لا+توجد+صورة';
+        img.src = product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMDAiIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2YjIjgwIj48L3RleHQ+PC9yZWN0Pjwvc3ZnPg==';
         img.alt = product.name;
         img.loading = 'lazy';
         img.width = 200;
@@ -684,7 +684,7 @@ function displayProducts(productsArray) {
         
         // معالجة أخطاء الصور
         img.onerror = function() {
-            this.src = 'https://via.placeholder.com/200x200/e5e7eb/6b7280?text=لا+توجد+صورة';
+            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMDAiIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2YjIjgwIj48L3RleHQ+PC9yZWN0Pjwvc3ZnPg==';
             this.alt = 'صورة افتراضية';
         };
         
@@ -1253,7 +1253,7 @@ async function fetchProductsFromFirestore() {
         const productsList = productsSnapshot.docs.map(doc => {
             const data = doc.data();
             // تحويل البيانات من Firestore إلى تنسيق المتجر
-            const product = {
+            return {
                 // نحتفظ بـ ID النصي كما هو من Firestore ليتوافق مع أزرار السلة
                 id: String(doc.id),
                 name: data.name || '',
@@ -1269,15 +1269,6 @@ async function fetchProductsFromFirestore() {
                 hasWeightOptions: data.hasWeightOptions || false,
                 discountPrice: data.discountPrice || null
             };
-            
-            // debug: طباعة رابط الصورة للتحقق
-            if (product.image) {
-                console.log(`🖼️ Product ${product.name} image:`, product.image);
-            } else {
-                console.warn(`⚠️ Product ${product.name} has no image`);
-            }
-            
-            return product;
         });
 
         console.log(`تم تحميل ${productsList.length} منتج من Firestore بنجاح`);

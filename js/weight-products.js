@@ -1,8 +1,8 @@
 // ================================
-// نظام البيع بالوزن (واجهة المتجر)
+// نظام البيع بالوزن (واجهة المتجر) - تصميم جديد
 // مسؤول عن:
 // - عرض معلومات الوزن للمنتجات التي soldByWeight = true
-// - إنشاء منتقي وزن (Buttons + Input)
+// - إنشاء منتقي وزن عصري وأنيق
 // - تحديث السعر بناءً على الوزن المختار
 // - قراءة إعدادات الوزن من siteSettings (min/max/increment/options)
 // ================================
@@ -13,7 +13,8 @@ class WeightProducts {
         this.weightSettings = {
             min: 0.1,
             max: 10,
-            increment: 0.25
+            increment: 0.25,
+            unit: 'كجم'
         };
         this.loadWeightSettings();
     }
@@ -48,7 +49,7 @@ class WeightProducts {
                     min: store.weightMin || 0.125,
                     max: store.weightMax || 1,
                     increment: store.weightIncrement || 0.125,
-                    options: store.weightOptions || ['0.125', '0.25', '0.375', '0.5', '0.625', '0.75', '0.875', '1']
+                    unit: store.weightUnit || 'كجم'
                 };
             }
         } catch (error) {
@@ -71,16 +72,22 @@ class WeightProducts {
         const unit = this.getWeightUnit(product);
 
         const weightDisplay = document.createElement('div');
-        weightDisplay.className = 'weight-display mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg';
+        weightDisplay.className = 'weight-display';
         weightDisplay.innerHTML = `
-            <div class="flex items-center justify-between mb-1">
-                <span class="text-sm font-semibold text-blue-800">
-                    <i class="fas fa-weight ml-1"></i>الوزن:
-                </span>
-                <span class="text-sm font-bold text-blue-600">${this.formatWeightValue(product.weight || this.weightSettings.min)} ${unit}</span>
-            </div>
-            <div class="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">
-                <i class="fas fa-info-circle ml-1"></i>يُباع بالوزن • النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
+            <div class="weight-header">
+                <div class="weight-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10 5z"/>
+                        <path d="M2 17l10-5 10 5M2 12l10 5 10-5"/>
+                    </svg>
+                    <span>يُباع بالوزن</span>
+                </div>
+                <div class="weight-range">
+                    <span class="min">${this.formatWeightValue(this.weightSettings.min)}</span>
+                    <span>-</span>
+                    <span class="max">${this.formatWeightValue(this.weightSettings.max)}</span>
+                    <span class="unit">${unit}</span>
+                </div>
             </div>
         `;
 
@@ -91,7 +98,7 @@ class WeightProducts {
         }
     }
 
-    // إنشاء منتقي الوزن التفاعلي
+    // إنشاء منتقي الوزن التفاعلي - تصميم جديد
     createWeightPicker(product, container) {
         // يبني عناصر اختيار الوزن ويحقنها داخل container
         if (!product.soldByWeight) return;
@@ -104,50 +111,65 @@ class WeightProducts {
         }
 
         const unit = this.getWeightUnit(product);
+        const weightOptions = this.getWeightOptions();
 
         const picker = document.createElement('div');
-        picker.className = 'weight-picker mt-3';
-        
-        // الحصول على خيارات الوزن من الإعدادات
-        const weightOptions = this.getWeightOptions();
-        
+        picker.className = 'weight-picker';
         picker.innerHTML = `
-            <label class="block text-sm font-semibold text-gray-700 mb-2">
-                <i class="fas fa-balance-scale ml-1"></i>اختر الوزن:
-            </label>
-            <div class="flex items-center space-x-2 space-x-reverse mb-3">
-                <select class="weight-select flex-1 border-2 border-blue-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
-                        data-product-id="${product.id}">
+            <div class="weight-picker-header">
+                <div class="weight-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 12h18m-9-9v18"/>
+                    </svg>
+                    اختر الوزن
+                </div>
+                <div class="weight-unit">${unit}</div>
+            </div>
+            
+            <div class="weight-selector">
+                <div class="weight-presets">
                     ${weightOptions.map(option => `
-                        <option value="${option.value}" 
-                                ${option.value === (product.weight || this.weightSettings.min) ? 'selected' : ''}>
-                            ${option.label}
-                        </option>
+                        <button type="button" 
+                                class="weight-preset ${option.value === (product.weight || this.weightSettings.min) ? 'active' : ''}"
+                                data-product-id="${product.id}" 
+                                data-weight="${option.value}">
+                            <span class="value">${option.label}</span>
+                        </button>
                     `).join('')}
-                </select>
-                <span class="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">${unit}</span>
+                </div>
+                
+                <div class="weight-custom">
+                    <div class="weight-input-group">
+                        <button type="button" class="weight-btn decrease" 
+                                data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 12H4"/>
+                            </svg>
+                        </button>
+                        <input type="number" 
+                               class="weight-input" 
+                               value="${product.weight || this.weightSettings.min}" 
+                               min="${this.weightSettings.min}" 
+                               max="${this.weightSettings.max}" 
+                               step="${this.weightSettings.increment}"
+                               data-product-id="${product.id}">
+                        <button type="button" class="weight-btn increase" 
+                                data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 5v14m-7-7l7 7 7-7"/>
+                            </svg>
+                        </button>
+                        <span class="input-unit">${unit}</span>
+                    </div>
+                </div>
             </div>
-            <div class="flex items-center space-x-2 space-x-reverse">
-                <button type="button" class="weight-decrease bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-2 transition-colors" 
-                        data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
-                    <i class="fas fa-minus text-xs"></i>
-                </button>
-                <input type="number" 
-                       class="weight-input w-24 text-center border-2 border-blue-300 rounded-lg px-3 py-2 font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
-                       value="${product.weight || this.weightSettings.min}" 
-                       min="${this.weightSettings.min}" 
-                       max="${this.weightSettings.max}" 
-                       step="${this.weightSettings.increment}"
-                       data-product-id="${product.id}">
-                <span class="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">${unit}</span>
-                <button type="button" class="weight-increase bg-green-500 hover:bg-green-600 text-white rounded-lg px-3 py-2 transition-colors" 
-                        data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
-                    <i class="fas fa-plus text-xs"></i>
-                </button>
-            </div>
-            <div class="text-xs text-gray-500 mt-2 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
-                <i class="fas fa-exclamation-triangle ml-1 text-yellow-600"></i>
-                النطاق المسموح: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
+            
+            <div class="weight-info">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}</span>
             </div>
         `;
 
@@ -159,13 +181,13 @@ class WeightProducts {
     getWeightOptions() {
         const unit = this.getWeightUnit(null);
         const defaultOptions = [
-            { value: 0.125, label: `1/8 ${unit}` },
-            { value: 0.25, label: `1/4 ${unit}` },
-            { value: 0.375, label: `3/8 ${unit}` },
-            { value: 0.5, label: `1/2 ${unit}` },
-            { value: 0.625, label: `5/8 ${unit}` },
-            { value: 0.75, label: `3/4 ${unit}` },
-            { value: 0.875, label: `7/8 ${unit}` },
+            { value: 0.125, label: `⅛ ${unit}` },
+            { value: 0.25, label: `¼ ${unit}` },
+            { value: 0.375, label: `⅜ ${unit}` },
+            { value: 0.5, label: `½ ${unit}` },
+            { value: 0.625, label: `⅝ ${unit}` },
+            { value: 0.75, label: `¾ ${unit}` },
+            { value: 0.875, label: `⅞ ${unit}` },
             { value: 1, label: `1 ${unit}` }
         ];
 
@@ -182,19 +204,19 @@ class WeightProducts {
         );
     }
 
-    // إعداد مستمعي الأحداث لمنتقي الوزن
+    // إعداد مستمعي الأحداث لمنتقي الوزن - تصميم جديد
     setupWeightPickerListeners(picker) {
-        const decreaseBtn = picker.querySelector('.weight-decrease');
-        const increaseBtn = picker.querySelector('.weight-increase');
+        const decreaseBtn = picker.querySelector('.decrease');
+        const increaseBtn = picker.querySelector('.increase');
         const input = picker.querySelector('.weight-input');
-        const select = picker.querySelector('.weight-select');
+        const presetBtns = picker.querySelectorAll('.weight-preset');
 
         decreaseBtn.addEventListener('click', () => {
             const currentValue = parseFloat(input.value);
             const step = parseFloat(decreaseBtn.dataset.step);
             const newValue = Math.max(this.weightSettings.min, currentValue - step);
             input.value = newValue.toFixed(3);
-            select.value = newValue;
+            this.updatePresetButtons(presetBtns, newValue);
             this.triggerWeightChange(input);
         });
 
@@ -203,7 +225,7 @@ class WeightProducts {
             const step = parseFloat(increaseBtn.dataset.step);
             const newValue = Math.min(this.weightSettings.max, currentValue + step);
             input.value = newValue.toFixed(3);
-            select.value = newValue;
+            this.updatePresetButtons(presetBtns, newValue);
             this.triggerWeightChange(input);
         });
 
@@ -214,15 +236,30 @@ class WeightProducts {
             } else if (value > this.weightSettings.max) {
                 input.value = this.weightSettings.max.toFixed(3);
             }
-            select.value = input.value;
+            this.updatePresetButtons(presetBtns, value);
             this.triggerWeightChange(input);
         });
 
-        // إضافة مستمع للقائمة المنسدلة
-        select.addEventListener('change', () => {
-            const value = parseFloat(select.value);
-            input.value = value.toFixed(3);
-            this.triggerWeightChange(input);
+        // إضافة مستمعي الأحداث لأزرار الخيارات
+        presetBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const weight = parseFloat(btn.dataset.weight);
+                input.value = weight.toFixed(3);
+                this.updatePresetButtons(presetBtns, weight);
+                this.triggerWeightChange(input);
+            });
+        });
+    }
+
+    // تحديث أزرار الخيارات - تصميم جديد
+    updatePresetButtons(presetBtns, selectedValue) {
+        presetBtns.forEach(btn => {
+            const weight = parseFloat(btn.dataset.weight);
+            if (Math.abs(weight - selectedValue) < 0.001) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
         });
     }
 
@@ -247,8 +284,10 @@ class WeightProducts {
             const unit = this.getWeightUnit(product);
             const newPrice = basePrice * weight;
             priceElement.innerHTML = `
-                <span class="current-price">${newPrice.toFixed(2)} ج.م</span>
-                <small class="text-xs text-gray-500 block">${this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
+                <div class="price-weighted">
+                    <span class="current-price">${newPrice.toFixed(2)} ج.م</span>
+                    <small class="weight-calculation">${this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
+                </div>
             `;
         }
     }
@@ -260,8 +299,14 @@ class WeightProducts {
         const unit = this.getWeightUnit(cartItem);
 
         const indicator = document.createElement('div');
-        indicator.className = 'cart-weight-indicator text-xs text-gray-500 mt-1';
-        indicator.textContent = `الوزن: ${this.formatWeightValue(weight)} ${unit}`;
+        indicator.className = 'cart-weight-indicator';
+        indicator.innerHTML = `
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2L2 7l10 5 10-5-10 5z"/>
+                <path d="M2 17l10-5 10 5M2 12l10 5 10-5"/>
+            </svg>
+            <span>الوزن: ${this.formatWeightValue(weight)} ${unit}</span>
+        `;
 
         const nameElement = cartItem.querySelector('.item-name');
         if (nameElement) {
