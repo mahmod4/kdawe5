@@ -504,7 +504,7 @@
                 // تحميل الطلبات السابقة
                 loadUserOrders(user.uid);
 
-                // الرجوع للصفحة المطلوبة بعد تسجيل الدخول (إتمام الطلب)
+                // الرجوع للصفحة التي حاول المستخدم إكمال الطلب منها (تم حفظها في sessionStorage)
                 try {
                     const redirectUrl = sessionStorage.getItem('postLoginRedirect');
                     if (redirectUrl) {
@@ -613,49 +613,29 @@
             }
         });
 
-        // تحميل الطلبات السابقة للمستخدم - يدعم هيكلين للبيانات
+        // تحميل الطلبات السابقة للمستخدم
+        // يدعم مصدرين للبيانات:
+        // 1) users/{uid}/purchases (إن كان مشروع قديم)
+        // 2) orders (المصدر الأساسي الحالي)
+        function escapeHtml(value) {
+            return String(value == null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
         async function loadUserOrders(userId) {
             try {
-                console.log('بدء تحميل المشتريات للمستخدم:', userId);
                 const ordersList = document.getElementById('orders-list');
                 const db = window.firebase.firestore();
                 
                 let userOrders = [];
-                
-                // الطريقة الأولى: جلب من مجلد المستخدم (users/userId/purchases)
+
+                // المصدر الأساسي: collection (orders) عبر where (متوافق مع Firestore Rules)
                 try {
-                    console.log('محاولة جلب المشتريات من مجلد المستخدم...');
-                    const userPurchasesRef = window.firebaseFirestore.collection(db, "users", userId, "purchases");
-                    const userPurchasesSnap = await window.firebaseFirestore.getDocs(userPurchasesRef);
-                    
-                    console.log('عدد المشتريات في مجلد المستخدم:', userPurchasesSnap.size);
-                    
-                    userPurchasesSnap.forEach((doc) => {
-                        const data = doc.data();
-                        console.log("Purchase from user folder:", doc.id, data);
-                        userOrders.push({
-                            id: doc.id,
-                            items: [{
-                                name: data.productName || data.name || 'منتج غير محدد',
-                                quantity: data.quantity || 1,
-                                price: data.price || 0
-                            }],
-                            total: data.price * data.quantity || data.total || 0,
-                            orderDate: data.date || data.orderDate || new Date(),
-                            source: 'user_folder'
-                        });
-                    });
-                } catch (userFolderError) {
-                    console.log('لا توجد مشتريات في مجلد المستخدم:', userFolderError.code);
-                }
-                
-                // الطريقة الثانية: جلب من collection العام (orders)
-                try {
-                    console.log('محاولة جلب المشتريات من collection العام...');
                     const ordersRef = window.firebaseFirestore.collection(db, 'orders');
 
-                    // لا يمكن قراءة كل الطلبات مع الـ Rules (permission-denied)
-                    // لذلك نستخدم where على userId/customerId
                     const q1 = window.firebaseFirestore.query(ordersRef, window.firebaseFirestore.where('userId', '==', userId));
                     const q2 = window.firebaseFirestore.query(ordersRef, window.firebaseFirestore.where('customerId', '==', userId));
 
@@ -683,7 +663,33 @@
                     console.log('خطأ في جلب المشتريات من collection العام:', ordersError.code);
                 }
                 
-                console.log('إجمالي عدد المشتريات المجمعة:', userOrders.length);
+
+                // fallback (قديـم): users/{uid}/purchases
+                // نستخدمه فقط لو لم نجد طلبات في المصدر الأساسي
+                if (userOrders.length === 0) {
+                    try {
+                        const userPurchasesRef = window.firebaseFirestore.collection(db, "users", userId, "purchases");
+                        const userPurchasesSnap = await window.firebaseFirestore.getDocs(userPurchasesRef);
+
+                        userPurchasesSnap.forEach((doc) => {
+                            const data = doc.data();
+                            userOrders.push({
+                                id: doc.id,
+                                items: [{
+                                    name: data.productName || data.name || 'منتج غير محدد',
+                                    quantity: data.quantity || 1,
+                                    price: data.price || 0
+                                }],
+                                total: data.price * data.quantity || data.total || 0,
+                                orderDate: data.date || data.orderDate || new Date(),
+                                source: 'user_folder'
+                            });
+                        });
+                    } catch (userFolderError) {
+                        console.log('لا توجد مشتريات في مجلد المستخدم:', userFolderError.code);
+                    }
+                }
+                
                 
                 if (userOrders.length === 0) {
                     ordersList.innerHTML = '<div class="no-orders">لا توجد مشتريات سابقة لهذا المستخدم</div>';
@@ -717,8 +723,8 @@
                         order.items.forEach(item => {
                             productsHTML += `
                                 <div class="order-product">
-                                    <span class="product-name">${item.name || item.productName || 'منتج غير محدد'}</span>
-                                    <span class="product-details">${item.quantity || 0} × ${item.price || 0} ج.م</span>
+                                    <span class="product-name">${escapeHtml(item.name || item.productName || 'منتج غير محدد')}</span>
+                                    <span class="product-details">${escapeHtml(item.quantity || 0)} × ${escapeHtml(item.price || 0)} ج.م</span>
                                 </div>
                             `;
                         });
@@ -733,8 +739,8 @@
                     ordersHTML += `
                         <div class="order-item">
                             <div class="order-header">
-                                <span class="order-date">${orderDateStr} ${sourceLabel}</span>
-                                <span class="order-total">${order.total || 0} ج.م</span>
+                                <span class="order-date">${escapeHtml(orderDateStr)} ${escapeHtml(sourceLabel)}</span>
+                                <span class="order-total">${escapeHtml(order.total || 0)} ج.م</span>
                             </div>
                             <div class="order-products">
                                 ${productsHTML}
@@ -744,7 +750,6 @@
                 });
                 
                 ordersList.innerHTML = ordersHTML;
-                console.log('تم عرض المشتريات بنجاح من مصادر متعددة');
                 
             } catch (error) {
                 console.error('خطأ عام في تحميل الطلبات:', error);
@@ -758,7 +763,7 @@
                     errorMessage = 'الخدمة غير متاحة حالياً، حاول لاحقاً';
                 }
                 
-                document.getElementById('orders-list').innerHTML = `<div class="no-orders">${errorMessage}</div>`;
+                document.getElementById('orders-list').innerHTML = `<div class="no-orders">${escapeHtml(errorMessage)}</div>`;
             }
         }
 
