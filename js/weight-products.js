@@ -71,14 +71,16 @@ class WeightProducts {
         const unit = this.getWeightUnit(product);
 
         const weightDisplay = document.createElement('div');
-        weightDisplay.className = 'weight-display mt-2 p-2 bg-gray-50 rounded';
+        weightDisplay.className = 'weight-display mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg';
         weightDisplay.innerHTML = `
-            <div class="flex items-center justify-between">
-                <span class="text-sm font-medium">الوزن:</span>
-                <span class="text-sm text-gray-600">${this.formatWeightValue(product.weight || this.weightSettings.min)} ${unit}</span>
+            <div class="flex items-center justify-between mb-1">
+                <span class="text-sm font-semibold text-blue-800">
+                    <i class="fas fa-weight ml-1"></i>الوزن:
+                </span>
+                <span class="text-sm font-bold text-blue-600">${this.formatWeightValue(product.weight || this.weightSettings.min)} ${unit}</span>
             </div>
-            <div class="text-xs text-gray-500 mt-1">
-                يُباع بالوزن • النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
+            <div class="text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                <i class="fas fa-info-circle ml-1"></i>يُباع بالوزن • النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
             </div>
         `;
 
@@ -110,37 +112,42 @@ class WeightProducts {
         const weightOptions = this.getWeightOptions();
         
         picker.innerHTML = `
-            <label class="block text-sm font-medium mb-2">اختر الوزن:</label>
-            <div class="weight-options-grid grid grid-cols-4 gap-2 mb-3">
-                ${weightOptions.map(option => `
-                    <button type="button" 
-                            class="weight-option-btn border rounded px-2 py-1 text-xs hover:bg-blue-100 ${option.value === (product.weight || this.weightSettings.min) ? 'bg-blue-500 text-white' : ''}"
-                            data-product-id="${product.id}" 
-                            data-weight="${option.value}">
-                        ${option.label}
-                    </button>
-                `).join('')}
+            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                <i class="fas fa-balance-scale ml-1"></i>اختر الوزن:
+            </label>
+            <div class="flex items-center space-x-2 space-x-reverse mb-3">
+                <select class="weight-select flex-1 border-2 border-blue-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
+                        data-product-id="${product.id}">
+                    ${weightOptions.map(option => `
+                        <option value="${option.value}" 
+                                ${option.value === (product.weight || this.weightSettings.min) ? 'selected' : ''}>
+                            ${option.label}
+                        </option>
+                    `).join('')}
+                </select>
+                <span class="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">${unit}</span>
             </div>
             <div class="flex items-center space-x-2 space-x-reverse">
-                <button type="button" class="weight-decrease bg-gray-200 hover:bg-gray-300 rounded px-2 py-1" 
+                <button type="button" class="weight-decrease bg-red-500 hover:bg-red-600 text-white rounded-lg px-3 py-2 transition-colors" 
                         data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
                     <i class="fas fa-minus text-xs"></i>
                 </button>
                 <input type="number" 
-                       class="weight-input w-20 text-center border rounded px-2 py-1" 
+                       class="weight-input w-24 text-center border-2 border-blue-300 rounded-lg px-3 py-2 font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
                        value="${product.weight || this.weightSettings.min}" 
                        min="${this.weightSettings.min}" 
                        max="${this.weightSettings.max}" 
                        step="${this.weightSettings.increment}"
                        data-product-id="${product.id}">
-                <span class="text-sm">${unit}</span>
-                <button type="button" class="weight-increase bg-gray-200 hover:bg-gray-300 rounded px-2 py-1" 
+                <span class="text-sm font-medium text-gray-600 bg-gray-100 px-2 py-1 rounded">${unit}</span>
+                <button type="button" class="weight-increase bg-green-500 hover:bg-green-600 text-white rounded-lg px-3 py-2 transition-colors" 
                         data-product-id="${product.id}" data-step="${this.weightSettings.increment}">
                     <i class="fas fa-plus text-xs"></i>
                 </button>
             </div>
-            <div class="text-xs text-gray-500 mt-1">
-                النطاق: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
+            <div class="text-xs text-gray-500 mt-2 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
+                <i class="fas fa-exclamation-triangle ml-1 text-yellow-600"></i>
+                النطاق المسموح: ${this.formatWeightValue(this.weightSettings.min)} - ${this.formatWeightValue(this.weightSettings.max)} ${unit}
             </div>
         `;
 
@@ -180,14 +187,14 @@ class WeightProducts {
         const decreaseBtn = picker.querySelector('.weight-decrease');
         const increaseBtn = picker.querySelector('.weight-increase');
         const input = picker.querySelector('.weight-input');
-        const optionBtns = picker.querySelectorAll('.weight-option-btn');
+        const select = picker.querySelector('.weight-select');
 
         decreaseBtn.addEventListener('click', () => {
             const currentValue = parseFloat(input.value);
             const step = parseFloat(decreaseBtn.dataset.step);
             const newValue = Math.max(this.weightSettings.min, currentValue - step);
             input.value = newValue.toFixed(3);
-            this.updateOptionButtons(optionBtns, newValue);
+            select.value = newValue;
             this.triggerWeightChange(input);
         });
 
@@ -196,7 +203,7 @@ class WeightProducts {
             const step = parseFloat(increaseBtn.dataset.step);
             const newValue = Math.min(this.weightSettings.max, currentValue + step);
             input.value = newValue.toFixed(3);
-            this.updateOptionButtons(optionBtns, newValue);
+            select.value = newValue;
             this.triggerWeightChange(input);
         });
 
@@ -207,32 +214,15 @@ class WeightProducts {
             } else if (value > this.weightSettings.max) {
                 input.value = this.weightSettings.max.toFixed(3);
             }
-            this.updateOptionButtons(optionBtns, value);
+            select.value = input.value;
             this.triggerWeightChange(input);
         });
 
-        // إضافة مستمعي الأحداث لأزرار الخيارات
-        optionBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const weight = parseFloat(btn.dataset.weight);
-                input.value = weight.toFixed(3);
-                this.updateOptionButtons(optionBtns, weight);
-                this.triggerWeightChange(input);
-            });
-        });
-    }
-
-    // تحديث أزرار الخيارات
-    updateOptionButtons(optionBtns, selectedValue) {
-        optionBtns.forEach(btn => {
-            const weight = parseFloat(btn.dataset.weight);
-            if (Math.abs(weight - selectedValue) < 0.001) {
-                btn.classList.add('bg-blue-500', 'text-white');
-                btn.classList.remove('border', 'hover:bg-blue-100');
-            } else {
-                btn.classList.remove('bg-blue-500', 'text-white');
-                btn.classList.add('border', 'hover:bg-blue-100');
-            }
+        // إضافة مستمع للقائمة المنسدلة
+        select.addEventListener('change', () => {
+            const value = parseFloat(select.value);
+            input.value = value.toFixed(3);
+            this.triggerWeightChange(input);
         });
     }
 
