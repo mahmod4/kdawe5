@@ -676,7 +676,7 @@ function displayProducts(productsArray) {
         
         // إنشاء الصورة
         const img = document.createElement('img');
-        img.src = product.image || '../images/default-product.jpg';
+        img.src = product.image || 'https://via.placeholder.com/200x200/e5e7eb/6b7280?text=لا+توجد+صورة';
         img.alt = product.name;
         img.loading = 'lazy';
         img.width = 200;
@@ -684,7 +684,7 @@ function displayProducts(productsArray) {
         
         // معالجة أخطاء الصور
         img.onerror = function() {
-            this.src = '../images/default-product.jpg';
+            this.src = 'https://via.placeholder.com/200x200/e5e7eb/6b7280?text=لا+توجد+صورة';
             this.alt = 'صورة افتراضية';
         };
         
@@ -1253,7 +1253,7 @@ async function fetchProductsFromFirestore() {
         const productsList = productsSnapshot.docs.map(doc => {
             const data = doc.data();
             // تحويل البيانات من Firestore إلى تنسيق المتجر
-            return {
+            const product = {
                 // نحتفظ بـ ID النصي كما هو من Firestore ليتوافق مع أزرار السلة
                 id: String(doc.id),
                 name: data.name || '',
@@ -1269,6 +1269,15 @@ async function fetchProductsFromFirestore() {
                 hasWeightOptions: data.hasWeightOptions || false,
                 discountPrice: data.discountPrice || null
             };
+            
+            // debug: طباعة رابط الصورة للتحقق
+            if (product.image) {
+                console.log(`🖼️ Product ${product.name} image:`, product.image);
+            } else {
+                console.warn(`⚠️ Product ${product.name} has no image`);
+            }
+            
+            return product;
         });
 
         console.log(`تم تحميل ${productsList.length} منتج من Firestore بنجاح`);
