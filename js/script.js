@@ -647,6 +647,50 @@ function normalizeArabic(text) {
         .toLowerCase();
 }
 
+// دالة مساعدة: تنسيق قيمة الوزن للعرض
+function formatWeightValue(value) {
+    const n = Number(value);
+    if (Number.isNaN(n)) return '';
+    if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+    return String(n);
+}
+
+// دالة مساعدة: الحصول على وحدة الوزن
+function getWeightUnit(product) {
+    try {
+        if (product && product.weightUnit) return String(product.weightUnit);
+        if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightUnit) {
+            return String(window.siteSettings.store.weightUnit);
+        }
+    } catch (e) {
+    }
+    return 'كجم';
+}
+
+// دالة مساعدة: الحصول على الوزن الأدنى
+function getWeightMin(product) {
+    try {
+        if (product && typeof product.weight === 'number') return product.weight;
+        if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightMin) {
+            return window.siteSettings.store.weightMin;
+        }
+    } catch (e) {
+    }
+    return 0.125;
+}
+
+// دالة مساعدة: الحصول على الوزن الأقصى
+function getWeightMax(product) {
+    try {
+        if (product && typeof product.weight === 'number') return product.weight;
+        if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightMax) {
+            return window.siteSettings.store.weightMax;
+        }
+    } catch (e) {
+    }
+    return 1;
+}
+
 // ================================
 // 12. عرض المنتجات مع الصفحات
 // ================================
@@ -689,6 +733,23 @@ function displayProducts(productsArray) {
         };
         
         productElement.appendChild(img);
+        
+        // عرض معلومات الوزن إذا كان المنتج يُباع بالوزن
+        if (product.soldByWeight) {
+            const weightInfo = document.createElement('div');
+            weightInfo.className = 'product-weight-info';
+            weightInfo.innerHTML = `
+                <div class="weight-badge">
+                    <i class="fas fa-weight"></i>
+                    <span>يُباع بالوزن</span>
+                </div>
+                <div class="weight-details">
+                    <span class="weight-value">${formatWeightValue(product.weight || getWeightMin(product))} ${getWeightUnit(product)}</span>
+                    <span class="weight-range">(${getWeightMin(product)} - ${getWeightMax(product)})</span>
+                </div>
+            `;
+            productElement.appendChild(weightInfo);
+        }
         
         // إنشاء معلومات المنتج
         const productInfo = document.createElement('div');
