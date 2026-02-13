@@ -1,0 +1,382 @@
+/* ================================
+   نظام البيع بالوزن (واجهة المتجر) - تصميم جديد
+   ================================ */
+
+/* ألوان ومتغيرات التصميم */
+:root {
+    --weight-primary: #3b82f6;
+    --weight-primary-light: #60a5fa;
+    --weight-success: #10b981;
+    --weight-danger: #ef4444;
+    --weight-warning: #f59e0b;
+    --weight-gray: #6b7280;
+    --weight-gray-light: #f3f4f6;
+    --weight-border: #e5e7eb;
+    --weight-shadow: rgba(0, 0, 0, 0.1);
+    --weight-radius: 12px;
+}
+
+/* عرض معلومات الوزن في بطاقة المنتج */
+.weight-display {
+    background: linear-gradient(135deg, var(--weight-gray-light) 0%, #ffffff 100%);
+    border: 1px solid var(--weight-border);
+    border-radius: var(--weight-radius);
+    padding: 12px 16px;
+    margin: 12px 0;
+    box-shadow: 0 2px 8px var(--weight-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.weight-display::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--weight-primary) 0%, var(--weight-primary-light) 100%);
+}
+
+.weight-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.weight-icon {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--weight-primary);
+}
+
+.weight-icon svg {
+    width: 18px;
+    height: 18px;
+    color: var(--weight-primary);
+}
+
+.weight-range {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--weight-gray);
+    background: rgba(59, 130, 246, 0.1);
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+.weight-range .min,
+.weight-range .max {
+    font-weight: 600;
+    color: var(--weight-primary);
+}
+
+.weight-range .unit {
+    color: var(--weight-gray);
+    font-weight: 500;
+}
+
+/* منتقي الوزن التفاعلي */
+.weight-picker {
+    background: #ffffff;
+    border: 1px solid var(--weight-border);
+    border-radius: var(--weight-radius);
+    padding: 20px;
+    margin-top: 16px;
+    box-shadow: 0 4px 12px var(--weight-shadow);
+}
+
+.weight-picker-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--weight-border);
+}
+
+.weight-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--weight-gray);
+}
+
+.weight-title svg {
+    width: 16px;
+    height: 16px;
+    color: var(--weight-primary);
+}
+
+.weight-unit {
+    background: var(--weight-primary);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.weight-selector {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.weight-presets {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+}
+
+.weight-preset {
+    background: var(--weight-gray-light);
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 12px 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.weight-preset::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, transparent 0%, rgba(59, 130, 246, 0.05) 100%);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.weight-preset:hover {
+    background: #ffffff;
+    border-color: var(--weight-primary-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px var(--weight-shadow);
+}
+
+.weight-preset:hover::before {
+    opacity: 1;
+}
+
+.weight-preset.active {
+    background: var(--weight-primary);
+    border-color: var(--weight-primary);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.weight-preset.active::before {
+    opacity: 0;
+}
+
+.weight-preset .value {
+    font-size: 13px;
+    font-weight: 500;
+    position: relative;
+    z-index: 1;
+}
+
+.weight-custom {
+    background: var(--weight-gray-light);
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.weight-input-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: center;
+}
+
+.weight-input {
+    background: #ffffff;
+    border: 2px solid var(--weight-border);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 16px;
+    font-weight: 600;
+    text-align: center;
+    min-width: 120px;
+    transition: all 0.2s ease;
+    color: var(--weight-gray);
+}
+
+.weight-input:focus {
+    outline: none;
+    border-color: var(--weight-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.weight-btn {
+    background: var(--weight-primary);
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: white;
+}
+
+.weight-btn:hover {
+    background: var(--weight-primary-light);
+    transform: scale(1.1);
+}
+
+.weight-btn:active {
+    transform: scale(0.95);
+}
+
+.weight-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.input-unit {
+    background: var(--weight-gray);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.weight-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--weight-warning) 0%, #fbbf24 100%);
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.weight-info svg {
+    width: 14px;
+    height: 14px;
+    color: white;
+}
+
+/* السعر المحدث حسب الوزن */
+.price-weighted {
+    text-align: center;
+}
+
+.current-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--weight-primary);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.weight-calculation {
+    font-size: 11px;
+    color: var(--weight-gray);
+    background: var(--weight-gray-light);
+    padding: 4px 8px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* مؤشر الوزن في السلة */
+.cart-weight-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: var(--weight-gray-light);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--weight-gray);
+    margin-top: 4px;
+}
+
+.cart-weight-indicator svg {
+    width: 12px;
+    height: 12px;
+    color: var(--weight-primary);
+}
+
+/* تأثيرات حركية */
+@keyframes weightPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.weight-preset.active {
+    animation: weightPulse 2s ease-in-out infinite;
+}
+
+/* تصميم متجاوب */
+@media (max-width: 768px) {
+    .weight-picker {
+        padding: 16px;
+        margin-top: 12px;
+    }
+    
+    .weight-selector {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .weight-presets {
+        grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+        gap: 6px;
+    }
+    
+    .weight-preset {
+        padding: 10px 6px;
+        font-size: 12px;
+    }
+    
+    .weight-input-group {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .weight-input {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    .weight-picker-header {
+        flex-direction: column;
+        gap: 8px;
+        align-items: stretch;
+    }
+}
+
+@media (max-width: 480px) {
+    .weight-presets {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    
+    .weight-preset {
+        padding: 8px 4px;
+        font-size: 11px;
+    }
+}
