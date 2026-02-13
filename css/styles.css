@@ -1878,3 +1878,116 @@ body.menu-open {
     color: #fff;
 }
 
+/* ================================
+   نظام البيع بالوزن - تصميم جديد
+   ================================ */
+
+.product-weight-info {
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 8px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.product-weight-info::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #3b82f6 0%, #60a5fa 100%);
+}
+
+.weight-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #3b82f6;
+    margin-bottom: 6px;
+}
+
+.weight-badge i {
+    width: 14px;
+    height: 14px;
+    color: #3b82f6;
+}
+
+.weight-details {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #6b7280;
+    background: rgba(59, 130, 246, 0.1);
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.weight-value {
+    font-weight: 500;
+    color: #1f2937;
+}
+
+.weight-range {
+    color: #6b7280;
+    font-weight: 400;
+}
+
+/* تأثيرات حركية للوزن */
+@keyframes weightPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.product-weight-info:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* تصميم متجاوب */
+@media (max-width: 768px) {
+    .product-weight-info {
+        padding: 6px 8px;
+        margin: 6px 0;
+    }
+    
+    .weight-badge {
+        font-size: 11px;
+        gap: 4px;
+    }
+    
+    .weight-details {
+        padding: 2px 4px;
+        font-size: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .product-weight-info {
+        padding: 4px 6px;
+        margin: 4px 0;
+    }
+    
+    .weight-badge {
+        font-size: 10px;
+        flex-direction: column;
+        gap: 2px;
+        text-align: center;
+    }
+    
+    .weight-details {
+        flex-direction: column;
+        gap: 2px;
+        padding: 2px;
+        font-size: 9px;
+    }
+}
+
