@@ -85,27 +85,20 @@ class WeightProducts {
         const weightOptions = this.getWeightOptions();
         
         const picker = document.createElement('div');
-        picker.className = 'weight-picker-simple mt-3 bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200 shadow-sm';
+        picker.className = 'weight-picker-simple mt-3';
         
         picker.innerHTML = `
             <div class="flex items-center justify-between space-x-2 space-x-reverse">
-                <div class="flex items-center space-x-2 space-x-reverse">
-                    <i class="fas fa-weight text-blue-600 text-sm"></i>
-                    <label class="text-sm font-semibold text-gray-800">اختر الوزن:</label>
-                </div>
-                <select class="weight-select-simple bg-white border-2 border-blue-300 rounded-xl px-4 py-2 text-sm font-medium focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200 shadow-sm hover:border-blue-400 transition-all cursor-pointer min-w-[180px]" 
+                <label class="text-sm font-medium text-gray-700">الوزن:</label>
+                <select class="weight-select-simple border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
                         data-product-id="${product.id}"
                         data-base-price="${product.price}">
                     ${weightOptions.map(option => `
-                        <option value="${option.value}" data-price="${product.price * option.value}" class="font-medium">
+                        <option value="${option.value}" data-price="${product.price * option.value}">
                             ${option.label} - ${(product.price * option.value).toFixed(2)} ج.م
                         </option>
                     `).join('')}
                 </select>
-            </div>
-            <div class="mt-2 text-xs text-blue-700 bg-blue-100 px-3 py-1 rounded-lg inline-block">
-                <i class="fas fa-info-circle ml-1"></i>
-                السعر يتغير حسب الوزن المختار
             </div>
         `;
 
@@ -123,23 +116,12 @@ class WeightProducts {
             const basePrice = parseFloat(select.dataset.basePrice);
             const newPrice = basePrice * weight;
             
-            // تحديث السعر المعروض بتصميم أفضل
+            // تحديث السعر المعروض
             if (priceElement) {
                 priceElement.innerHTML = `
-                    <div class="price-update-animation">
-                        <span class="current-price text-xl font-bold text-green-600 bg-green-50 px-3 py-1 rounded-lg border border-green-200 inline-block">${newPrice.toFixed(2)} ج.م</span>
-                        <div class="mt-1 text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-md inline-block">
-                            <i class="fas fa-calculator ml-1"></i>
-                            ${this.formatWeightValue(weight)} ${this.getWeightUnit(product)} × ${basePrice} ج.م
-                        </div>
-                    </div>
+                    <span class="current-price text-lg font-bold text-green-600">${newPrice.toFixed(2)} ج.م</span>
+                    <small class="text-xs text-gray-500 block">${this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
                 `;
-                
-                // إضافة تأثير حركي بسيط
-                priceElement.style.transform = 'scale(1.05)';
-                setTimeout(() => {
-                    priceElement.style.transform = 'scale(1)';
-                }, 200);
             }
 
             // إرسال حدث تغيير الوزن
