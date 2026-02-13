@@ -1,123 +1,93 @@
 /* ================================
-   تصميم نظام الوزن الجديد - Slider و Controls
+   أنماط CSS خاصة بنظام الوزن المبسط
    ================================ */
 
-/* Slider مخصص */
-.weight-slider {
-    -webkit-appearance: none;
-    appearance: none;
-    background: linear-gradient(to right, #3b82f6 0%, #3b82f6 var(--value), #e5e7eb var(--value), #e5e7eb 100%);
-    border-radius: 0.5rem;
-    outline: none;
+/* حاوية منتقي الوزن */
+.weight-picker-simple {
     transition: all 0.3s ease;
 }
 
-.weight-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border: 3px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
-    transition: all 0.2s ease;
-}
-
-.weight-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
-}
-
-.weight-slider::-moz-range-thumb {
-    width: 24px;
-    height: 24px;
-    background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-    border: 3px solid white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.5);
-    transition: all 0.2s ease;
-}
-
-.weight-slider::-moz-range-thumb:hover {
-    transform: scale(1.2);
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
-}
-
-/* أزرار الوزن السريعة */
-.weight-preset-btn {
-    position: relative;
-    overflow: hidden;
-}
-
-.weight-preset-btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(59, 130, 246, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.weight-preset-btn:active::before {
-    width: 300px;
-    height: 300px;
-}
-
-/* حقل الإدخال */
-.weight-input {
-    transition: all 0.3s ease;
-}
-
-.weight-input:focus {
+.weight-picker-simple:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
 }
 
-/* أزرار التحكم */
-.weight-decrease, .weight-increase {
-    position: relative;
-    overflow: hidden;
+/* قائمة الوزن المنسدلة */
+.weight-select-simple {
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    background-size: 20px;
+    padding-left: 40px !important;
 }
 
-.weight-decrease::before, .weight-increase::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    transition: width 0.4s, height 0.4s;
+.weight-select-simple:hover {
+    background-color: #f0f9ff;
+    border-color: #3b82f6;
 }
 
-.weight-decrease:active::before, .weight-increase:active::before {
-    width: 200px;
-    height: 200px;
+.weight-select-simple:focus {
+    background-color: #ffffff;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* عرض السعر */
-#price-display {
-    transition: all 0.3s ease;
+/* خيارات القائمة */
+.weight-select-simple option {
+    padding: 8px 12px;
+    font-weight: 500;
+    color: #374151;
+    background-color: #ffffff;
 }
 
-/* تأثيرات حركية للـ weight picker */
-.weight-picker {
-    animation: slideUp 0.4s ease-out;
+.weight-select-simple option:hover {
+    background-color: #f3f4f6;
 }
 
-@keyframes slideUp {
+/* تحديث السعر */
+.price-update-animation {
+    animation: priceUpdate 0.3s ease-out;
+}
+
+@keyframes priceUpdate {
+    0% {
+        opacity: 0.7;
+        transform: scale(0.95);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* تأثيرات إضافية للسعر */
+.current-price {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    transition: all 0.2s ease;
+}
+
+.current-price:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+}
+
+/* رسالة المعلومات */
+.weight-picker-simple .text-blue-700 {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(-5px);
     }
     to {
         opacity: 1;
@@ -125,92 +95,58 @@
     }
 }
 
-/* تأثير hover للبطاقة */
-.weight-picker:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-}
-
-/* عرض الوزن */
-.weight-display {
-    animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-/* Responsive Design */
+/* تصميم متجاوب */
 @media (max-width: 640px) {
-    .weight-preset-btn {
-        font-size: 0.65rem !important;
-        padding: 0.5rem 0.75rem !important;
+    .weight-picker-simple {
+        padding: 12px;
     }
     
-    .weight-input {
-        font-size: 1rem !important;
-        padding: 0.75rem !important;
+    .weight-picker-simple .flex {
+        flex-direction: column;
+        align-items: stretch !important;
+        gap: 12px;
     }
     
-    .weight-decrease, .weight-increase {
-        padding: 0.75rem !important;
+    .weight-select-simple {
+        min-width: 100% !important;
+        font-size: 14px;
     }
     
-    #price-display {
-        font-size: 1rem !important;
+    .current-price {
+        font-size: 18px;
     }
 }
 
-@media (max-width: 480px) {
-    .weight-picker {
-        padding: 1rem !important;
-    }
-    
-    .grid-cols-4 {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 0.5rem !important;
-    }
+/* تأثيرات للمنتجات التي تُباع بالوزن */
+.product[data-sold-by-weight="true"] {
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.product[data-sold-by-weight="true"]:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
 }
 
 /* تحسين الأداء */
-.weight-slider,
-.weight-input,
-.weight-preset-btn,
-.weight-decrease,
-.weight-increase {
+.weight-picker-simple * {
     will-change: transform;
 }
 
-/* تدرجات لونية متقدمة */
-.weight-picker {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-image: linear-gradient(135deg, #3b82f6, #8b5cf6) 1;
-}
-
-.weight-display {
-    background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 100%);
-}
-
-/* تأثير النبض للأزرار النشطة */
-.weight-preset-btn.bg-blue-500 {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+/* دعم الوضع الليلي */
+@media (prefers-color-scheme: dark) {
+    .weight-picker-simple {
+        background: linear-gradient(to left, #1e3a8a, #1e40af);
+        border-color: #3730a3;
     }
-    70% {
-        box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    
+    .weight-select-simple {
+        background-color: #1f2937;
+        color: #f9fafb;
+        border-color: #4b5563;
     }
-    100% {
-        box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+    
+    .current-price {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
     }
 }
