@@ -363,12 +363,12 @@ async function renderDailyOffers() {
     // إنشاء عنصر التحميل بشكل آمن
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'loading-spinner';
-    loadingDiv.innerHTML = `
-        <div class="flex flex-col items-center justify-center py-8">
-            <i class="fas fa-spinner fa-spin text-3xl text-orange-500 mb-4"></i>
-            <span class="text-gray-600">جاري تحميل العروض اليومية...</span>
-        </div>
-    `;
+    const spinnerIcon = document.createElement('i');
+    spinnerIcon.className = 'fas fa-spinner fa-spin';
+    const loadingText = document.createElement('span');
+    loadingText.textContent = 'جاري تحميل العروض اليومية...';
+    loadingDiv.appendChild(spinnerIcon);
+    loadingDiv.appendChild(loadingText);
     
     dailyOffersContainer.innerHTML = '';
     dailyOffersContainer.appendChild(loadingDiv);
@@ -390,109 +390,75 @@ async function renderDailyOffers() {
         console.log(`عدد العروض المتاحة: ${dailyOffers.length}`);
         
         if (dailyOffers.length === 0) {
-            const noOffersDiv = document.createElement('div');
-            noOffersDiv.className = 'text-center py-12';
-            noOffersDiv.innerHTML = `
-                <i class="fas fa-gift text-6xl text-gray-300 mb-4"></i>
-                <h3 class="text-xl font-semibold text-gray-600 mb-2">لا توجد عروض يومية حالياً</h3>
-                <p class="text-gray-500 mb-6">سيتم إضافة عروض جديدة قريباً</p>
-                <button onclick="location.reload()" class="bg-orange-500 text-white px-6 py-2 rounded-lg hover:bg-orange-600 transition">
-                    <i class="fas fa-redo ml-2"></i>تحديث الصفحة
-                </button>
-            `;
-            dailyOffersContainer.appendChild(noOffersDiv);
+            const noOffersText = document.createElement('p');
+            noOffersText.className = 'no-products';
+            noOffersText.style.textAlign = 'center';
+            noOffersText.style.color = '#666';
+            noOffersText.style.fontSize = '1.1rem';
+            noOffersText.textContent = 'لا توجد عروض يومية حالياً';
+            dailyOffersContainer.appendChild(noOffersText);
             console.log('لا توجد عروض لعرضها');
             return;
         }
-        
-        // إنشاء حاوية للعروض
-        const offersWrapper = document.createElement('div');
-        offersWrapper.className = 'flex gap-6 overflow-x-auto pb-4';
-        offersWrapper.style.scrollSnapType = 'x mandatory';
         
         dailyOffers.forEach((offer, index) => {
             console.log(`عرض ${index + 1}:`, offer);
             
             const offerDiv = document.createElement('div');
-            offerDiv.className = 'daily-offer flex-shrink-0';
-            offerDiv.style.scrollSnapAlign = 'start';
+            offerDiv.className = 'daily-offer';
             
-            // إضافة الصورة
-            const imageDiv = document.createElement('div');
-            imageDiv.className = 'mb-4';
+            // تحقق من وجود خيارات وزن
+            const hasWeightOptions = offer.weight && (
+                offer.weight.trim() === '✓' ||
+                offer.weight.trim() === 'صح' ||
+                offer.weight.trim() === '1' ||
+                offer.weight.trim().toLowerCase() === 'true'
+            );
             
-            const img = document.createElement('img');
-            img.src = offer.image || 'https://via.placeholder.com/240x180/ff9800/ffffff?text=Special+Offer';
-            img.alt = offer.name;
-            img.className = 'w-full h-48 object-cover rounded-lg shadow-md';
-            img.onerror = function() {
-                this.src = 'https://via.placeholder.com/240x180/e0e0e0/666666?text=No+Image';
-            };
-            imageDiv.appendChild(img);
-            offerDiv.appendChild(imageDiv);
-            
-            // إضافة شارة الخصم
-            const badgeDiv = document.createElement('div');
-            badgeDiv.className = 'absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg';
-            badgeDiv.textContent = 'خصم خاص';
-            offerDiv.style.position = 'relative';
-            offerDiv.appendChild(badgeDiv);
+            // إضافة الصورة إذا وجدت
+            if (offer.image) {
+                const img = document.createElement('img');
+                img.src = offer.image;
+                img.alt = offer.name;
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/240x180/e0e0e0/666666?text=No+Image';
+                };
+                offerDiv.appendChild(img);
+            }
             
             // إضافة العنوان
             const titleDiv = document.createElement('div');
-            titleDiv.className = 'daily-offer-title font-bold text-lg mb-2 text-gray-800';
+            titleDiv.className = 'daily-offer-title';
             titleDiv.textContent = offer.name;
             offerDiv.appendChild(titleDiv);
             
-            // إضافة السعر مع عرض الخصم
+            // السعر الأساسي - تم نقل خيارات الوزن إلى النظام الجديد
             const priceDiv = document.createElement('div');
-            priceDiv.className = 'daily-offer-price mb-4';
+            priceDiv.className = 'daily-offer-price';
+            priceDiv.textContent = `${offer.price} ج.م`;
             
-            // إذا كان هناك سعر أصلي، اعرضه
+            // إضافة السعر الأصلي إذا كان هناك خصم
             if (offer.originalPrice && offer.originalPrice > offer.price) {
-                priceDiv.innerHTML = `
-                    <div class="flex items-center gap-2">
-                        <span class="text-gray-400 line-through text-sm">${offer.originalPrice} ج.م</span>
-                        <span class="text-2xl font-bold text-orange-600">${offer.price} ج.م</span>
-                    </div>
-                    <div class="text-green-600 text-sm font-medium">وفر ${((offer.originalPrice - offer.price) / offer.originalPrice * 100).toFixed(0)}%</div>
-                `;
-            } else {
-                priceDiv.innerHTML = `
-                    <span class="text-2xl font-bold text-orange-600">${offer.price} ج.م</span>
-                `;
+                priceDiv.setAttribute('data-original-price', `${offer.originalPrice} ج.م`);
             }
             
             offerDiv.appendChild(priceDiv);
             
-            // إضافة الوصف إذا وجد
-            if (offer.description) {
-                const descDiv = document.createElement('div');
-                descDiv.className = 'text-gray-600 text-sm mb-4 line-clamp-2';
-                descDiv.textContent = offer.description;
-                offerDiv.appendChild(descDiv);
-            }
-            
             // إضافة زر الإضافة للسلة
             const addButton = document.createElement('button');
-            addButton.className = 'add-to-cart w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 rounded-xl font-semibold hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 shadow-lg';
+            addButton.className = 'add-to-cart';
             addButton.setAttribute('data-id', `daily-${offer.id}`);
             addButton.setAttribute('data-offer', 'true');
-            addButton.innerHTML = `
-                <i class="fas fa-shopping-cart ml-2"></i>
-                إضافة للسلة
-            `;
+            addButton.textContent = 'إضافة للسلة';
             offerDiv.appendChild(addButton);
             
-            offersWrapper.appendChild(offerDiv);
+            dailyOffersContainer.appendChild(offerDiv);
         });
-        
-        dailyOffersContainer.appendChild(offersWrapper);
         
         console.log(`تم عرض ${dailyOffers.length} عرض بنجاح`);
         
         // ربط زر الإضافة للسلة
-        offersWrapper.querySelectorAll('.add-to-cart').forEach(btn => {
+        dailyOffersContainer.querySelectorAll('.add-to-cart').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 addDailyOfferToCart(e, dailyOffers);
             });
@@ -500,18 +466,14 @@ async function renderDailyOffers() {
         
     } catch (err) {
         console.error('فشل تحميل العروض اليومية:', err);
-        const errorDiv = document.createElement('div');
-        errorDiv.className = 'text-center py-12';
-        errorDiv.innerHTML = `
-            <i class="fas fa-exclamation-triangle text-6xl text-red-300 mb-4"></i>
-            <h3 class="text-xl font-semibold text-red-600 mb-2">حدث خطأ أثناء تحميل العروض</h3>
-            <p class="text-gray-600 mb-6">يرجى المحاولة مرة أخرى لاحقاً</p>
-            <button onclick="location.reload()" class="bg-red-500 text-white px-6 py-2 rounded-lg hover:bg-red-600 transition">
-                <i class="fas fa-redo ml-2"></i>إعادة المحاولة
-            </button>
-        `;
+        const errorText = document.createElement('p');
+        errorText.className = 'no-products';
+        errorText.style.textAlign = 'center';
+        errorText.style.color = '#e74c3c';
+        errorText.style.fontSize = '1.1rem';
+        errorText.textContent = 'حدث خطأ أثناء تحميل العروض اليومية.';
         dailyOffersContainer.innerHTML = '';
-        dailyOffersContainer.appendChild(errorDiv);
+        dailyOffersContainer.appendChild(errorText);
     }
 }
 
@@ -886,10 +848,38 @@ function displayProducts(productsArray) {
         // خيارات الوزن - تم نقلها إلى نظام الوزن الجديد
         // الآن يتم التحكم فيها من لوحة التحكم عبر weight-products.js
         
-        // السعر الأساسي
-        priceEl.textContent = `${product.price} ج.م`;
-
-        footer.appendChild(priceEl);
+        // السعر الأساسي مع الخصم
+        if (product.discountPrice && product.discountPrice < product.price) {
+            // إضافة شارة الخصم
+            const discountBadge = document.createElement('div');
+            discountBadge.className = 'discount-badge';
+            const discountPercent = Math.round(((product.price - product.discountPrice) / product.price) * 100);
+            discountBadge.textContent = `خصم ${discountPercent}%`;
+            productElement.appendChild(discountBadge);
+            
+            // عرض السعر الأصلي والسعر المخصوم
+            const priceContainer = document.createElement('div');
+            priceContainer.className = 'price-container';
+            
+            const originalPrice = document.createElement('span');
+            originalPrice.className = 'original-price';
+            originalPrice.textContent = `${product.price} ج.م`;
+            
+            const discountPrice = document.createElement('span');
+            discountPrice.className = 'discount-price';
+            discountPrice.textContent = `${product.discountPrice} ج.م`;
+            
+            priceContainer.appendChild(originalPrice);
+            priceContainer.appendChild(discountPrice);
+            footer.appendChild(priceContainer);
+            
+            // إضافة كلاس للمنتج للتنسيق الخاص
+            productElement.classList.add('has-discount');
+        } else {
+            // السعر العادي بدون خصم
+            priceEl.textContent = `${product.price} ج.م`;
+            footer.appendChild(priceEl);
+        }
         footer.appendChild(addButton);
         productInfo.appendChild(footer);
         productElement.appendChild(productInfo);
@@ -1046,14 +1036,25 @@ function addToCart(e) {
     
     let selectedWeight = 1;
     let selectedPrice = product.price;
+    let originalPrice = null;
+    
+    // التحقق من وجود خصم
+    if (product.discountPrice && product.discountPrice < product.price) {
+        originalPrice = product.price;
+        selectedPrice = product.discountPrice;
+    }
     
     // البحث عن وزن من نظام الوزن الجديد
     const card = e.target.closest('.product');
     const weightInput = card ? card.querySelector('.weight-input') : null;
     if (weightInput) {
         selectedWeight = parseFloat(weightInput.value);
-        selectedPrice = (product.price * selectedWeight).toFixed(2);
+        selectedPrice = (selectedPrice * selectedWeight).toFixed(2);
+        if (originalPrice) {
+            originalPrice = (originalPrice * selectedWeight).toFixed(2);
+        }
     }
+    
     const existingItem = cart.find(item => String(item.id) === String(productId) && Number(item.selectedWeight) === Number(selectedWeight));
     if (existingItem) {
         existingItem.quantity++;
@@ -1062,9 +1063,11 @@ function addToCart(e) {
             id: product.id,
             name: product.name,
             price: Number(selectedPrice),
+            originalPrice: originalPrice ? Number(originalPrice) : null,
             image: product.image,
             quantity: 1,
-            selectedWeight: selectedWeight 
+            selectedWeight: selectedWeight,
+            hasDiscount: !!originalPrice
         });
     }
     updateCart();
@@ -1122,7 +1125,24 @@ function updateCart() {
         
         const price = document.createElement('p');
         price.className = 'cart-item-price';
-        price.textContent = `${item.price} ج.م`;
+        
+        // عرض الخصم في السلة
+        if (item.hasDiscount && item.originalPrice) {
+            price.classList.add('has-discount');
+            const originalPriceEl = document.createElement('span');
+            originalPriceEl.className = 'original-price';
+            originalPriceEl.textContent = `${item.originalPrice} ج.م`;
+            
+            const discountPriceEl = document.createElement('span');
+            discountPriceEl.className = 'discount-price';
+            discountPriceEl.textContent = `${item.price} ج.م`;
+            
+            price.appendChild(originalPriceEl);
+            price.appendChild(discountPriceEl);
+        } else {
+            price.textContent = `${item.price} ج.م`;
+        }
+        
         cartItemInfo.appendChild(price);
         
         cartItem.appendChild(cartItemInfo);
@@ -1408,6 +1428,68 @@ async function fetchProductsFromFirestore() {
                 discountPrice: data.discountPrice || null
             };
         });
+
+        // إضافة منتجات تجريبية بخصوم للاختبار
+        if (productsList.length === 0) {
+            console.log('إضافة منتجات تجريبية بخصومات للاختبار');
+            productsList.push(
+                {
+                    id: 'demo-1',
+                    name: 'تفاح أحمر',
+                    category: 'فواكه',
+                    image: 'https://via.placeholder.com/200x200/ff6b6b/ffffff?text=Apple',
+                    price: 50.00,
+                    discountPrice: 35.00,
+                    soldByWeight: true,
+                    stock: true,
+                    description: 'تفاح أحمر طازج من أفضل المزارع'
+                },
+                {
+                    id: 'demo-2',
+                    name: 'برتقال',
+                    category: 'فواكه',
+                    image: 'https://via.placeholder.com/200x200/ffa500/ffffff?text=Orange',
+                    price: 40.00,
+                    discountPrice: 25.00,
+                    soldByWeight: true,
+                    stock: true,
+                    description: 'برتقال حلو وعصيري'
+                },
+                {
+                    id: 'demo-3',
+                    name: 'موز',
+                    category: 'فواكه',
+                    image: 'https://via.placeholder.com/200x200/ffeb3b/ffffff?text=Banana',
+                    price: 30.00,
+                    discountPrice: 20.00,
+                    soldByWeight: false,
+                    stock: true,
+                    description: 'موز ناضج ولذيذ'
+                },
+                {
+                    id: 'demo-4',
+                    name: 'طماطم',
+                    category: 'خضروات',
+                    image: 'https://via.placeholder.com/200x200/ff5722/ffffff?text=Tomato',
+                    price: 25.00,
+                    discountPrice: 15.00,
+                    soldByWeight: true,
+                    stock: true,
+                    description: 'طماطم طازجة من الحديقة'
+                },
+                {
+                    id: 'demo-5',
+                    name: 'خيار',
+                    category: 'خضروات',
+                    image: 'https://via.placeholder.com/200x200/4caf50/ffffff?text=Cucumber',
+                    price: 20.00,
+                    discountPrice: null,
+                    soldByWeight: true,
+                    stock: true,
+                    description: 'خيار طازج وقرمش'
+                }
+            );
+        }
 
         console.log(`تم تحميل ${productsList.length} منتج من Firestore بنجاح`);
         return productsList;
