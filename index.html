@@ -5,14 +5,12 @@
          المتجر - الصفحة الرئيسية
          ================================ -->
     <!-- هذا الملف يحتوي على:
-         - إعدادات Firebase للمصادقة
-         - واجهة المستخدم الرئيسية
-         - نظام تسجيل الدخول بجوجل
-         - عرض المنتجات والعروض
+         - إعدادات Firebase للمصادقة وقاعدة البيانات
+         - واجهة المستخدم الرئيسية للمتجر
+         - نظام تسجيل الدخول بحساب جوجل
+         - عرض المنتجات والعروض اليومية
          - جميع البيانات ديناميكية من لوحة التحكم
          ================================ -->
-
-
 
 <!-- ================================
      Google Analytics - تتبع الزوار
@@ -28,31 +26,21 @@
   gtag('config', 'G-K8FNNYH4S1');
 </script>
 
+<!-- ================================
+     إعدادات الصفحة الأساسية
+     ================================ -->
+<meta charset="UTF-8"> <!-- ترميز الأحرف العربي -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> <!-- إعدادات العرض للأجهزة المحمولة -->
+<title data-store-name>المتجر</title> <!-- عنوان الصفحة (ديناميكي من الإعدادات) -->
 
-
-
-<script type="text/javascript">
-	
-</script>
-
-
-
-    
-    <!-- ================================
-         إعدادات الصفحة الأساسية
-         ================================ -->
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title data-store-name>المتجر</title>
-    
-    <!-- ================================
-         PWA - Progressive Web App
-         ================================ -->
+<!-- ================================
+     PWA - Progressive Web App
+     ================================ -->
     <!-- إعدادات التطبيق التقدمي للويب لتحسين تجربة الهواتف المحمولة -->
-    <meta name="theme-color" content="#1a5f7a">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#1a5f7a"> <!-- لون شريط المتصفح على أندرويد -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a"> <!-- لون شريط الحالة على آيفون -->
+    <meta name="apple-mobile-web-app-capable" content="yes"> <!-- تمكين وضع التطبيق الكامل -->
+    <meta name="mobile-web-app-capable" content="yes"> <!-- تمكين وضع التطبيق المحمول -->
     
     <!-- ================================
          SEO - تحسين محركات البحث
@@ -60,18 +48,19 @@
     <!-- وصف الموقع وكلمات مفتاحية لتحسين ظهوره في محركات البحث -->
     <meta name="description" data-store-description="متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن.">
     <meta name="keywords" data-store-keywords="خضراوات, فواكه, سوق, تسوق, طازج, توصيل, متجر إلكتروني, خضار, فاكهة, grocery, fruits, vegetables, online store, delivery">
-    <meta name="author" data-store-author="">
+    <meta name="author" data-store-author=""> <!-- اسم المطور (ديناميكي) -->
+    
     <!-- ================================
          مكتبات CSS و JavaScript
          ================================ -->
     <!-- ملف التنسيقات الرئيسي -->
-    <link rel="stylesheet" href="../css/styles.css">  
+    <link rel="stylesheet" href="../css/styles.css"> <!-- تنسيقات الموقع -->
     <!-- مكتبة Font Awesome للأيقونات -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- أيقونات Font Awesome -->
     <!-- مكتبة AOS للحركات والتأثيرات -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" /> <!-- تأثيرات الحركة -->
     <!-- مكتبة Lucide للأيقونات -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@latest"></script> <!-- أيقونات Lucide -->
     
     <!-- تحسين الموقع للهواتف المحمولة -->
     <!--
@@ -92,24 +81,21 @@
     
     5. تم استخدام link rel="dns-prefetch" لتسريع تحميل الموارد الخارجية مثل مكتبة Font Awesome
     -->
-    <meta name="theme-color" content="#1a5f7a">
-    <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta property="og:title" data-store-og-title="متجر إلكتروني - تسوق خضراوات وفواكه طازجة">
-    <meta property="og:description" data-store-og-description="أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن.">
-    <meta property="og:image" data-store-logo="../images/logo22.png">
+    <!-- إعدادات Open Graph للشبكات الاجتماعية -->
+    <meta property="og:title" data-store-og-title="متجر إلكتروني - تسوق خضراوات وفواكه طازجة"> <!-- عنوان الموقع للشبكات -->
+    <meta property="og:description" data-store-og-description="أفضل متجر إلكتروني لشراء الخضراوات والفواكه الطازجة أونلاين مع توصيل سريع وجودة عالية. تسوق الآن."> <!-- وصف الموقع للشبكات -->
+    <meta property="og:image" data-store-logo="../images/logo22.png"> <!-- صورة الموقع للشبكات -->
     <meta property="og:type" content="website">
     <!-- تحسين الأداء -->
-    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com"> <!-- تسريع تحميل الموارد الخارجية -->
     
     <!-- إضافة رمز الموقع المختصر (favicon) -->
-    <link rel="icon" type="image/png" data-store-favicon="../images/logo22.png">
-    <link rel="shortcut icon" type="image/png" data-store-favicon="../images/logo22.png">
-    <link rel="apple-touch-icon" data-store-favicon="../images/logo22.png">
+    <link rel="icon" type="image/png" data-store-favicon="../images/logo22.png"> <!-- أيقونة الموقع -->
+    <link rel="shortcut icon" type="image/png" data-store-favicon="../images/logo22.png"> <!-- أيقونة مختصرة -->
+    <link rel="apple-touch-icon" data-store-favicon="../images/logo22.png"> <!-- أيقونة آيفون -->
     
     <!-- PWA Manifest -->
-    <link rel="manifest" href="../manifest.json">
+    <link rel="manifest" href="../manifest.json"> <!-- ملف بيانات التطبيق التقدمي -->
     
     <!-- ================================
          Firebase SDK - قاعدة البيانات والمصادقة
@@ -190,6 +176,7 @@
         console.error('خطأ في تهيئة Firebase:', error);
       }
     </script>
+    
     <!-- ================================
          JavaScript - إدارة تسجيل الدخول
          ================================ -->
