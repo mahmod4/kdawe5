@@ -1490,15 +1490,15 @@ body.menu-open {
 
 /* Daily Offers Section - قسم العروض اليومية */
 .daily-offers {
-    padding: 50px 20px;
-    background: linear-gradient(135deg, #fffbe7 0%, #ffeaa7 50%, #e6f7fc 100%);
+    padding: 60px 20px;
+    background: linear-gradient(135deg, #fffbeb 0%, #fff3cd 50%, #ffeaa7 100%);
     border-top: 3px solid #ff9800;
     border-bottom: 3px solid #ff9800;
     position: relative;
     overflow: hidden;
 }
 
-/* إضافة خلفية زخرفية */
+/* إضافة خلفية زخرفية متحركة */
 .daily-offers::before {
     content: '';
     position: absolute;
@@ -1524,8 +1524,8 @@ body.menu-open {
 .daily-offers h2 {
     text-align: center;
     color: #ff9800;
-    font-size: 2.5rem;
-    margin-bottom: 40px;
+    font-size: 2.8rem;
+    margin-bottom: 50px;
     font-weight: bold;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
     position: relative;
@@ -1544,56 +1544,34 @@ body.menu-open {
     50% { transform: scale(1.2); }
 }
 
+/* حاوية العروض اليومية */
 .daily-offers-container {
-    display: flex;
-    flex-direction: row;
-    overflow-x: auto;
-    gap: 25px;
-    padding-bottom: 15px;
-    scroll-snap-type: x mandatory;
     position: relative;
     z-index: 1;
 }
 
-/* تحسين شريط التمرير */
-.daily-offers-container::-webkit-scrollbar {
-    height: 8px;
-}
-
-.daily-offers-container::-webkit-scrollbar-track {
-    background: rgba(255, 152, 0, 0.1);
-    border-radius: 10px;
-}
-
-.daily-offers-container::-webkit-scrollbar-thumb {
-    background: linear-gradient(90deg, #ff9800, #e65100);
-    border-radius: 10px;
-    border: 2px solid #fff;
-}
-
+/* بطاقة العرض اليومي */
 .daily-offer {
-    min-width: 240px;
-    max-width: 280px;
-    flex: 0 0 auto;
-    scroll-snap-align: start;
+    min-width: 280px;
+    max-width: 320px;
     background: white;
-    border-radius: 15px;
+    border-radius: 20px;
     padding: 20px;
-    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15);
+    box-shadow: 0 10px 30px rgba(255, 152, 0, 0.15);
     border: 2px solid #ff9800;
     position: relative;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
 }
 
 /* شارة الخصم */
-.daily-offer::before {
-    content: 'خصم خاص';
+.daily-offer .discount-badge {
     position: absolute;
-    top: -10px;
-    right: -10px;
+    top: 10px;
+    right: 10px;
     background: linear-gradient(135deg, #ff6b6b, #ee5a24);
     color: white;
-    padding: 8px 15px;
+    padding: 8px 16px;
     border-radius: 20px;
     font-size: 0.8rem;
     font-weight: bold;
@@ -1609,19 +1587,16 @@ body.menu-open {
 }
 
 .daily-offer:hover {
-    transform: translateY(-12px) scale(1.05) rotate(1deg);
-    box-shadow: 0 15px 40px rgba(255, 152, 0, 0.25);
+    transform: translateY(-15px) scale(1.05) rotate(1deg);
+    box-shadow: 0 20px 40px rgba(255, 152, 0, 0.25);
     border-color: #e65100;
 }
 
 .daily-offer img {
     width: 100%;
-    max-width: 240px;
     height: 180px;
     object-fit: cover;
-    margin-bottom: 15px;
-    border-radius: 12px;
-    background: #fffbe7;
+    border-radius: 15px;
     transition: transform 0.3s ease;
 }
 
@@ -1630,45 +1605,32 @@ body.menu-open {
 }
 
 .daily-offer-title {
-    font-size: 1.2rem;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+    font-size: 1.3rem;
+    color: #333;
+    margin-bottom: 12px;
     font-weight: bold;
     text-align: center;
     line-height: 1.4;
 }
 
 .daily-offer-price {
-    font-weight: bold;
-    color: #ff9800;
-    font-size: 1.3rem;
-    margin-bottom: 15px;
     text-align: center;
+    margin-bottom: 15px;
     position: relative;
 }
 
-/* إضافة خط السعر الأصلي */
-.daily-offer-price::before {
-    content: attr(data-original-price);
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: #999;
-    font-size: 0.9rem;
-    text-decoration: line-through;
-    opacity: 0.7;
+.daily-offer-price .text-2xl {
+    font-weight: bold;
+    color: #ff9800;
 }
 
 .daily-offer .add-to-cart {
     background: linear-gradient(135deg, #ff9800, #e65100);
-    color: #fff;
-    border-radius: 30px;
-    padding: 12px 25px;
-    font-size: 1.1rem;
+    color: white;
+    border-radius: 15px;
+    padding: 12px 20px;
+    font-size: 1rem;
     font-weight: bold;
-    margin-top: 15px;
-    width: 100%;
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1701,10 +1663,46 @@ body.menu-open {
 .daily-offer .add-to-cart:active {
     transform: translateY(0);
 }
+
+/* شريط التمرير للعروض */
+.daily-offers-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.daily-offers-container::-webkit-scrollbar-track {
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 10px;
+}
+
+.daily-offers-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #ff9800, #e65100);
+    border-radius: 10px;
+    border: 2px solid #fff;
+}
+
+/* تأثيرات إضافية */
+.daily-offer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff9800, #e65100, #ff9800);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* تحسينات للشاشات الصغيرة */
 @media (max-width: 768px) {
     .daily-offers {
-        padding: 30px 10px;
+        padding: 40px 15px;
     }
+    
     .daily-offers h2 {
         font-size: 1.8rem;
         margin-bottom: 25px;
