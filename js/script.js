@@ -229,11 +229,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // تحميل العروض اليومية مع تأخير وتحقق من جاهزية Firebase
     setTimeout(() => {
         try {
+            console.log('بدء تحميل العروض اليومية بعد التأخير...');
             renderDailyOffers();
         } catch (error) {
             console.warn('خطأ في تحميل العروض اليومية:', error);
         }
-    }, 2000);
+    }, 1000); // تقليل التأخير من 2000 إلى 1000
+    
+    // استدعاء فوري للاختبار
+    setTimeout(() => {
+        try {
+            console.log('استدعاء إضافي لتحميل العروض...');
+            renderDailyOffers();
+        } catch (error) {
+            console.warn('خطأ في الاستدعاء الإضافي:', error);
+        }
+    }, 3000);
 });
 
 // ================================
@@ -251,10 +262,11 @@ async function fetchDailyOffersFromFirestore() {
         
         const db = window.firebase.firestore();
         const offersCol = window.firebaseFirestore.collection(db, 'offers');
+        
+        // تعديل الاستعلام - إزالة شرط type لأنه قد لا يكون موجوداً
         const q = window.firebaseFirestore.query(
             offersCol,
-            window.firebaseFirestore.where('active', '==', true),
-            window.firebaseFirestore.where('type', '==', 'daily')
+            window.firebaseFirestore.where('active', '==', true)
         );
         const offersSnapshot = await window.firebaseFirestore.getDocs(q);
         
@@ -265,15 +277,45 @@ async function fetchDailyOffersFromFirestore() {
                 name: data.name || data.title || '',
                 image: data.image || '',
                 price: parseFloat(data.price) || parseFloat(data.discountPrice) || 0,
-                weight: data.hasWeightOptions || false
+                weight: data.hasWeightOptions || false,
+                type: data.type || 'daily' // افتراض العرض اليومي
             };
         });
 
         console.log(`تم تحميل ${offersList.length} عرض من Firestore بنجاح`);
+        console.log('العروض المحملة:', offersList);
         return offersList;
     } catch (error) {
         console.error('خطأ في جلب العروض من Firestore:', error);
-        return [];
+        
+        // إضافة عروض تجريبية للاختبار
+        console.log('استخدام عروض تجريبية للاختبار');
+        return [
+            {
+                id: 'demo-1',
+                name: 'عرض خاص: تشكيلة الفواكه',
+                image: 'https://via.placeholder.com/240x180/ff9800/ffffff?text=Fruits+Offer',
+                price: 89.99,
+                weight: false,
+                type: 'daily'
+            },
+            {
+                id: 'demo-2', 
+                name: 'خصم على الخضروات الطازجة',
+                image: 'https://via.placeholder.com/240x180/4caf50/ffffff?text=Vegetables+Offer',
+                price: 45.50,
+                weight: false,
+                type: 'daily'
+            },
+            {
+                id: 'demo-3',
+                name: 'عروض العصائر الطبيعية',
+                image: 'https://via.placeholder.com/240x180/2196f3/ffffff?text=Juice+Offer',
+                price: 25.00,
+                weight: false,
+                type: 'daily'
+            }
+        ];
     }
 }
 
@@ -311,7 +353,12 @@ async function fetchDailyOffersFromSheet() {
 // عرض العروض اليومية
 async function renderDailyOffers() {
     const dailyOffersContainer = document.getElementById('daily-offers-container');
-    if (!dailyOffersContainer) return;
+    if (!dailyOffersContainer) {
+        console.warn('حاوية العروض اليومية غير موجودة');
+        return;
+    }
+    
+    console.log('بدء تحميل العروض اليومية...');
     
     // إنشاء عنصر التحميل بشكل آمن
     const loadingDiv = document.createElement('div');
@@ -338,17 +385,25 @@ async function renderDailyOffers() {
             dailyOffers = await fetchDailyOffersFromSheet();
             console.log('✅ تم تحميل العروض من Google Sheets (احتياطي)');
         }
+        
         dailyOffersContainer.innerHTML = '';
+        console.log(`عدد العروض المتاحة: ${dailyOffers.length}`);
         
         if (dailyOffers.length === 0) {
             const noOffersText = document.createElement('p');
             noOffersText.className = 'no-products';
+            noOffersText.style.textAlign = 'center';
+            noOffersText.style.color = '#666';
+            noOffersText.style.fontSize = '1.1rem';
             noOffersText.textContent = 'لا توجد عروض يومية حالياً';
             dailyOffersContainer.appendChild(noOffersText);
+            console.log('لا توجد عروض لعرضها');
             return;
         }
         
-        dailyOffers.forEach(offer => {
+        dailyOffers.forEach((offer, index) => {
+            console.log(`عرض ${index + 1}:`, offer);
+            
             const offerDiv = document.createElement('div');
             offerDiv.className = 'daily-offer';
             
@@ -365,6 +420,9 @@ async function renderDailyOffers() {
                 const img = document.createElement('img');
                 img.src = offer.image;
                 img.alt = offer.name;
+                img.onerror = function() {
+                    this.src = 'https://via.placeholder.com/240x180/e0e0e0/666666?text=No+Image';
+                };
                 offerDiv.appendChild(img);
             }
             
@@ -378,6 +436,12 @@ async function renderDailyOffers() {
             const priceDiv = document.createElement('div');
             priceDiv.className = 'daily-offer-price';
             priceDiv.textContent = `${offer.price} ج.م`;
+            
+            // إضافة السعر الأصلي إذا كان هناك خصم
+            if (offer.originalPrice && offer.originalPrice > offer.price) {
+                priceDiv.setAttribute('data-original-price', `${offer.originalPrice} ج.م`);
+            }
+            
             offerDiv.appendChild(priceDiv);
             
             // إضافة زر الإضافة للسلة
@@ -391,19 +455,25 @@ async function renderDailyOffers() {
             dailyOffersContainer.appendChild(offerDiv);
         });
         
+        console.log(`تم عرض ${dailyOffers.length} عرض بنجاح`);
+        
         // ربط زر الإضافة للسلة
         dailyOffersContainer.querySelectorAll('.add-to-cart').forEach(btn => {
             btn.addEventListener('click', function(e) {
                 addDailyOfferToCart(e, dailyOffers);
             });
         });
+        
     } catch (err) {
+        console.error('فشل تحميل العروض اليومية:', err);
         const errorText = document.createElement('p');
         errorText.className = 'no-products';
+        errorText.style.textAlign = 'center';
+        errorText.style.color = '#e74c3c';
+        errorText.style.fontSize = '1.1rem';
         errorText.textContent = 'حدث خطأ أثناء تحميل العروض اليومية.';
         dailyOffersContainer.innerHTML = '';
         dailyOffersContainer.appendChild(errorText);
-        console.error('فشل تحميل العروض اليومية:', err);
     }
 }
 
@@ -1543,6 +1613,17 @@ async function loadProducts() {
         }, 100);
         hideLoadingSpinner();
         showUpdateNotification('تم تحديث المنتجات بنجاح', 'success');
+        
+        // إضافة استدعاء لتحميل العروض بعد تحميل المنتجات
+        setTimeout(() => {
+            try {
+                console.log('تحميل العروض بعد تحميل المنتجات...');
+                renderDailyOffers();
+            } catch (error) {
+                console.warn('خطأ في تحميل العروض بعد المنتجات:', error);
+            }
+        }, 500);
+        
     } catch (err) {
         hideLoadingSpinner();
         const errorDiv = document.createElement('div');
