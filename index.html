@@ -19,13 +19,13 @@
      ================================ -->
 <!-- كود Google Analytics لتتبع زوار الموقع وإحصائيات الاستخدام -->
 <!-- سيتم جلب ID من لوحة التحكم -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K8FNNYH4S1"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
-  gtag('config', 'GA_MEASUREMENT_ID');
+  gtag('config', 'G-K8FNNYH4S1');
 </script>
 
 
@@ -117,11 +117,11 @@
     <!-- إعداد Firebase للمصادقة وقاعدة البيانات -->
     <script type="module">
       // استيراد مكتبات Firebase الأساسية
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
       // استيراد مكتبات المصادقة (تسجيل الدخول بجوجل)
-      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
       // استيراد مكتبات قاعدة البيانات Firestore
-      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
       
       // ================================
       // إعدادات مشروع Firebase
@@ -560,6 +560,7 @@
     </div>
 
     <script src="../js/settings.js"></script>
+    <script src="../js/firebase-ready-check.js"></script>
     <script src="../js/products.js" type="module"></script>
     <script src="../js/settings-sync.js" type="module"></script>
     <script src="../js/whatsapp-sync.js" type="module"></script>

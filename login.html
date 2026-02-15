@@ -43,9 +43,9 @@
     <!-- Firebase SDK لـ المتصفح -->
     <script type="module">
       // Import Firebase SDK
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-      import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+      import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
       
       // Firebase config - إعدادات مشروعك
        const firebaseConfig = {
@@ -779,12 +779,11 @@
 </body>
 </html>
 
-<!-- Google Analytics لتتبع زوار الموقع وإحصائيات الاستخدام -->
-<!-- سيتم جلب ID من لوحة التحكم -->
-<script async data-google-analytics-id src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K8FNNYH4S1"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
-  gtag('config', 'GA_MEASUREMENT_ID');
+  gtag('config', 'G-K8FNNYH4S1');
 </script>
