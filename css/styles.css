@@ -2,24 +2,25 @@
    أسواق الخديوي - ملف التنسيقات الرئيسي
    ================================ */
 /* هذا الملف يحتوي على جميع التنسيقات للموقع:
-   - التنسيقات العامة
-   - شريط التنقل والهيدر
-   - المنتجات والسلة
-   - العروض اليومية
-   - التصميم المتجاوب للهواتف
+   - التنسيقات العامة والأساسية
+   - شريط التنقل والهيدر الثابت
+   - بطاقات المنتجات والسلة
+   - العروض اليومية والخصومات
+   - التصميم المتجاوب للهواتف والأجهزة اللوحية
    ================================ */
 
-/* استيراد الخطوط */
+/* استيراد الخطوط من Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap'); /* خط تجاول العربي من Google Fonts */
 
-/* إعادة تعيين التنسيقات العامة */
+/* إعادة تعيين التنسيقات العامة (CSS Reset) */
 * {
-    margin: 0; /* إزالة الهوامش الخارجية */
-    padding: 0; /* إزالة الهوامش الداخلية */
+    margin: 0; /* إزالة الهوامش الخارجية من جميع العناصر */
+    padding: 0; /* إزالة الهوامش الداخلية من جميع العناصر */
     box-sizing: border-box; /* حساب أبعاد العناصر مع احتساب الـ padding والـ border */
 }
 
 /* متغيرات الألوان (CSS Custom Properties) */
+/* هذه المتغيرات تسهل تغيير ألوان الموقع بالكامل من مكان واحد */
 :root {
     --primary-color: #3a8daa; /* اللون الرئيسي للموقع (أزرق داكن) */
     --secondary-color: #42c5ea; /* اللون الثانوي للموقع (أزرق فاتح) */
@@ -34,33 +35,38 @@
 body {
     font-family: 'Tajawal', sans-serif; /* نوع الخط المستخدم (عربي) */
     line-height: 1.6; /* ارتفاع السطر للقراءة المريحة */
-    color: var(--text-color); /* لون النص */
+    color: var(--text-color); /* لون النص من المتغيرات */
     background-color: var(--background-color); /* لون خلفية الصفحة */
     direction: rtl; /* اتجاه النص من اليمين إلى اليسار (عربي) */
     overflow-x: hidden; /* إخفاء شريط التمرير الأفقي */
     padding-top: 90px; /* هامش علوي للمحتوى لتفادي تداخله مع الهيدر الثابت */
 }
 
+/* تنسيق الحاوية الرئيسية */
 .container {
     max-width: 1200px; /* الحد الأقصى لعرض المحتوى */
     margin: 0 auto; /* توسيط المحتوى أفقيًا */
     padding: 0 20px; /* هوامش داخلية يمين ويسار */
 }
 
+/* تنسيقات العناوين */
 h1, h2, h3, h4, h5, h6 {
     margin-bottom: 15px; /* هامش سفلي للعناوين */
-    color: var(--primary-color); /* لون العناوين */
+    color: var(--primary-color); /* لون العناوين من المتغيرات */
 }
 
+/* تنسيقات الروابط */
 a {
     text-decoration: none; /* إزالة تسطير الروابط */
-    color: var(--primary-color); /* لون الروابط */
+    color: var(--primary-color); /* لون الروابط من المتغيرات */
 }
 
+/* تنسيقات القوائم */
 ul {
     list-style: none; /* إزالة نقاط القوائم */
 }
 
+/* تنسيقات الأزرار العامة */
 .btn {
     display: inline-block; /* عرض كعنصر مستقل على نفس السطر */
     background-color: var(--primary-color); /* لون خلفية الزر */
@@ -72,29 +78,32 @@ ul {
     transition: background-color 0.3s; /* تأثير انتقالي عند تغيير لون الخلفية */
 }
 
+/* حالة المرور فوق الزر */
 .btn:hover {
     background-color: var(--accent-color); /* تغيير لون خلفية الزر عند المرور فوقه */
 }
 
+/* تنسيقات الأقسام */
 section {
     padding: 50px 20px; /* هوامش داخلية للأقسام */
 }
 
+/* تنسيقات عناوين الأقسام */
 section h2 {
     text-align: center; /* محاذاة نص العنوان للوسط */
     margin-bottom: 30px; /* هامش سفلي للعنوان */
     font-size: 2rem; /* حجم خط العنوان */
 }
 
-/* Header */
+/* تنسيقات الهيدر (شريط التنقل العلوي) */
 header {
     background-color: white; /* لون خلفية الهيدر */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* ظل للهيدر */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* ظل خفيف للهيدر */
     padding: 15px 20px; /* هوامش داخلية */
     display: flex; /* عرض كحاوية مرنة */
     align-items: center; /* محاذاة العناصر عموديًا للوسط */
     justify-content: space-between; /* توزيع المساحة بين العناصر */
-    position: fixed; /* تثبيت الهيدر */
+    position: fixed; /* تثبيت الهيدر في أعلى الصفحة */
     top: 0; /* موضعه في أعلى الصفحة */
     left: 0; /* تمتد للحافة اليسرى */
     right: 0; /* تمتد للحافة اليمنى */
@@ -103,11 +112,13 @@ header {
     transition: transform 0.3s ease; /* تأثير انتقالي عند الإخفاء/الظهور */
 }
 
+/* حاوية الشعار */
 .logo-container {
     display: flex; /* عرض كحاوية مرنة */
     align-items: center; /* محاذاة العناصر عموديًا للوسط */
 }
 
+/* تنسيقات الشعار */
 .logo {
     width: 60px; /* عرض الشعار */
     height: 60px; /* ارتفاع الشعار */
@@ -115,47 +126,52 @@ header {
     border-radius: 50%; /* لجعل الشعار دائريًا */
 }
 
+/* تنسيق عنوان الهيدر */
 header h1 {
     font-size: 1.5rem; /* حجم خط العنوان */
     margin: 0; /* إزالة الهوامش */
 }
 
-/* Improved Navigation Menu */
+/* تنسيقات قائمة التنقل */
 nav {
     position: relative; /* موضع نسبي للقائمة */
 }
 
+/* تنسيق قائمة التنقل الرئيسية */
 nav ul {
     display: flex; /* عرض القائمة كحاوية مرنة */
     align-items: center; /* محاذاة العناصر عموديًا للوسط */
     justify-content: center; /* محاذاة العناصر أفقيًا للوسط */
 }
 
+/* تنسيقات عناصر قائمة التنقل */
 nav ul li {
     margin: 0 10px; /* هوامش جانبية للعناصر */
     position: relative; /* موضع نسبي لتطبيق تأثيرات إضافية */
 }
 
+/* تنسيقات روابط قائمة التنقل */
 nav ul li a {
     font-weight: 500; /* سماكة الخط */
-    transition: all 0.3s; /* تأثير انتقالي */
+    transition: all 0.3s; /* تأثير انتقالي لجميع الخصائص */
     padding: 10px 15px; /* هوامش داخلية */
     display: block; /* عرض كعنصر مستقل */
     border-radius: 5px; /* تدوير الزوايا */
 }
 
+/* حالة المرور فوق روابط التنقل */
 nav ul li a:hover {
     color: white; /* لون النص عند المرور */
     background-color: var(--secondary-color); /* لون خلفية الرابط عند المرور */
 }
 
-/* Active menu item */
+/* العنصر النشط في قائمة التنقل */
 nav ul li a.active {
     color: white; /* لون النص للعنصر النشط */
     background-color: var(--primary-color); /* لون خلفية العنصر النشط */
 }
 
-/* Mobile menu button */
+/* زر القائمة المتنقلة للهواتف */
 .menu-toggle {
     display: none; /* مخفي افتراضيًا في الشاشات الكبيرة */
     background: none; /* بدون خلفية */
@@ -165,12 +181,14 @@ nav ul li a.active {
     color: var(--primary-color); /* لون الأيقونة */
 }
 
+/* تنسيقات أيقونة السلة */
 .cart a {
     font-size: 1.2rem; /* حجم أيقونة السلة */
     position: relative; /* موضع نسبي لإضافة العداد */
     color: var(--primary-color); /* لون أيقونة السلة */
 }
 
+/* عداد عناصر السلة */
 #cart-count {
     position: absolute; /* موضع مطلق داخل الحاوية */
     top: -10px; /* إزاحة للأعلى */
@@ -186,7 +204,7 @@ nav ul li a.active {
     font-size: 0.8rem; /* حجم خط العداد */
 }
 
-/* Hero Section - Updated with the uploaded image as background */
+/* قسم البطل (Hero Section) - القسم الرئيسي في أعلى الصفحة */
 .hero {
     background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../images/خلفية.jpg'); /* خلفية مع تدرج تعتيم فوق الصورة */
     background-size: cover; /* جعل الصورة تغطي كامل المساحة */
@@ -199,28 +217,31 @@ nav ul li a.active {
     min-height: 60vh; /* ارتفاع أدنى نسبي لارتفاع الشاشة */
 }
 
-/* Remove the red overlay */
+/* إزالة الطبقة الحمراء فوق الخلفية */
 .hero:before {
-    display: none;
+    display: none; /* إخفاء الطبقة الزائفة */
 }
 
+/* محتوى قسم البطل */
 .hero-content {
     position: relative; /* موضع نسبي */
     z-index: 2; /* مستوى طبقة أعلى من الخلفية */
 }
 
+/* عنوان قسم البطل */
 .hero-content h2 {
     font-size: 2.5rem; /* حجم العنوان */
     margin-bottom: 20px; /* هامش سفلي */
     color: white; /* لون النص */
 }
 
+/* نص قسم البطل */
 .hero-content p {
     font-size: 1.2rem; /* حجم النص */
     margin-bottom: 25px; /* هامش سفلي */
 }
 
-/* Mobile adjustments for hero section */
+/* تعديلات قسم البطل للشاشات المتوسطة */
 @media (max-width: 768px) {
     .hero {
         padding: 110px 20px 80px; /* تعديل الهوامش الداخلية للشاشات المتوسطة */
@@ -403,11 +424,114 @@ nav ul li a.active {
     color: var(--primary-color); /* لون العنوان */
 }
 
-.product-footer { display:flex; justify-content:space-between; align-items:center; padding:0 14px 14px 14px; }
-.product-price { font-weight:700; color:#111827; font-size:1.25rem; margin:0; }
+/* عرض الخصومات في المنتجات العادية */
+.product {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+/* شارة الخصم للمنتج */
+.product.has-discount::before {
+    content: 'خصم';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    z-index: 2;
+    animation: pulse 2s infinite;
+}
+
+/* شارة نسبة الخصم */
+.product.has-discount::after {
+    content: attr(data-discount-percent);
+    position: absolute;
+    top: 45px;
+    left: 10px;
+    background: linear-gradient(135deg, #00b894, #00a085);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 15px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    box-shadow: 0 2px 10px rgba(0, 184, 148, 0.4);
+    z-index: 2;
+}
+
+/* عرض السعر مع الخصم */
+.product-price {
+    position: relative;
+    font-weight: 700;
+    color: #111827;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.product-price.has-discount {
+    color: #ff9800;
+}
+
+/* السعر الأصلي مع خط */
+.product-price .original-price {
+    font-size: 0.9rem;
+    color: #999;
+    text-decoration: line-through;
+    opacity: 0.7;
+    margin-left: 8px;
+}
+
+/* السعر الجديد */
+.product-price .discount-price {
+    font-weight: bold;
+    color: #ff9800;
+}
+
+/* تحسين بطاقة المنتج مع الخصم */
+.product.has-discount {
+    border: 2px solid #ff9800;
+    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15);
+}
+
+.product.has-discount:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 40px rgba(255, 152, 0, 0.25);
+}
+
+/* عرض الخصم في السلة */
+.cart-item-price.has-discount {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.cart-item-price .original-price {
+    font-size: 0.8rem;
+    color: #999;
+    text-decoration: line-through;
+    opacity: 0.7;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.cart-item-price .discount-price {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+/* فوتر المنتج */
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 14px 14px 14px;
+}
 
 /* زر إضافة دائري داخل البطاقة */
-.product .add-to-cart { width:44px; height:44px; min-width:44px; padding:0; border-radius:50%; background-color:#6178e0; color:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(49,193,107,0.25); border:none; font-size:22px; line-height:1; }
+.product .add-to-cart { width:44px; height:44px; min-width:44px; padding:0; border-radius:50%; background-color:#6178e0; color:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(255, 255, 255, 0.25); border:none; font-size:22px; line-height:1; }
 .product .add-to-cart:hover { background-color:#234dc0; }
 
 .product .add-to-cart.disabled {
@@ -1364,101 +1488,292 @@ body.menu-open {
     }
 }
 
-/* Daily Offers Section */
+/* Daily Offers Section - قسم العروض اليومية */
 .daily-offers {
     padding: 50px 20px;
-    background: linear-gradient(90deg, #fffbe7 0%, #e6f7fc 100%);
-    border-top: 2px solid var(--secondary-color);
-    border-bottom: 2px solid var(--secondary-color);
+    background: linear-gradient(135deg, #fffbe7 0%, #ffeaa7 50%, #e6f7fc 100%);
+    border-top: 3px solid #ff9800;
+    border-bottom: 3px solid #ff9800;
+    position: relative;
+    overflow: hidden;
 }
+
+/* إضافة خلفية زخرفية */
+.daily-offers::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 152, 0, 0.03) 10px,
+        rgba(255, 152, 0, 0.03) 20px
+    );
+    animation: slideBackground 20s linear infinite;
+}
+
+@keyframes slideBackground {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(50px, 50px); }
+}
+
 .daily-offers h2 {
     text-align: center;
     color: #ff9800;
-    font-size: 2rem;
-    margin-bottom: 30px;
+    font-size: 2.5rem;
+    margin-bottom: 40px;
+    font-weight: bold;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
 }
+
+/* شارة العروض */
+.daily-offers h2::before {
+    content: '🔥';
+    margin-left: 15px;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
 .daily-offers-container {
     display: flex;
     flex-direction: row;
     overflow-x: auto;
-    gap: 20px;
-    padding-bottom: 10px;
+    gap: 25px;
+    padding-bottom: 15px;
     scroll-snap-type: x mandatory;
+    position: relative;
+    z-index: 1;
 }
+
+/* تحسين شريط التمرير */
+.daily-offers-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.daily-offers-container::-webkit-scrollbar-track {
+    background: rgba(255, 152, 0, 0.1);
+    border-radius: 10px;
+}
+
+.daily-offers-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #ff9800, #e65100);
+    border-radius: 10px;
+    border: 2px solid #fff;
+}
+
 .daily-offer {
-    min-width: 220px;
-    max-width: 260px;
+    min-width: 240px;
+    max-width: 280px;
     flex: 0 0 auto;
     scroll-snap-align: start;
-}
-.daily-offer:hover {
-    transform: translateY(-6px) scale(1.03);
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
     box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15);
+    border: 2px solid #ff9800;
+    position: relative;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+/* شارة الخصم */
+.daily-offer::before {
+    content: 'خصم خاص';
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+    z-index: 2;
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+    40% { transform: translateY(-10px); }
+    60% { transform: translateY(-5px); }
+}
+
+.daily-offer:hover {
+    transform: translateY(-12px) scale(1.05) rotate(1deg);
+    box-shadow: 0 15px 40px rgba(255, 152, 0, 0.25);
+    border-color: #e65100;
+}
+
 .daily-offer img {
     width: 100%;
-    max-width: 220px; /* تم تكبير الحد الأقصى */
-    height: 170px;    /* تم تكبير الارتفاع */
-    object-fit: contain;
+    max-width: 240px;
+    height: 180px;
+    object-fit: cover;
     margin-bottom: 15px;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #fffbe7;
+    transition: transform 0.3s ease;
 }
+
+.daily-offer:hover img {
+    transform: scale(1.05);
+}
+
 .daily-offer-title {
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--primary-color);
-    margin-bottom: 8px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-align: center;
+    line-height: 1.4;
 }
+
 .daily-offer-price {
     font-weight: bold;
     color: #ff9800;
-    font-size: 1.1rem;
-    margin-bottom: 10px;
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+    text-align: center;
+    position: relative;
 }
+
+/* إضافة خط السعر الأصلي */
+.daily-offer-price::before {
+    content: attr(data-original-price);
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #999;
+    font-size: 0.9rem;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
 .daily-offer .add-to-cart {
-    background: #ff9800;
+    background: linear-gradient(135deg, #ff9800, #e65100);
     color: #fff;
-    border-radius: 25px;
-    padding: 8px 18px;
-    font-size: 1rem;
-    margin-top: 10px;
+    border-radius: 30px;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin-top: 15px;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    position: relative;
+    overflow: hidden;
 }
+
+.daily-offer .add-to-cart::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.daily-offer .add-to-cart:hover::before {
+    left: 100%;
+}
+
 .daily-offer .add-to-cart:hover {
-    background: #e65100;
+    background: linear-gradient(135deg, #e65100, #d84315);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+}
+
+.daily-offer .add-to-cart:active {
+    transform: translateY(0);
 }
 @media (max-width: 768px) {
     .daily-offers {
         padding: 30px 10px;
     }
     .daily-offers h2 {
-        font-size: 1.4rem;
+        font-size: 1.8rem;
+        margin-bottom: 25px;
     }
     .daily-offers-container {
-        gap: 12px;
-        padding-bottom: 8px;
+        gap: 15px;
+        padding-bottom: 10px;
     }
     .daily-offer {
-        min-width: 160px;
-        max-width: 200px;
+        min-width: 180px;
+        max-width: 220px;
+        padding: 15px;
     }
     .daily-offer img {
-        max-width: 150px; /* تم تكبير الحد الأقصى */
-        height: 110px;    /* تم تكبير الارتفاع */
+        max-width: 180px;
+        height: 140px;
+    }
+    .daily-offer-title {
+        font-size: 1rem;
+    }
+    .daily-offer-price {
+        font-size: 1.1rem;
+    }
+    .daily-offer .add-to-cart {
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    .daily-offer::before {
+        font-size: 0.7rem;
+        padding: 6px 12px;
+        top: -8px;
+        right: -8px;
     }
 }
+
 @media (max-width: 480px) {
     .daily-offers {
         padding: 20px 5px;
     }
     .daily-offers h2 {
-        font-size: 1.1rem;
+        font-size: 1.5rem;
+        margin-bottom: 20px;
     }
     .daily-offer {
-        padding: 10px;
+        min-width: 160px;
+        max-width: 190px;
+        padding: 12px;
     }
     .daily-offer img {
-        max-width: 100px; /* تم تكبير الحد الأقصى */
-        height: 80px;     /* تم تكبير الارتفاع */
+        max-width: 160px;
+        height: 120px;
+    }
+    .daily-offer-title {
+        font-size: 0.95rem;
+        margin-bottom: 8px;
+    }
+    .daily-offer-price {
+        font-size: 1rem;
+        margin-bottom: 12px;
+    }
+    .daily-offer .add-to-cart {
+        padding: 8px 16px;
+        font-size: 0.9rem;
+    }
+    .daily-offer::before {
+        font-size: 0.65rem;
+        padding: 5px 10px;
+        top: -6px;
+        right: -6px;
     }
 }
 
