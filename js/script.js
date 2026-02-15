@@ -171,19 +171,43 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // تحميل الفئات من Firestore أولاً ثم تحميل المنتجات
     // هذا يضمن أن الفلاتر والأيقونات مبنية على نفس البيانات الموجودة في لوحة التحكم
-    fetchCategoriesFromFirestore()
-        .then(() => {
-            // بعد جلب الفئات، نقوم بتعبئة الفلتر وأيقونات الأقسام
-            populateCategoryFilter();
-            // ثم تحميل المنتجات التي تعتمد على حقل category / categoryId من Firestore
-            loadProducts();
-        })
-        .catch(() => {
-            // في حالة أي خطأ غير متوقع، نستخدم الإعدادات المحلية كاحتياطي
+    try {
+        fetchCategoriesFromFirestore()
+            .then(() => {
+                // بعد جلب الفئات، نقوم بتعبئة الفلتر وأيقونات الأقسام
+                try {
+                    populateCategoryFilter();
+                    // ثم تحميل المنتجات التي تعتمد على حقل category / categoryId من Firestore
+                    loadProducts();
+                } catch (error) {
+                    console.warn('خطأ في تحميل المنتجات:', error);
+                    loadFallbackCategoriesFromSettings();
+                    populateCategoryFilter();
+                    loadProducts();
+                }
+            })
+            .catch((error) => {
+                console.warn('خطأ في جلب الفئات من Firestore:', error);
+                // في حالة أي خطأ غير متوقع، نستخدم الإعدادات المحلية كاحتياطي
+                try {
+                    loadFallbackCategoriesFromSettings();
+                    populateCategoryFilter();
+                    loadProducts();
+                } catch (fallbackError) {
+                    console.error('خطأ في تحميل الإعدادات الاحتياطية:', fallbackError);
+                }
+            });
+    } catch (error) {
+        console.error('خطأ عام في تهيئة تحميل البيانات:', error);
+        // محاولة تحميل الإعدادات المحلية مباشرة
+        try {
             loadFallbackCategoriesFromSettings();
             populateCategoryFilter();
             loadProducts();
-        });
+        } catch (fallbackError) {
+            console.error('خطأ في التحميل الاحتياطي النهائي:', fallbackError);
+        }
+    }
     // تفعيل الأحداث
     setupEventListeners();
     handleMobileMenu();
@@ -202,8 +226,14 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('touchstart', function() {}, {passive: true});
     // بدء التحديث التلقائي
     startAutoUpdate();
-    // تحميل العروض اليومية
-    setTimeout(renderDailyOffers, 1000);
+    // تحميل العروض اليومية مع تأخير وتحقق من جاهزية Firebase
+    setTimeout(() => {
+        try {
+            renderDailyOffers();
+        } catch (error) {
+            console.warn('خطأ في تحميل العروض اليومية:', error);
+        }
+    }, 2000);
 });
 
 // ================================
@@ -1452,15 +1482,39 @@ async function loadProducts() {
             }
         }
         if (!fetchedProducts) {
-            // محاولة جلب المنتجات من Firestore أولاً (لوحة التحكم)
+            // انتظر جاهزية Firebase قبل جلب المنتجات
             try {
-                fetchedProducts = await fetchProductsFromFirestore();
-                console.log('✅ تم تحميل المنتجات من Firestore (لوحة التحكم)');
-            } catch (firestoreError) {
-                console.warn('⚠️ فشل تحميل المنتجات من Firestore، جارٍ المحاولة من Google Sheets:', firestoreError);
-                // في حالة الفشل، استخدم Google Sheets كبديل احتياطي
-                fetchedProducts = await fetchProductsFromSheet();
-                console.log('✅ تم تحميل المنتجات من Google Sheets (احتياطي)');
+                // تحقق من جاهزية Firebase
+                if (!window.firebase || !window.firebaseFirestore) {
+                    console.warn('Firebase ليس جاهزاً بعد، انتظار 3 ثوانٍ...');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                }
+                
+                // محاولة جلب المنتجات من Firestore أولاً (لوحة التحكم)
+                try {
+                    fetchedProducts = await fetchProductsFromFirestore();
+                    console.log('✅ تم تحميل المنتجات من Firestore (لوحة التحكم)');
+                } catch (firestoreError) {
+                    console.warn('⚠️ فشل تحميل المنتجات من Firestore، جارٍ المحاولة من Google Sheets:', firestoreError);
+                    // في حالة الفشل، استخدم Google Sheets كبديل احتياطي
+                    try {
+                        fetchedProducts = await fetchProductsFromSheet();
+                        console.log('✅ تم تحميل المنتجات من Google Sheets (احتياطي)');
+                    } catch (sheetError) {
+                        console.error('فشل تحميل المنتجات من Google Sheets أيضاً:', sheetError);
+                        fetchedProducts = [];
+                    }
+                }
+            } catch (firebaseError) {
+                console.error('خطأ في التحقق من جاهزية Firebase:', firebaseError);
+                // محاولة استخدام Google Sheets مباشرة
+                try {
+                    fetchedProducts = await fetchProductsFromSheet();
+                    console.log('✅ تم تحميل المنتجات من Google Sheets (مباشر)');
+                } catch (sheetError) {
+                    console.error('فشل تحميل المنتجات من Google Sheets:', sheetError);
+                    fetchedProducts = [];
+                }
             }
             localStorage.setItem(cacheKey, JSON.stringify(fetchedProducts));
             localStorage.setItem(cacheTimeKey, now.toString());
