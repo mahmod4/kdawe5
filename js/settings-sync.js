@@ -147,21 +147,60 @@ function updateStoreElements() {
     // Update store logo
     updateStoreLogo(store);
 
+    // Update hero horizontal scroll images
+    updateHeroScroll(store);
+
     // Sync APP_SETTINGS used by legacy pages/scripts
     syncAppSettingsFromStore(store);
 
-    // Apply product grid columns (CSS variables)
+    // Apply responsive layout settings (products grid columns)
+    applyStoreLayoutSettings(store);
+}
+
+function updateHeroScroll(store) {
     try {
-        const desktop = Number(store.productsColsDesktop || 4);
-        const tablet = Number(store.productsColsTablet || 3);
-        const mobile = Number(store.productsColsMobile || 2);
-        const root = document.documentElement;
-        if (root && root.style) {
-            if (!Number.isNaN(desktop) && desktop > 0) root.style.setProperty('--products-cols-desktop', String(desktop));
-            if (!Number.isNaN(tablet) && tablet > 0) root.style.setProperty('--products-cols-tablet', String(tablet));
-            if (!Number.isNaN(mobile) && mobile > 0) root.style.setProperty('--products-cols-mobile', String(mobile));
+        const container = document.getElementById('heroScrollContainer');
+        if (!container) return;
+
+        const images = Array.isArray(store.heroScrollImages) ? store.heroScrollImages : [];
+        container.innerHTML = '';
+
+        if (!images.length) {
+            return;
         }
+
+        images.forEach((url) => {
+            if (!url) return;
+            const item = document.createElement('div');
+            item.className = 'hero-scroll-item';
+
+            const img = document.createElement('img');
+            img.src = String(url);
+            img.alt = store.storeName ? String(store.storeName) : 'banner';
+            img.loading = 'lazy';
+
+            item.appendChild(img);
+            container.appendChild(item);
+        });
     } catch (e) {
+        console.warn('Error updating hero scroll:', e);
+    }
+}
+
+function applyStoreLayoutSettings(store) {
+    try {
+        const root = document.documentElement;
+        if (!root || !root.style) return;
+
+        const mobile = Number(store.gridColumnsMobile);
+        const tablet = Number(store.gridColumnsTablet);
+        const desktop = Number(store.gridColumnsDesktop);
+
+        if (!Number.isNaN(mobile) && mobile > 0) root.style.setProperty('--products-cols-mobile', String(mobile));
+        if (!Number.isNaN(tablet) && tablet > 0) root.style.setProperty('--products-cols-tablet', String(tablet));
+        if (!Number.isNaN(desktop) && desktop > 0) root.style.setProperty('--products-cols-desktop', String(desktop));
+    } catch (e) {
+        console.warn('Failed to apply store layout settings:', e);
     }
 }
 
@@ -258,113 +297,6 @@ function updateCategoriesElements() {
     
     // Update category icons container
     updateCategoryIcons();
-    updateCategoriesDrawer();
-}
-
-function toggleCategoriesDrawer(open) {
-    try {
-        if (open) {
-            document.body.classList.add('categories-drawer-open');
-        } else {
-            document.body.classList.remove('categories-drawer-open');
-        }
-    } catch (e) {
-    }
-}
-
-window.toggleCategoriesDrawer = toggleCategoriesDrawer;
-
-function updateCategoriesDrawer() {
-    const list = document.getElementById('category-drawer-list');
-    if (!list) return;
-
-    const iconMapping = {
-        'dairy': 'fa-cheese',
-        'grocery': 'fa-shopping-basket',
-        'snacks': 'fa-cookie-bite',
-        'beverages': 'fa-wine-bottle',
-        'cleaning': 'fa-soap',
-        'frozen': 'fa-snowflake',
-        'canned': 'fa-box',
-        'vegetables': 'fa-carrot',
-        'fruits': 'fa-apple-alt'
-    };
-
-    const currentActive = (() => {
-        try {
-            const filter = document.getElementById('category-filter');
-            return filter ? String(filter.value || 'all') : 'all';
-        } catch (e) {
-            return 'all';
-        }
-    })();
-
-    list.innerHTML = '';
-
-    const makeItem = (id, name, iconUrl) => {
-        const item = document.createElement('div');
-        item.className = 'categories-drawer-item' + (String(id) === String(currentActive) ? ' active' : '');
-        item.dataset.category = String(id);
-
-        const left = document.createElement('div');
-        left.className = 'left';
-
-        const iconClass = iconMapping[String(name || '').toLowerCase()] || 'fa-tag';
-        if (iconUrl) {
-            const img = document.createElement('img');
-            img.src = iconUrl;
-            img.alt = name;
-            img.onerror = function() {
-                this.style.display = 'none';
-                const i = document.createElement('i');
-                i.className = `fas ${iconClass}`;
-                left.insertBefore(i, left.firstChild);
-            };
-            left.appendChild(img);
-        } else {
-            const i = document.createElement('i');
-            i.className = `fas ${iconClass}`;
-            left.appendChild(i);
-        }
-
-        const title = document.createElement('div');
-        title.className = 'name';
-        title.textContent = name;
-        left.appendChild(title);
-
-        item.appendChild(left);
-
-        item.addEventListener('click', () => {
-            try {
-                const filter = document.getElementById('category-filter');
-                if (filter) {
-                    filter.value = String(id);
-                    if (typeof window.filterProducts === 'function') {
-                        window.filterProducts();
-                    }
-                }
-            } catch (e) {
-            }
-
-            try {
-                document.querySelectorAll('.categories-drawer-item').forEach(el => el.classList.remove('active'));
-                item.classList.add('active');
-            } catch (e) {
-            }
-
-            toggleCategoriesDrawer(false);
-        });
-
-        return item;
-    };
-
-    list.appendChild(makeItem('all', 'جميع المنتجات', null));
-
-    if (Array.isArray(siteSettings.categories)) {
-        siteSettings.categories.forEach((category) => {
-            list.appendChild(makeItem(category.id, category.name, category.iconUrl || null));
-        });
-    }
 }
 
 // Update category icons in the main page

@@ -107,7 +107,7 @@
       // استيراد مكتبات المصادقة (تسجيل الدخول بجوجل)
       import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
       // استيراد مكتبات قاعدة البيانات Firestore
-      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
       
       // ================================
       // إعدادات مشروع Firebase
@@ -167,8 +167,7 @@
           doc,
           getDoc,
           setDoc,
-          updateDoc,
-          deleteDoc
+          updateDoc
         };
         
         console.log('تم تهيئة Firebase بنجاح');
@@ -373,10 +372,6 @@
         <div class="main-menu-toggle">
             <i data-lucide="menu"></i>
         </div>
-
-        <button class="categories-drawer-btn" type="button" onclick="window.toggleCategoriesDrawer && window.toggleCategoriesDrawer(true)" aria-label="الأقسام">
-            <i data-lucide="grid"></i>
-        </button>
         
         <!-- القائمة الرئيسية -->
         <nav class="main-menu" id="main-menu">
@@ -415,14 +410,9 @@
         </div>
     </header>
 
-    <!-- ================================
-         قسم البطل - الصفحة الرئيسية
-         ================================ -->
-    <section class="hero" id="home" data-aos="fade-up" data-aos-duration="1200">
-        <div class="hero-content">
-            <h2>مرحبًا بكم في <span data-store-name>المتجر</span></h2>
-            <p>خضراوات وفواكه طازجة بأفضل الأسعار </p>
-            <a href="#products" class="btn">تسوق الآن <i data-lucide="arrow-left"></i></a>
+    <section class="hero-scroll" id="home" data-aos="fade-up" data-aos-duration="1200">
+        <div class="hero-scroll-container" id="heroScrollContainer">
+            <!-- سيتم تحميل صور الشريط ديناميكياً من settings/general -->
         </div>
     </section>
 
@@ -439,21 +429,10 @@
   
     <section id="categories" class="categories" data-aos="fade-up" data-aos-delay="200">
         <h2>الأقسام <i data-lucide="grid"></i></h2>
-        <div class="categories-drawer-hint">
-            <button class="btn" type="button" onclick="window.toggleCategoriesDrawer && window.toggleCategoriesDrawer(true)">عرض الأقسام</button>
+        <div id="category-icons-container" class="category-container">
+            <!-- سيتم تحميل الفئات ديناميكياً عبر JavaScript -->
         </div>
     </section>
-
-    <div id="categoriesDrawerOverlay" class="categories-drawer-overlay" onclick="window.toggleCategoriesDrawer && window.toggleCategoriesDrawer(false)"></div>
-    <aside id="categoriesDrawer" class="categories-drawer" aria-label="قائمة الأقسام">
-        <div class="categories-drawer-header">
-            <h3>الأقسام</h3>
-            <button type="button" class="categories-drawer-close" onclick="window.toggleCategoriesDrawer && window.toggleCategoriesDrawer(false)" aria-label="إغلاق">
-                ×
-            </button>
-        </div>
-        <div id="category-drawer-list" class="categories-drawer-list"></div>
-    </aside>
 
     <section id="products" class="products" data-aos="fade-up" data-aos-delay="300">
         <h2>منتجاتنا <i data-lucide="shopping-bag"></i></h2>
