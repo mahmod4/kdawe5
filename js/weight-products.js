@@ -122,6 +122,17 @@ class WeightProducts {
         `;
 
         container.appendChild(picker);
+
+        // إذا كان المنتج لديه منتقي وزن، ضع زر الإضافة أسفل القائمة
+        try {
+            const card = picker.closest('.product');
+            const addBtn = card ? card.querySelector('.add-to-cart') : null;
+            if (addBtn && addBtn.parentElement === container) {
+                container.appendChild(addBtn);
+            }
+        } catch (e) {
+        }
+
         this.setupWeightPickerListeners(picker, product);
     }
 

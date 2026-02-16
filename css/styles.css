@@ -9,6 +9,10 @@
    - التصميم المتجاوب للهواتف والأجهزة اللوحية
    ================================ */
 
+/* ================================
+   1) الأساسيات (Reset + متغيرات + Body)
+   ================================ */
+
 /* استيراد الخطوط من Google Fonts */
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700&display=swap'); /* خط تجاول العربي من Google Fonts */
 
@@ -115,7 +119,13 @@ header {
     transition: transform 0.3s ease; /* تأثير انتقالي عند الإخفاء/الظهور */
 }
 
-/* Hero Horizontal Scroll */
+/* ================================
+   2) الهيدر والقائمة (Navbar + Menu)
+   ================================ */
+
+/* ================================
+   2) الهيرو (Hero Horizontal Scroll)
+   ================================ */
 .hero-scroll {
     padding: 18px 20px 6px;
     margin-top: -90px;
@@ -236,15 +246,6 @@ nav ul li a.active {
 }
 
 /* زر القائمة المتنقلة للهواتف */
-.menu-toggle {
-    display: none; /* مخفي افتراضيًا في الشاشات الكبيرة */
-    background: none; /* بدون خلفية */
-    border: none; /* بدون حدود */
-    font-size: 1.5rem; /* حجم الأيقونة */
-    cursor: pointer; /* مؤشر يد عند المرور */
-    color: var(--primary-color); /* لون الأيقونة */
-}
-
 /* تنسيقات أيقونة السلة */
 .cart a {
     font-size: 1.2rem; /* حجم أيقونة السلة */
@@ -252,94 +253,14 @@ nav ul li a.active {
     color: var(--primary-color); /* لون أيقونة السلة */
 }
 
-/* عداد عناصر السلة */
-#cart-count {
-    position: absolute; /* موضع مطلق داخل الحاوية */
-    top: -10px; /* إزاحة للأعلى */
-    right: -10px; /* إزاحة لليمين */
-    background-color: var(--secondary-color); /* لون خلفية العداد */
-    color: white; /* لون نص العداد */
-    border-radius: 50%; /* جعله دائريًا */
-    width: 20px; /* عرض العداد */
-    height: 20px; /* ارتفاع العداد */
-    display: flex; /* عرض كحاوية مرنة */
-    align-items: center; /* محاذاة الرقم عموديًا للوسط */
-    justify-content: center; /* محاذاة الرقم أفقيًا للوسط */
-    font-size: 0.8rem; /* حجم خط العداد */
-}
+/* ملاحظة: تم حذف أنماط #cart-count القديمة وقسم .hero القديم لأن المتجر يستخدم حالياً:
+   - #cart-count-desktop و #cart-count-mobile
+   - .hero-scroll بدلاً من .hero
+*/
 
-/* قسم البطل (Hero Section) - القسم الرئيسي في أعلى الصفحة */
-.hero {
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('../images/خلفية.jpg'); /* خلفية مع تدرج تعتيم فوق الصورة */
-    background-size: cover; /* جعل الصورة تغطي كامل المساحة */
-    background-position: center 40%; /* موضع الخلفية (وسط أفقيًا، 40% من الأعلى) */
-    color: white; /* لون النص */
-    text-align: center; /* محاذاة النص للوسط */
-    padding: 130px 20px 100px; /* هوامش داخلية */
-    position: relative; /* موضع نسبي */
-    margin-top: -90px; /* هامش سالب للأعلى لتداخل مع الهيدر */
-    min-height: 60vh; /* ارتفاع أدنى نسبي لارتفاع الشاشة */
-}
-
-/* إزالة الطبقة الحمراء فوق الخلفية */
-.hero:before {
-    display: none; /* إخفاء الطبقة الزائفة */
-}
-
-/* محتوى قسم البطل */
-.hero-content {
-    position: relative; /* موضع نسبي */
-    z-index: 2; /* مستوى طبقة أعلى من الخلفية */
-}
-
-/* عنوان قسم البطل */
-.hero-content h2 {
-    font-size: 2.5rem; /* حجم العنوان */
-    margin-bottom: 20px; /* هامش سفلي */
-    color: white; /* لون النص */
-}
-
-/* نص قسم البطل */
-.hero-content p {
-    font-size: 1.2rem; /* حجم النص */
-    margin-bottom: 25px; /* هامش سفلي */
-}
-
-/* تعديلات قسم البطل للشاشات المتوسطة */
-@media (max-width: 768px) {
-    .hero {
-        padding: 110px 20px 80px; /* تعديل الهوامش الداخلية للشاشات المتوسطة */
-        margin-top: -60px; /* تعديل الهامش العلوي */
-        min-height: 50vh; /* تقليل الارتفاع الأدنى */
-        background-position: center 45%; /* تعديل موضع الخلفية */
-    }
-}
-
-@media (max-width: 480px) {
-    .hero {
-        padding: 100px 15px 70px; /* تعديل الهوامش الداخلية للشاشات الصغيرة */
-        margin-top: -55px; /* تعديل الهامش العلوي */
-        min-height: 50vh; /* الارتفاع الأدنى */
-        background-position: center 50%; /* تعديل موضع الخلفية ليظهر أكثر للأسفل */
-    }
-    
-    .hero-content h2 {
-        font-size: 1.8rem; /* تقليل حجم العنوان */
-        line-height: 1.3; /* زيادة المسافة بين السطور */
-    }
-    
-    .hero-content p {
-        font-size: 1rem; /* تقليل حجم النص */
-        margin-bottom: 20px; /* تعديل الهامش السفلي */
-    }
-    
-    .hero .btn {
-        padding: 8px 15px; /* تقليل الهوامش الداخلية للزر */
-        font-size: 0.9rem; /* تقليل حجم خط الزر */
-    }
-}
-
-/* Categories Section */
+/* ================================
+   3) الأقسام (Categories)
+   ================================ */
 .category-container {
     display: flex;
     flex-wrap: nowrap;
@@ -426,24 +347,33 @@ nav ul li a.active {
     gap: 25px; /* المسافة بين المنتجات */
 }
 
+/* ================================
+   كرت المنتج (Product Card)
+   ================================ */
 .product {
     background-color: #fff;
     border-radius: 16px;
     border: 1px solid rgba(0,0,0,0.06);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    box-shadow: none;
     overflow: hidden;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    gap: 16px;
+    width: 100%;
+    max-width: 236.8px;
+    min-height: 320px;
     cursor: default;
     position: relative;
 }
 
-/* Favorite button */
+/* زر المفضلة داخل كرت المنتج (أعلى يمين) */
 .favorite-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
+    top: 0px;
+    right: 0px;
     width: 38px;
     height: 38px;
     border-radius: 999px;
@@ -461,19 +391,23 @@ nav ul li a.active {
     transform: scale(1.04);
 }
 
+/* أيقونة المفضلة (تكون زرقاء حسب الطلب) */
 .favorite-btn i {
-    color: #ef4444;
+    color: #1d4ed8;
     font-size: 18px;
 }
 
+/* حالة المنتج داخل المفضلة (خلفية خفيفة مع بقاء الأيقونة زرقاء) */
 .favorite-btn.is-favorite {
-    background: rgba(239, 68, 68, 0.12);
-    border-color: rgba(239, 68, 68, 0.25);
+    background: rgba(29, 78, 216, 0.10);
+    border-color: rgba(29, 78, 216, 0.22);
 }
 
+/* صورة المنتج داخل البطاقة */
 .product img {
+    /* صورة المنتج */
     width: 100%;
-    height: 160px;
+    height: 140px;
     object-fit: contain;
     background-color: #fff;
     padding: 16px;
@@ -482,33 +416,47 @@ nav ul li a.active {
 
 .product:hover {
     transform: translateY(-8px); /* رفع المنتج للأعلى عند المرور */
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* زيادة حجم الظل عند المرور */
+    box-shadow: none; /* إزالة الظل عند المرور */
 }
 
-.product-info { padding: 14px 14px 10px 14px; }
-.product-subtitle { color: #8a8a8a; font-size: 0.9rem; margin-top: 2px; }
+/* محتوى البطاقة (العنوان/الوصف) */
+.product-info { 
+    padding: 0px 14px 10px 14px; 
+    width: 100%; 
+    flex: 1;
+}
+
+.product-subtitle { 
+    color: #8a8a8a; 
+    font-size: 0.9rem; 
+    margin-top: 2px; 
+}
 
 /* حالة المخزون - شارة في أعلى المنتج من الجانب */
 .stock-badge {
     position: absolute;
     top: 0px;
-    right: 0px;
+    left: 0px;
     font-size: 0.75rem;
     font-weight: bold;
     padding: 4px 8px;
     border-radius: 12px;
     z-index: 2;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: none;
 }
 
 .stock-badge.in-stock {
     background-color: #10b981;
     color: #fff;
+    display: none;
 }
 
 .stock-badge.out-of-stock {
-    background-color: #ef4444;
+    background-color: #ff0000;
     color: #fff;
+    display: inline-flex;
+    align-items: center;
 }
 
 /* وصف المنتج */
@@ -543,15 +491,15 @@ nav ul li a.active {
     position: absolute;
     top: 10px;
     left: 10px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    background: linear-gradient(135deg, #ec1616, #e72a2a);
     color: white;
-    padding: 6px 12px;
+    padding: 5px 10px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: bold;
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
     z-index: 2;
-    animation: pulse 2s infinite;
+    animation: none;
 }
 
 /* حاوية الأسعار */
@@ -565,7 +513,7 @@ nav ul li a.active {
 /* السعر الأصلي مع خط */
 .product .original-price {
     font-size: 0.9rem;
-    color: #999;
+    color: #8f8a8a;
     text-decoration: line-through;
     opacity: 0.7;
 }
@@ -573,30 +521,35 @@ nav ul li a.active {
 /* السعر الجديد */
 .product .discount-price {
     font-weight: bold;
-    color: #ff9800;
+    color: #000;
     font-size: 1.1rem;
+}
+
+/* السعر (بدون خصم) */
+.product-price {
+    color: #000;
 }
 
 /* تحسين بطاقة المنتج مع الخصم */
 .product.has-discount {
-    border: 2px solid #ff9800;
-    box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15);
+    border: 2px solid #50504f10;
+    box-shadow: none;
 }
 
 .product.has-discount:hover {
     transform: translateY(-8px) scale(1.02);
-    box-shadow: 0 15px 40px rgba(255, 152, 0, 0.25);
+    box-shadow: none;
 }
 
 /* عرض الخصم في السلة */
 .cart-item-price.has-discount {
-    color: #ff9800;
+    color: #9b9284;
     font-weight: bold;
 }
 
 .cart-item-price .original-price {
     font-size: 0.8rem;
-    color: #999;
+    color: #6b6767;
     text-decoration: line-through;
     opacity: 0.7;
     display: block;
@@ -605,67 +558,50 @@ nav ul li a.active {
 
 .cart-item-price .discount-price {
     font-size: 1rem;
-    color: #ff9800;
+    color: #9b9284;
     font-weight: bold;
 }
 
 /* فوتر المنتج */
 .product-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
     padding: 0 14px 14px 14px;
+    margin-top: auto;
+}
+
+/* جزء الأسعار داخل فوتر البطاقة (يسحب المساحة المتاحة) */
+.product-footer .price-container,
+.product-footer .product-price {
+    flex: 1;
+    min-width: 0;
 }
 
 /* زر إضافة دائري داخل البطاقة */
-.product .add-to-cart { width:44px; height:44px; min-width:44px; padding:0; border-radius:50%; background-color:#6178e0; color:#fff; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(255, 255, 255, 0.25); border:none; font-size:22px; line-height:1; }
-.product .add-to-cart:hover { background-color:#234dc0; }
+.product .add-to-cart { width:44px; height:44px; min-width:44px; padding:0; border-radius:50%; background-color:#cfefff; color:#1d4ed8; display:inline-flex; align-items:center; justify-content:center; box-shadow:0 4px 10px rgba(29, 78, 216, 0.10); border:none; font-size:22px; line-height:1; }
+.product .add-to-cart:hover { background-color:#bfe7ff; }
+
+/* وضع زر الإضافة أسفل السعر/قائمة الوزن داخل الفوتر */
+.product-footer .add-to-cart {
+    align-self: flex-end;
+}
 
 .product .add-to-cart.disabled {
-    background-color: #9ca3af;
+    background-color: #5d87d1;
     cursor: not-allowed;
     opacity: 0.6;
 }
 
 .product .add-to-cart.disabled:hover {
-    background-color: #9ca3af;
+    background-color: #88a8df;
     transform: none;
 }
 
-/* Offers Section */
-.offers-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-}
-
-.offer {
-    display: flex;
-    background-color: white;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s;
-}
-
-.offer:hover {
-    transform: translateY(-5px);
-}
-
-.offer img {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-}
-
-.offer-details {
-    padding: 15px;
-}
-
-.offer-details h3 {
-    color: var(--secondary-color);
-    margin-bottom: 8px;
-}
+/* ================================
+   3) المنتجات (Grid + Card)
+   ================================ */
 
 /* About Section */
 .about-content {
@@ -1121,11 +1057,11 @@ footer:before {
     
     .product img {
         height: 110px;
-        padding: 5px;
+        padding: 0px;
     }
     
     .product-info {
-        padding: 8px 5px;
+        padding: 0px 14px 10px 14px;
     }
     
     .product-title {
@@ -1173,18 +1109,8 @@ footer:before {
     .container {
         padding: 0 15px;
     }
-    
-    .hero-content h2 {
-        font-size: 1.8rem;
-    }
-    
-    .hero-content p {
-        font-size: 1rem;
-    }
-    
-    .hero {
-        padding: 60px 15px;
-    }
+
+    /* ملاحظة: تم حذف قواعد .hero و .hero-content القديمة (تم استبدالها بـ .hero-scroll) */
     
     /* تحسين عرض الأقسام على الهواتف الصغيرة */
     .categories { padding-top: 10px; }
@@ -1556,11 +1482,9 @@ body.menu-open {
   }
 }
 
-@media (max-width: 480px) {
-    /* Remove this duplicate media query */
-}
-
-/* Improve tap feedback on mobile */
+/* ================================
+   4) تحسين اللمس للموبايل (Touch + Active feedback)
+   ================================ */
 @media (max-width: 768px) {
     .btn:active,
     .add-to-cart:active,
@@ -1581,8 +1505,8 @@ body.menu-open {
 .daily-offers {
     padding: 50px 20px;
     background: linear-gradient(135deg, #fffbe7 0%, #ffeaa7 50%, #e6f7fc 100%);
-    border-top: 3px solid #ff9800;
-    border-bottom: 3px solid #ff9800;
+    border-top: 3px solid #d8d6d3;
+    border-bottom: 3px solid #ebe6de;
     position: relative;
     overflow: hidden;
 }
@@ -1602,17 +1526,12 @@ body.menu-open {
         rgba(255, 152, 0, 0.03) 10px,
         rgba(255, 152, 0, 0.03) 20px
     );
-    animation: slideBackground 20s linear infinite;
-}
-
-@keyframes slideBackground {
-    0% { transform: translate(0, 0); }
-    100% { transform: translate(50px, 50px); }
+    animation: none;
 }
 
 .daily-offers h2 {
     text-align: center;
-    color: #ff9800;
+    color: #696866;
     font-size: 2.5rem;
     margin-bottom: 40px;
     font-weight: bold;
@@ -1625,12 +1544,7 @@ body.menu-open {
 .daily-offers h2::before {
     content: '🔥';
     margin-left: 15px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.2); }
+    animation: none;
 }
 
 .daily-offers-container {
@@ -1669,7 +1583,7 @@ body.menu-open {
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 8px 25px rgba(255, 152, 0, 0.15);
-    border: 2px solid #ff9800;
+    border: 2px solid #a09d9a;
     position: relative;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
@@ -1680,7 +1594,7 @@ body.menu-open {
     position: absolute;
     top: -10px;
     right: -10px;
-    background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+    background: linear-gradient(135deg, #ff6b6b, hsla(0, 100%, 50%, 0.699));
     color: white;
     padding: 8px 15px;
     border-radius: 20px;
@@ -1688,19 +1602,13 @@ body.menu-open {
     font-weight: bold;
     box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
     z-index: 2;
-    animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-    40% { transform: translateY(-10px); }
-    60% { transform: translateY(-5px); }
+    animation: none;
 }
 
 .daily-offer:hover {
     transform: translateY(-12px) scale(1.05) rotate(1deg);
     box-shadow: 0 15px 40px rgba(255, 152, 0, 0.25);
-    border-color: #e65100;
+    border-color: #d6d1ce;
 }
 
 .daily-offer img {
@@ -1729,7 +1637,7 @@ body.menu-open {
 
 .daily-offer-price {
     font-weight: bold;
-    color: #ff9800;
+    color: #e9e4db;
     font-size: 1.3rem;
     margin-bottom: 15px;
     text-align: center;
@@ -1761,7 +1669,7 @@ body.menu-open {
     border: none;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(216, 214, 210, 0.3);
     position: relative;
     overflow: hidden;
 }
@@ -1782,7 +1690,7 @@ body.menu-open {
 }
 
 .daily-offer .add-to-cart:hover {
-    background: linear-gradient(135deg, #e65100, #d84315);
+    background: linear-gradient(135deg, #f1efed, #dfd7d5);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
 }
@@ -1886,17 +1794,6 @@ body.menu-open {
       justify-content: center;
       transition: box-shadow 0.2s, background 0.2s;
     }
-    #cart-icon {
-      font-size: 1.7rem;
-      padding: 12px 22px;
-      border-radius: 50px;
-      box-shadow: none;
-    }
-    #cart-count {
-      font-size: 1.1em;
-      padding: 3px 10px;
-      margin: 0 4px;
-    }
   }
 
 .cart-label {
@@ -1940,17 +1837,6 @@ body.menu-open {
     justify-content: center;
     transition: box-shadow 0.2s, background 0.2s;
   }
-  .floating-cart #cart-icon {
-    font-size: 1.7rem;
-    padding: 12px 22px;
-    border-radius: 50px;
-    box-shadow: none;
-  }
-  .floating-cart #cart-count {
-    font-size: 1.1em;
-    padding: 3px 10px;
-    margin: 0 4px;
-  }
 }
 
 .main-update-btn {
@@ -1963,7 +1849,7 @@ body.menu-open {
 }
 
 .update-btn {
-    background: linear-gradient(90deg, #42c5ea 0%, #3a8daa 100%);
+    background: linear-gradient(90deg, #a6cedb 0%, #8fbfd1 100%);
     color: #fff;
     border: none;
     border-radius: 25px;
@@ -1980,7 +1866,7 @@ body.menu-open {
     margin: 0 auto 18px auto;
 }
 .update-btn:hover, .update-btn:focus {
-    background: linear-gradient(90deg, #3a8daa 0%, #42c5ea 100%);
+    background: linear-gradient(90deg, #a2bfca 0%, #95b9c4 100%);
     box-shadow: 0 4px 18px rgba(66,197,234,0.18);
     transform: translateY(-2px) scale(1.03);
 }
@@ -2086,18 +1972,7 @@ body.menu-open {
     margin-right: auto;
   }
   
-  /* تحسين hero section */
-  .hero-content {
-    align-items: center;
-    justify-content: center;
-    display: flex;
-    flex-direction: column;
-    padding: 0 5px;
-  }
-  .hero-content h2, .hero-content p {
-    width: 100%;
-    text-align: center;
-  }
+  /* ملاحظة: تم حذف تحسينات .hero-content لأن المتجر يعتمد على .hero-scroll */
   
   /* أقسام دائرية ثابتة على الهواتف */
   .category-container { display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap: 12px; }

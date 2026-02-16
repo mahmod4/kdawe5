@@ -9,6 +9,11 @@
 // - التحديث التلقائي
 // ================================
 
+// ملاحظة تنظيمية:
+// تم تجميع الدوال هنا حسب المسؤوليات (سلة/منتجات/مفضلة/عروض/واجهة).
+// أغلب البيانات تأتي من Firestore (لوحة التحكم)، ومع وجود بدائل احتياطية (Sheets/بيانات تجريبية)
+// لضمان أن المتجر يعمل أثناء الاختبار المحلي حتى لو لم تتوفر البيانات.
+
 // ================================
 // 1. تعريف المتغيرات وعناصر الـ DOM
 // ================================
@@ -77,6 +82,10 @@ let currentProducts = []; // المنتجات المعروضة حالياً
 // ================================
 // المفضلة (Guest + Logged-in Sync)
 // ================================
+// الهدف:
+// - الزائر: حفظ المفضلة في localStorage
+// - المستخدم المسجل: مزامنة المفضلة مع Firestore داخل users/{uid}
+// - عند تسجيل الدخول: دمج مفضلة localStorage مع Firestore (بدون فقد بيانات)
 let favorites = [];
 
 function loadFavoritesFromStorage() {
@@ -155,6 +164,7 @@ async function loadFavoritesFromFirestoreAndMerge() {
 }
 
 function toggleFavorite(productId) {
+    // تبديل حالة المنتج في المفضلة (إضافة/إزالة) ثم حفظ/مزامنة
     const id = String(productId);
     if (isFavorite(id)) {
         favorites = favorites.filter((x) => x !== id);
@@ -368,6 +378,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================
 async function fetchDailyOffersFromFirestore() {
     try {
+        // قراءة العروض من Collection (offers) بشرط active == true
+        // ملاحظة: هذه القراءة تعتمد على Firestore Rules
         if (!window.firebase || !window.firebaseFirestore) {
             throw new Error('Firebase Firestore غير مهيأ.');
         }
@@ -464,6 +476,11 @@ async function fetchDailyOffersFromSheet() {
 
 // عرض العروض اليومية
 async function renderDailyOffers() {
+    // رسم العروض اليومية داخل الحاوية #daily-offers-container
+    // مصدر البيانات:
+    // 1) Firestore (لوحة التحكم)
+    // 2) Google Sheets (احتياطي)
+    // 3) عروض تجريبية محلية عند عدم وجود بيانات
     const dailyOffersContainer = document.getElementById('daily-offers-container');
     if (!dailyOffersContainer) {
         console.warn('حاوية العروض اليومية غير موجودة');
@@ -502,15 +519,33 @@ async function renderDailyOffers() {
         console.log(`عدد العروض المتاحة: ${dailyOffers.length}`);
         
         if (dailyOffers.length === 0) {
-            const noOffersText = document.createElement('p');
-            noOffersText.className = 'no-products';
-            noOffersText.style.textAlign = 'center';
-            noOffersText.style.color = '#666';
-            noOffersText.style.fontSize = '1.1rem';
-            noOffersText.textContent = 'لا توجد عروض يومية حالياً';
-            dailyOffersContainer.appendChild(noOffersText);
-            console.log('لا توجد عروض لعرضها');
-            return;
+            console.log('لا توجد عروض من المصدر، استخدام 3 عروض تجريبية للاختبار المحلي');
+            dailyOffers = [
+                {
+                    id: 'demo-o-1',
+                    name: 'عرض فواكه مشكلة',
+                    image: 'https://via.placeholder.com/240x180/ff9800/ffffff?text=Fruit+Mix',
+                    price: 89.99,
+                    weight: false,
+                    type: 'daily'
+                },
+                {
+                    id: 'demo-o-2',
+                    name: 'خصم الخضروات الطازجة',
+                    image: 'https://via.placeholder.com/240x180/4caf50/ffffff?text=Fresh+Veg',
+                    price: 45.50,
+                    weight: false,
+                    type: 'daily'
+                },
+                {
+                    id: 'demo-o-3',
+                    name: 'عروض العصائر',
+                    image: 'https://via.placeholder.com/240x180/2196f3/ffffff?text=Juice',
+                    price: 25.00,
+                    weight: false,
+                    type: 'daily'
+                }
+            ];
         }
         
         dailyOffers.forEach((offer, index) => {
@@ -630,6 +665,10 @@ function addDailyOfferToCart(e, dailyOffers) {
 // 8. إعداد الأحداث الرئيسية
 // ================================
 function setupEventListeners() {
+    // ربط أحداث الواجهة مرة واحدة:
+    // - الفلترة/البحث
+    // - إضافة إلى السلة (delegation)
+    // - فتح/إغلاق السلة
     // فلترة المنتجات حسب الفئة
     categoryFilter.addEventListener('change', filterProducts);
     // البحث
@@ -870,6 +909,8 @@ function normalizeArabic(text) {
 // 12. عرض المنتجات مع الصفحات
 // ================================
 function displayProducts(productsArray) {
+    // عرض المنتجات في الصفحة مع التقسيم لصفحات (Pagination)
+    // هذه الدالة مسؤولة عن بناء كروت المنتجات داخل #product-container
     currentProducts = productsArray;
     totalPages = Math.ceil(productsArray.length / productsPerPage);
     if (currentPage > totalPages) { currentPage = totalPages || 1; }
@@ -933,29 +974,20 @@ function displayProducts(productsArray) {
         title.textContent = product.name;
         productInfo.appendChild(title);
 
-        // سطر فرعي - تم نقل إلى نظام الوزن الجديد
-        // الآن يتم التحكم فيه من لوحة التحكم
-        if (product.soldByWeight) {
-            const subtitle = document.createElement('p');
-            subtitle.className = 'product-subtitle';
-            subtitle.textContent = 'يُباع بالوزن';
-            productInfo.appendChild(subtitle);
-        }
-
-        // عرض حالة المخزون في أعلى المنتج من الجانب
-        if (product.stock !== undefined) {
-            const stockStatus = document.createElement('div');
-            stockStatus.className = `stock-badge ${product.stock ? 'in-stock' : 'out-of-stock'}`;
-            stockStatus.textContent = product.stock ? 'متوفر' : 'غير متوفر';
-            productElement.appendChild(stockStatus);
-        }
-
         // عرض الوصف إذا كان موجوداً
         if (product.description && product.description.trim()) {
             const description = document.createElement('p');
             description.className = 'product-description';
             description.textContent = product.description;
             productInfo.appendChild(description);
+        }
+
+        // إظهار شارة "غير متوفر" فقط عند نفاد المخزون (بدون إظهار "متوفر")
+        if (product.stock === false) {
+            const stockStatus = document.createElement('div');
+            stockStatus.className = 'stock-badge out-of-stock';
+            stockStatus.textContent = 'غير متوفر';
+            productElement.appendChild(stockStatus);
         }
 
         // عناصر الفوتر (السعر + زر الإضافة)
@@ -977,6 +1009,9 @@ function displayProducts(productsArray) {
             addButton.classList.add('disabled');
             addButton.title = 'غير متوفر في المخزون';
         }
+
+        // إضافة زر الإضافة أولاً ليظهر على اليمين (RTL) في كل الحالات
+        footer.appendChild(addButton);
 
         // خيارات الوزن - تم نقلها إلى نظام الوزن الجديد
         // الآن يتم التحكم فيها من لوحة التحكم عبر weight-products.js
@@ -1013,7 +1048,6 @@ function displayProducts(productsArray) {
             priceEl.textContent = `${product.price} ج.م`;
             footer.appendChild(priceEl);
         }
-        footer.appendChild(addButton);
         productInfo.appendChild(footer);
         productElement.appendChild(productInfo);
         fragment.appendChild(productElement);
@@ -1562,67 +1596,7 @@ async function fetchProductsFromFirestore() {
             };
         });
 
-        // إضافة منتجات تجريبية بخصوم للاختبار
-        if (productsList.length === 0) {
-            console.log('إضافة منتجات تجريبية بخصومات للاختبار');
-            productsList.push(
-                {
-                    id: 'demo-1',
-                    name: 'تفاح أحمر',
-                    category: 'فواكه',
-                    image: 'https://via.placeholder.com/200x200/ff6b6b/ffffff?text=Apple',
-                    price: 50.00,
-                    discountPrice: 35.00,
-                    soldByWeight: true,
-                    stock: true,
-                    description: 'تفاح أحمر طازج من أفضل المزارع'
-                },
-                {
-                    id: 'demo-2',
-                    name: 'برتقال',
-                    category: 'فواكه',
-                    image: 'https://via.placeholder.com/200x200/ffa500/ffffff?text=Orange',
-                    price: 40.00,
-                    discountPrice: 25.00,
-                    soldByWeight: true,
-                    stock: true,
-                    description: 'برتقال حلو وعصيري'
-                },
-                {
-                    id: 'demo-3',
-                    name: 'موز',
-                    category: 'فواكه',
-                    image: 'https://via.placeholder.com/200x200/ffeb3b/ffffff?text=Banana',
-                    price: 30.00,
-                    discountPrice: 20.00,
-                    soldByWeight: false,
-                    stock: true,
-                    description: 'موز ناضج ولذيذ'
-                },
-                {
-                    id: 'demo-4',
-                    name: 'طماطم',
-                    category: 'خضروات',
-                    image: 'https://via.placeholder.com/200x200/ff5722/ffffff?text=Tomato',
-                    price: 25.00,
-                    discountPrice: 15.00,
-                    soldByWeight: true,
-                    stock: true,
-                    description: 'طماطم طازجة من الحديقة'
-                },
-                {
-                    id: 'demo-5',
-                    name: 'خيار',
-                    category: 'خضروات',
-                    image: 'https://via.placeholder.com/200x200/4caf50/ffffff?text=Cucumber',
-                    price: 20.00,
-                    discountPrice: null,
-                    soldByWeight: true,
-                    stock: true,
-                    description: 'خيار طازج وقرمش'
-                }
-            );
-        }
+        // ملاحظة: المنتجات التجريبية يتم حقنها في loadProducts() فقط عند عدم وجود أي منتجات
 
         console.log(`تم تحميل ${productsList.length} منتج من Firestore بنجاح`);
         return productsList;
@@ -1788,6 +1762,10 @@ function updatePageTitle(category) {
 // 26. تحميل المنتجات
 // ================================
 async function loadProducts() {
+    // تحميل المنتجات مع كاش محلي لتسريع الأداء:
+    // - محاولة استخدام localStorage cache إن كان حديثاً
+    // - وإلا: Firestore ثم Sheets
+    // - وإذا كانت القائمة فارغة: حقن 3 منتجات تجريبية للاختبار المحلي
     try {
         showLoadingSpinner();
         // تسريع التحميل: استخدم cache من localStorage إذا كان حديثاً
@@ -1841,6 +1819,46 @@ async function loadProducts() {
             }
             localStorage.setItem(cacheKey, JSON.stringify(fetchedProducts));
             localStorage.setItem(cacheTimeKey, now.toString());
+        }
+
+        // ضمان وجود بيانات للاختبار المحلي: 3 منتجات وهمية عند عدم وجود منتجات
+        if (!Array.isArray(fetchedProducts) || fetchedProducts.length === 0) {
+            console.log('استخدام 3 منتجات تجريبية للاختبار المحلي');
+            fetchedProducts = [
+                {
+                    id: 'demo-p-1',
+                    name: 'تفاح أحمر',
+                    category: 'demo',
+                    image: 'https://via.placeholder.com/400x300/ff6b6b/ffffff?text=Apple',
+                    price: 50.0,
+                    discountPrice: 35.0,
+                    soldByWeight: true,
+                    stock: true,
+                    description: 'تفاح أحمر طازج'
+                },
+                {
+                    id: 'demo-p-2',
+                    name: 'طماطم',
+                    category: 'demo',
+                    image: 'https://via.placeholder.com/400x300/ff5722/ffffff?text=Tomato',
+                    price: 25.0,
+                    discountPrice: 19.0,
+                    soldByWeight: true,
+                    stock: true,
+                    description: 'طماطم طازجة'
+                },
+                {
+                    id: 'demo-p-3',
+                    name: 'مياه معدنية',
+                    category: 'demo',
+                    image: 'https://via.placeholder.com/400x300/2196f3/ffffff?text=Water',
+                    price: 12.0,
+                    discountPrice: null,
+                    soldByWeight: false,
+                    stock: true,
+                    description: 'عبوة 1.5 لتر'
+                }
+            ];
         }
         // Normalize products (especially when coming from old cache)
         products = Array.isArray(fetchedProducts) ? fetchedProducts.map((p) => {

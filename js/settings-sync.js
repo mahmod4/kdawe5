@@ -1,8 +1,13 @@
 // Settings Sync - جلب الإعدادات من لوحة التحكم وتحديث الموقع
+//
+// ملاحظة مهمة:
+// هذا الملف مسؤول عن مزامنة إعدادات المتجر (settings/general) + المحتوى (content/main)
+// ثم تطبيقها على عناصر الصفحة (DOM) مثل اسم المتجر، الشعار، الروابط، وسلايدر صور الـHero
+// كما يقوم بتطبيق إعدادات التخطيط (عدد الأعمدة) عن طريق CSS variables.
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
 import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
 
-// Firebase configuration - نفس الإعدادات في لوحة التحكم
+// إعدادات Firebase - نفس الإعدادات المستخدمة في لوحة التحكم
 const firebaseConfig = {
     apiKey: "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
     authDomain: "dashboard-27bc8.firebaseapp.com",
@@ -13,11 +18,11 @@ const firebaseConfig = {
     measurementId: "G-K8FNNYH4S1"
 };
 
-// Initialize Firebase
+// تهيئة Firebase (App + Firestore)
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// Global settings object
+// كائن موحّد يجمع كل الإعدادات التي سيتم قراءتها من Firestore
 let siteSettings = {
     store: {},
     content: {},
@@ -25,7 +30,12 @@ let siteSettings = {
     offers: []
 };
 
-// Load all settings from Firebase
+// تحميل كل الإعدادات من Firestore ثم تطبيقها على الصفحة
+// التسلسل مهم:
+// 1) إعدادات المتجر (الاسم/التواصل/الشعار/التخطيط)
+// 2) المحتوى (content/main)
+// 3) الأقسام
+// 4) العروض
 export async function loadAllSettings() {
     try {
         console.log('Loading settings from dashboard...');
@@ -50,7 +60,8 @@ export async function loadAllSettings() {
     }
 }
 
-// Load store settings (اسم المتجر، معلومات الاتصال، إلخ)
+// جلب إعدادات المتجر من settings/general (اسم المتجر، معلومات الاتصال، الروابط، اللوجو...)
+// ثم استدعاء updateStoreElements لتطبيقها على الصفحة
 async function loadStoreSettings() {
     try {
         const settingsDoc = await getDoc(doc(db, 'settings', 'general'));
@@ -63,7 +74,8 @@ async function loadStoreSettings() {
     }
 }
 
-// Load content settings (بانر، صفحات ثابتة)
+// جلب إعدادات المحتوى من content/main (مثل نصوص/صفحات ثابتة/عناصر محتوى)
+// ملاحظة: في حال كانت Rules لا تسمح، سيتم الاكتفاء بتحذير (console.warn)
 async function loadContentSettings() {
     try {
         const contentDoc = await getDoc(doc(db, 'content', 'main'));
@@ -76,7 +88,7 @@ async function loadContentSettings() {
     }
 }
 
-// Load categories
+// جلب الأقسام من categories لترتيبها وعرضها في المتجر
 async function loadCategories() {
     try {
         const categoriesSnapshot = await getDocs(collection(db, 'categories'));
@@ -90,7 +102,7 @@ async function loadCategories() {
     }
 }
 
-// Load active offers
+// جلب العروض من offers ثم فلترة العروض النشطة (active) ضمن تاريخ البداية/النهاية
 async function loadOffers() {
     try {
         const offersSnapshot = await getDocs(collection(db, 'offers'));
@@ -111,7 +123,8 @@ async function loadOffers() {
     }
 }
 
-// Update store elements in the page
+// تحديث عناصر الصفحة حسب إعدادات المتجر التي تم تحميلها في siteSettings.store
+// (اسم المتجر، عنوان الصفحة، الـmeta tags، بيانات التواصل، روابط السوشيال، اللوجو...)
 function updateStoreElements() {
     const store = siteSettings.store;
     
@@ -162,6 +175,7 @@ function updateHeroScroll(store) {
         const container = document.getElementById('heroScrollContainer');
         if (!container) return;
 
+        // صور الـHero Scroll يتم إدارتها من لوحة التحكم داخل settings/general
         const images = Array.isArray(store.heroScrollImages) ? store.heroScrollImages : [];
         container.innerHTML = '';
 
