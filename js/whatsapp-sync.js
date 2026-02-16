@@ -1,88 +1,85 @@
-// WhatsApp Sync - تحديث رقم الواتساب من الإعدادات
-import { getShippingSettings } from './settings-sync.js';
+// ================================
+// مزامنة إعدادات الواتساب
+// ================================
 
-// Get WhatsApp number from settings
-export function getWhatsAppNumber() {
-    const settings = getShippingSettings();
-    return settings.socialWhatsapp || '201234567890'; // رقم افتراضي
+// انتظار جاهزية Firebase
+function waitForFirebase(timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        
+        function checkFirebase() {
+            if (window.firebase && window.firebaseFirestore) {
+                resolve(true);
+            } else if (Date.now() - startTime > timeout) {
+                reject(new Error('Firebase لم يصبح جاهزاً في الوقت المحدد'));
+            } else {
+                setTimeout(checkFirebase, 100);
+            }
+        }
+        
+        checkFirebase();
+    });
 }
 
-// Update WhatsApp checkout function to use settings
-export function updateWhatsAppCheckout() {
-    // Override the checkout function to use dynamic WhatsApp number
-    const originalCheckout = window.checkout;
-    
-    window.checkout = async function() {
-        // Get the current WhatsApp number from settings
-        const phoneNumber = getWhatsAppNumber();
+// جلب رقم الواتساب من الإعدادات
+async function fetchWhatsAppNumber() {
+    try {
+        await waitForFirebase();
         
-        // Rest of the original checkout logic...
-        const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-        const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        const docRef = window.firebaseFirestore.doc(window.firebase.db, 'settings', 'store');
+        const docSnap = await window.firebaseFirestore.getDoc(docRef);
         
-        if (cartItems.length === 0) {
-            alert('السلة فارغة!');
+        if (docSnap.exists()) {
+            const data = docSnap.data();
+            return data.whatsappNumber || data.storePhone || '';
+        }
+        
+        return '';
+    } catch (error) {
+        console.warn('خطأ في جلب رقم الواتساب:', error);
+        return '';
+    }
+}
+
+// تحديث روابط الواتساب في الصفحة
+async function updateWhatsAppLinks() {
+    try {
+        const whatsappNumber = await fetchWhatsAppNumber();
+        
+        if (!whatsappNumber) {
+            console.log('لم يتم العثور على رقم واتساب في الإعدادات');
             return;
         }
         
-        const user = window.firebaseAuth?.auth?.currentUser;
-        if (!user) {
-            alert('يرجى تسجيل الدخول أولاً!');
-            return;
-        }
+        // تحديث جميع روابط الواتساب
+        document.querySelectorAll('a[href*="wa.me"], a[href*="api.whatsapp.com"]').forEach(link => {
+            const cleanNumber = whatsappNumber.replace(/[^\d]/g, '');
+            const message = encodeURIComponent('مرحباً من المتجر');
+            link.href = `https://wa.me/${cleanNumber}?text=${message}`;
+        });
         
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const originalText = checkoutBtn.innerHTML;
-        checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري حفظ الطلب...';
-        checkoutBtn.style.pointerEvents = 'none';
+        // تحديث أزرار الواتساب المخصصة
+        document.querySelectorAll('[data-whatsapp-btn]').forEach(btn => {
+            const cleanNumber = whatsappNumber.replace(/[^\d]/g, '');
+            const message = encodeURIComponent(btn.dataset.message || 'مرحباً من المتجر');
+            btn.onclick = () => {
+                window.open(`https://wa.me/${cleanNumber}?text=${message}`, '_blank');
+            };
+        });
         
-        try {
-            // حفظ الطلب في Firebase
-            const orderId = await window.saveOrderToFirebase(cartItems, totalPrice);
-            
-            // إعداد رسالة واتساب
-            const storeName = document.querySelector('[data-store-name]')?.textContent || 'المتجر';
-            let whatsappMessage = `مرحباً، أريد طلب من ${storeName}:\n\n`;
-            whatsappMessage += `رقم الطلب: ${orderId}\n`;
-            whatsappMessage += `اسم العميل: ${user.displayName || user.email}\n\n`;
-            whatsappMessage += `تفاصيل الطلب:\n`;
-            
-            cartItems.forEach(item => {
-                whatsappMessage += `- ${item.name}: ${item.quantity} × ${item.price} ج.م = ${item.quantity * item.price} ج.م\n`;
-            });
-            
-            whatsappMessage += `\nالمجموع الكلي: ${totalPrice} ج.م\n`;
-            whatsappMessage += `تاريخ الطلب: ${new Date().toLocaleString('ar-EG')}`;
-            
-            // إرسال رسالة واتساب باستخدام الرقم من الإعدادات
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-            
-            // فتح واتساب
-            window.open(whatsappUrl, '_blank');
-            
-            // إظهار رسالة نجاح
-            alert('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.');
-            
-            // مسح السلة
-            localStorage.removeItem('cart');
-            updateCartCount();
-            
-            // إغلاق نافذة السلة
-            document.getElementById('cart-modal').style.display = 'none';
-            
-        } catch (error) {
-            console.error('Error during checkout:', error);
-            alert('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.');
-        } finally {
-            checkoutBtn.innerHTML = originalText;
-            checkoutBtn.style.pointerEvents = 'auto';
-        }
-    };
+        console.log('✅ تم تحديث روابط الواتساب بنجاح');
+        
+    } catch (error) {
+        console.warn('⚠️ خطأ في تحديث روابط الواتساب:', error);
+    }
 }
 
-// Initialize WhatsApp sync
+// تهيئة المزامنة عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for settings to load, then update checkout
-    setTimeout(updateWhatsAppCheckout, 2000);
+    // تأخير التحديث لضمان جاهزية كل العناصر
+    setTimeout(updateWhatsAppLinks, 2500);
 });
 
+// تصدير الدوال
+window.updateWhatsAppLinks = updateWhatsAppLinks;
+window.fetchWhatsAppNumber = fetchWhatsAppNumber;

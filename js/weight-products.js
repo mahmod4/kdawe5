@@ -1,219 +1,306 @@
 // ================================
-// نظام البيع بالوزن المبسط (واجهة المتجر)
-// مسؤول عن:
-// - عرض قائمة منسدلة للوزن فقط
-// - تحديث السعر بناءً على الوزن المختار
-// - تصميم بسيط وواضح
+// إدارة المنتجات مع دعم الوزن
+// هذا الملف مسؤول عن جلب وعرض المنتجات مع دعم المنتجات الموزونة والقطعية
 // ================================
 
-class WeightProducts {
-    constructor() {
-        // إعدادات افتراضية
-        this.weightSettings = {
-            min: 0.125,
-            max: 1,
-            increment: 0.125
-        };
-        this.loadWeightSettings();
-    }
-
-    getWeightUnit(product) {
-        // تحديد وحدة الوزن
-        try {
-            if (product && product.weightUnit) return String(product.weightUnit);
-            if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightUnit) {
-                return String(window.siteSettings.store.weightUnit);
+// انتظار جاهزية Firebase
+// هذه الدالة تنتظر حتى تصبح مكتبات Firebase جاهزة للاستخدام
+function waitForFirebase(timeout = 10000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now(); // تسجيل وقت البدء
+        
+        // دالة داخلية للتحقق المستمر من جاهزية Firebase
+        function checkFirebase() {
+            if (window.firebase && window.firebaseFirestore) {
+                resolve(true); // Firebase جاهز
+            } else if (Date.now() - startTime > timeout) {
+                reject(new Error('Firebase لم يصبح جاهزاً في الوقت المحدد')); // تجاوز الوقت
+            } else {
+                setTimeout(checkFirebase, 100); // إعادة المحاولة بعد 100ms
             }
-        } catch (e) {
         }
-        return 'كجم';
-    }
+        
+        checkFirebase(); // بدء عملية التحقق
+    });
+}
 
-    formatWeightValue(value) {
-        // تنسيق قيمة الوزن للعرض
-        const n = Number(value);
-        if (Number.isNaN(n)) return '';
-        if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
-        return String(n);
-    }
-
-    // تحميل إعدادات الوزن
-    async loadWeightSettings() {
-        try {
-            // محاولة القراءة من localStorage أولاً (أسرع)
-            const savedSettings = localStorage.getItem('weightSettings');
-            if (savedSettings) {
-                const settings = JSON.parse(savedSettings);
-                this.weightSettings = settings;
-                console.log('تم تحميل إعدادات الوزن من localStorage:', settings);
-                return;
-            }
-            
-            // إذا لم توجد في localStorage، جلب من Firebase
-            if (window.siteSettings && window.siteSettings.store) {
-                const store = window.siteSettings.store;
-                this.weightSettings = {
-                    min: store.weightMin || 0.125,
-                    max: store.weightMax || 1,
-                    increment: store.weightIncrement || 0.125,
-                    options: store.weightOptions || ['0.125', '0.25', '0.5', '0.75', '1']
-                };
-                console.log('تم تحميل إعدادات الوزن من Firebase:', this.weightSettings);
-            }
-        } catch (e) {
-            console.warn('Failed to load weight settings:', e);
-            // إعدادات افتراضية في حالة الخطأ
-            this.weightSettings = {
-                min: 0.125,
-                max: 1,
-                increment: 0.125,
-                options: ['0.125', '0.25', '0.5', '0.75', '1']
+// جلب المنتجات من Firestore
+// هذه الدالة مسؤولة عن جلب جميع المنتجات من قاعدة البيانات
+async function fetchWeightProductsFromFirestore() {
+    try {
+        await waitForFirebase(); // انتظار جاهزية Firebase
+        
+        // إنشاء مرجع لمجموعة المنتجات
+        const colRef = window.firebaseFirestore.collection(window.firebase.db, 'products');
+        const snap = await window.firebaseFirestore.getDocs(colRef); // جلب جميع المستندات
+        
+        // تحويل المستندات إلى كائنات JavaScript
+        const products = snap.docs.map(doc => {
+            const data = doc.data(); // جلب بيانات المستند
+            return {
+                id: doc.id, // معرف المنتج
+                name: data.name || '', // اسم المنتج
+                price: data.price || 0, // سعر المنتج
+                image: data.image || '../images/default-logo.png', // صورة المنتج
+                description: data.description || '', // وصف المنتج
+                category: data.category || '', // فئة المنتج
+                unit: data.unit || 'قطعة', // وحدة القياس
+                soldByWeight: data.soldByWeight || data.hasWeightOptions || false, // هل يباع بالوزن؟
+                stock: data.stock || 0, // كمية المخزون
+                isActive: data.isActive !== false // هل المنتج نشط؟
             };
-        }
-    }
-
-    // الحصول على خيارات الوزن
-    getWeightOptions() {
-        const unit = this.getWeightUnit(null);
-        const options = [];
+        }).filter(product => product.isActive && product.name); // تصفية المنتجات النشطة فقط
         
-        // إنشاء خيارات الوزن من min إلى max
-        for (let weight = this.weightSettings.min; weight <= this.weightSettings.max; weight += this.weightSettings.increment) {
-            options.push({
-                value: weight,
-                label: `${this.formatWeightValue(weight)} ${unit}`,
-                price: null // سيتم حسابها لاحقاً
-            });
-        }
+        console.log(`✅ تم تحميل ${products.length} منتج من Firestore`); // رسالة نجاح
+        return products; // إرجاع المنتجات
         
-        return options;
-    }
-
-    // إنشاء منتقي وزن بسيط
-    createWeightPicker(product, container) {
-        if (!product.soldByWeight) return;
-
-        // إزالة أي منتقي موجود
-        try {
-            const existing = container.querySelector('.weight-picker-simple');
-            if (existing) existing.remove();
-        } catch (e) {
-        }
-
-        const unit = this.getWeightUnit(product);
-        const weightOptions = this.getWeightOptions();
-        
-        const picker = document.createElement('div');
-        picker.className = 'weight-picker-simple mt-3';
-        
-        picker.innerHTML = `
-            <div class="flex items-center justify-between space-x-2 space-x-reverse">
-                <label class="text-sm font-medium text-gray-700">الوزن:</label>
-                <select class="weight-select-simple border border-gray-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200" 
-                        data-product-id="${product.id}"
-                        data-base-price="${product.price}">
-                    ${weightOptions.map(option => `
-                        <option value="${option.value}" data-price="${product.price * option.value}">
-                            ${option.label} - ${(product.price * option.value).toFixed(2)} ج.م
-                        </option>
-                    `).join('')}
-                </select>
-            </div>
-        `;
-
-        container.appendChild(picker);
-        this.setupWeightPickerListeners(picker, product);
-    }
-
-    // إعداد مستمعي الأحداث
-    setupWeightPickerListeners(picker, product) {
-        const select = picker.querySelector('.weight-select-simple');
-        const priceElement = picker.closest('.product').querySelector('.product-price');
-
-        select.addEventListener('change', () => {
-            const weight = parseFloat(select.value);
-            const basePrice = parseFloat(select.dataset.basePrice);
-            const newPrice = basePrice * weight;
-            
-            // تحديث السعر المعروض
-            if (priceElement) {
-                priceElement.innerHTML = `
-                    <span class="current-price text-lg font-bold text-green-600">${newPrice.toFixed(2)} ج.م</span>
-                    <small class="text-xs text-gray-500 block">${this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
-                `;
-            }
-
-            // إرسال حدث تغيير الوزن
-            const event = new CustomEvent('weightChanged', {
-                detail: { productId: product.id, weight }
-            });
-            document.dispatchEvent(event);
-        });
-    }
-
-    // تهيئة جميع المنتجات
-    initializeProducts() {
-        document.querySelectorAll('.product').forEach(card => {
-            const productId = card.dataset.productId;
-            const product = this.getProductData(productId);
-            
-            if (product && product.soldByWeight) {
-                const container = card.querySelector('.product-footer');
-                if (container) {
-                    this.createWeightPicker(product, container);
-                }
-            }
-        });
-    }
-
-    // الحصول على بيانات المنتج
-    getProductData(productId) {
-        if (window.products) {
-            return window.products.find(p => p.id === productId);
-        }
-        if (window.productsArray) {
-            return window.productsArray.find(p => p.id === productId);
-        }
-        return null;
+    } catch (error) {
+        console.warn('⚠️ خطأ في جلب المنتجات من Firestore:', error); // رسالة خطأ
+        return []; // إرجاع مصفوفة فارغة في حالة الخطأ
     }
 }
 
-// تهيئة النظام
-const weightProductsInstance = new WeightProducts();
-window.weightProducts = weightProductsInstance;
-
-document.addEventListener('DOMContentLoaded', () => {
-    weightProductsInstance.initializeProducts();
-    
-    // مراقبة تحديثات إعدادات الوزن من لوحة التحكم
-    document.addEventListener('weightSettingsUpdated', (event) => {
-        console.log('تم استلام تحديث إعدادات الوزن من لوحة التحكم:', event.detail);
+// عرض المنتجات في الواجهة
+// هذه الدالة تعرض المنتجات في واجهة المستخدم مع دعم المنتجات الموزونة والقطعية
+function displayWeightProducts(products) {
+    try {
+        const container = document.getElementById('product-container'); // الحصول على حاوية المنتجات
+        if (!container) return; // الخروج إذا لم يتم العثور على الحاوية
         
-        // تحديث الإعدادات الحالية
-        weightProductsInstance.weightSettings = {
-            min: event.detail.min,
-            max: event.detail.max,
-            increment: event.detail.increment,
-            options: event.detail.options,
-            unit: event.detail.unit
+        if (products.length === 0) {
+            // عرض رسالة عندما لا توجد منتجات
+            container.innerHTML = `
+                <div class="no-products">
+                    <i class="fas fa-box-open"></i> <!-- أيقونة الصندوق الفارغ -->
+                    <h3>لا توجد منتجات حالياً</h3> <!-- عنوان الرسالة -->
+                    <p>يرجى التحقق لاحقاً</p> <!-- نص الرسالة -->
+                </div>
+            `;
+            return;
+        }
+        
+        // إنشاء عناصر HTML لكل منتج
+        container.innerHTML = products.map(product => `
+            <div class="product-card" data-category="${product.category}" data-product-id="${product.id}">
+                <div class="product-image">
+                    <img src="${product.image}" alt="${product.name}" 
+                         onerror="this.src='../images/default-logo.png'"> <!-- صورة المنتج مع صورة احتياطية -->
+                    ${product.soldByWeight ? '<span class="weight-badge">بالوزن</span>' : ''} <!-- شارة الوزن -->
+                </div>
+                <div class="product-info">
+                    <h3>${product.name}</h3> <!-- اسم المنتج -->
+                    <p class="description">${product.description}</p> <!-- وصف المنتج -->
+                    <div class="price-info">
+                        <span class="price">${product.price}</span> <!-- السعر -->
+                        <span class="unit">${product.unit === 'كجم' ? 'ج.م/كجم' : 'ج.م'}</span> <!-- الوحدة -->
+                    </div>
+                    ${product.stock <= 10 ? '<p class="low-stock">مخزون محدود</p>' : ''} <!-- تحذير المخزون -->
+                </div>
+                <div class="product-actions">
+                    ${product.soldByWeight ? `
+                        <!-- عناصر التحكم للمنتجات الموزونة -->
+                        <div class="weight-input-group">
+                            <input type="number" 
+                                   id="weight-${product.id}" // معرف فريد لحقل الوزن
+                                   placeholder="الوزن بالكجم" // نص المساعد
+                                   step="0.1" // خطوة الزيادة
+                                   min="0.1"> // الحد الأدنى
+                            <button onclick="addWeightProductToCart('${product.id}')">
+                                <i class="fas fa-cart-plus"></i> <!-- أيقونة السلة -->
+                                أضف للسلة <!-- نص الزر -->
+                            </button>
+                        </div>
+                    ` : `
+                        <!-- عناصر التحكم للمنتجات القطعية -->
+                        <div class="quantity-input-group">
+                            <input type="number" 
+                                   id="quantity-${product.id}" // معرف فريد لحقل الكمية
+                                   placeholder="الكمية" // نص المساعد
+                                   min="1" // الحد الأدنى
+                                   value="1"> // القيمة الافتراضية
+                            <button onclick="addProductToCart('${product.id}')">
+                                <i class="fas fa-cart-plus"></i> <!-- أيقونة السلة -->
+                                أضف للسلة <!-- نص الزر -->
+                            </button>
+                        </div>
+                    `}
+                </div>
+            </div>
+        `).join(''); // دمج جميع عناصر HTML
+        
+    } catch (error) {
+        console.error('خطأ في عرض المنتجات:', error); // رسالة خطأ
+    }
+}
+
+// إضافة منتج بالوزن للسلة
+// هذه الدالة تضيف منتجاً موزوناً للسلة بناءً على الوزن المدخل
+function addWeightProductToCart(productId) {
+    try {
+        const weightInput = document.getElementById(`weight-${productId}`); // الحصول على حقل الوزن
+        const weight = parseFloat(weightInput.value); // تحويل القيمة إلى رقم
+        
+        // التحقق من صحة الوزن المدخل
+        if (!weight || weight <= 0) {
+            showNotification('يرجى إدخال وزن صحيح', 'error'); // رسالة خطأ
+            return;
+        }
+        
+        // البحث عن المنتج في القائمة المعروضة
+        const productCard = document.querySelector(`[data-product-id="${productId}"]`);
+        if (!productCard) {
+            showNotification('المنتج غير موجود', 'error'); // رسالة خطأ
+            return;
+        }
+        
+        // إنشاء كائن المنتج من بيانات الواجهة
+        const product = {
+            id: productId, // معرف المنتج
+            name: productCard.querySelector('h3').textContent, // اسم المنتج
+            price: parseFloat(productCard.querySelector('.price').textContent), // سعر المنتج
+            image: productCard.querySelector('img').src, // صورة المنتج
+            unit: 'كجم', // وحدة القياس
+            soldByWeight: true // يباع بالوزن
         };
         
-        // إعادة تهيئة جميع المنتجات لإظهار خيارات الوزن الجديدة
-        weightProductsInstance.initializeProducts();
+        // استدعاء دالة إضافة للسلة من ملف weight-cart.js
+        if (window.addToCart) {
+            window.addToCart(product, 0, weight); // إضافة المنتج مع الوزن
+            weightInput.value = ''; // تفريغ حقل الوزن
+        } else {
+            console.error('دالة addToCart غير موجودة'); // رسالة خطأ
+        }
         
-        // عرض إشعار للمستخدم
-        showNotification('تم تحديث إعدادات الوزن', 'success');
-    });
+    } catch (error) {
+        console.error('خطأ في إضافة المنتج بالوزن:', error); // رسالة خطأ مفصلة
+        showNotification('خطأ في إضافة المنتج', 'error'); // رسالة خطأ للمستخدم
+    }
+}
+
+// إضافة منتج عادي للسلة
+// هذه الدالة تضيف منتجاً قطعياً للسلة بناءً على الكمية المدخلة
+function addProductToCart(productId) {
+    try {
+        const quantityInput = document.getElementById(`quantity-${productId}`); // الحصول على حقل الكمية
+        const quantity = parseInt(quantityInput.value) || 1; // تحويل القيمة إلى رقم مع قيمة افتراضية
+        
+        // البحث عن المنتج في القائمة المعروضة
+        const productCard = document.querySelector(`[data-product-id="${productId}"]`);
+        if (!productCard) {
+            showNotification('المنتج غير موجود', 'error'); // رسالة خطأ
+            return;
+        }
+        
+        // إنشاء كائن المنتج من بيانات الواجهة
+        const product = {
+            id: productId, // معرف المنتج
+            name: productCard.querySelector('h3').textContent, // اسم المنتج
+            price: parseFloat(productCard.querySelector('.price').textContent), // سعر المنتج
+            image: productCard.querySelector('img').src, // صورة المنتج
+            unit: 'قطعة', // وحدة القياس
+            soldByWeight: false // لا يباع بالوزن
+        };
+        
+        // استدعاء دالة إضافة للسلة من ملف weight-cart.js
+        if (window.addToCart) {
+            window.addToCart(product, quantity, null); // إضافة المنتج مع الكمية
+            quantityInput.value = '1'; // إعادة تعيين الحقل للقيمة الافتراضية
+        } else {
+            console.error('دالة addToCart غير موجودة'); // رسالة خطأ
+        }
+        
+    } catch (error) {
+        console.error('خطأ في إضافة المنتج:', error); // رسالة خطأ مفصلة
+        showNotification('خطأ في إضافة المنتج', 'error'); // رسالة خطأ للمستخدم
+    }
+}
+
+// تحميل المنتجات وعرضها
+// هذه الدالة تجلب المنتجات من Firebase وتعرضها في الواجهة
+async function loadWeightProducts() {
+    try {
+        showLoading(true); // إظهار حالة التحميل
+        const products = await fetchWeightProductsFromFirestore(); // جلب المنتجات
+        displayWeightProducts(products); // عرض المنتجات
+    } catch (error) {
+        console.error('خطأ في تحميل المنتجات:', error); // رسالة خطأ مفصلة
+        showNotification('خطأ في تحميل المنتجات', 'error'); // رسالة خطأ للمستخدم
+    } finally {
+        showLoading(false); // إخفاء حالة التحميل
+    }
+}
+
+// إظهار/إخفاء حالة التحميل
+// هذه الدالة تعرض أو تخفي مؤشر التحميل أثناء جلب البيانات
+function showLoading(show) {
+    try {
+        const container = document.getElementById('product-container'); // الحصول على حاوية المنتجات
+        if (!container) return; // الخروج إذا لم يتم العثور على الحاوية
+        
+        if (show) {
+            // عرض مؤشر التحميل
+            container.innerHTML = `
+                <div class="loading-container">
+                    <div class="spinner"></div> <!-- مؤشر التحميل الدوار -->
+                    <p>جاري تحميل المنتجات...</p> <!-- نص التحميل -->
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('خطأ في عرض حالة التحميل:', error); // رسالة خطأ
+    }
+}
+
+// إظهار الإشعارات
+// هذه الدالة تعرض إشعارات للمستخدم مع دعم استخدام دالة موجودة
+function showNotification(message, type = 'info') {
+    try {
+        // التحقق من وجود دالة إشعارات عالمية
+        if (window.showNotification) {
+            window.showNotification(message, type); // استخدام الدالة الموجودة
+            return;
+        }
+        
+        // إنشاء إشعار جديد إذا لم توجد دالة
+        const notification = document.createElement('div');
+        notification.className = `notification ${type}`; // إضافة الفئة حسب النوع
+        notification.textContent = message; // نص الرسالة
+        
+        // تنسيق الإشعار باستخدام CSS
+        notification.style.cssText = `
+            position: fixed; // تثبيت الإشعار
+            top: 20px; // المسافة من الأعلى
+            left: 50%; // توسيط أفقي
+            transform: translateX(-50%); // تعديل التوسيط
+            background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'}; // اللون حسب النوع
+            color: white; // لون النص
+            padding: 12px 24px; // الحشو الداخلي
+            border-radius: 8px; // زوايا دائرية
+            z-index: 10000; // أعلى طبقة
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); // الظل
+        `;
+        
+        document.body.appendChild(notification); // إضافة الإشعار للصفحة
+        
+        // إزالة الإشعار بعد 3 ثواني
+        setTimeout(() => {
+            notification.remove(); // حذف الإشعار
+        }, 3000);
+        
+    } catch (error) {
+        console.error('خطأ في إظهار الإشعار:', error); // رسالة خطأ
+    }
+}
+
+// تهيئة عند تحميل الصفحة
+// هذا الحدث يضمن بدء تحميل المنتجات بعد تحميل الصفحة
+document.addEventListener('DOMContentLoaded', function() {
+    // تأخير تحميل المنتجات لضمان جاهزية Firebase
+    setTimeout(loadWeightProducts, 3000); // انتظار 3 ثواني قبل التحميل
 });
 
-// استماع لتغييرات الإعدادات
-if (window.siteSettings) {
-    const originalLoadAllSettings = window.loadAllSettings;
-    if (originalLoadAllSettings) {
-        window.loadAllSettings = async function() {
-            await originalLoadAllSettings();
-            await weightProductsInstance.loadWeightSettings();
-            weightProductsInstance.initializeProducts();
-        };
-    }
-}
+// تصدير الدوال للاستخدام الخارجي
+// هذه الدوال تصدر لتكون متاحة للاستخدام من ملفات JavaScript أخرى
+window.addWeightProductToCart = addWeightProductToCart; // دالة إضافة منتج بالوزن
+window.addProductToCart = addProductToCart; // دالة إضافة منتج عادي
+window.loadWeightProducts = loadWeightProducts; // دالة تحميل المنتجات

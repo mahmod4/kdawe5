@@ -1,0 +1,632 @@
+/* Custom Styles */
+* {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    direction: rtl;
+}
+
+.nav-item {
+    display: block;
+    padding: 15px 20px;
+    color: #cbd5e0;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-right: 3px solid transparent;
+}
+
+.nav-item:hover {
+    background-color: #4a5568;
+    color: white;
+    border-right-color: #4299e1;
+}
+
+.nav-item.active {
+    background-color: #2d3748;
+    color: white;
+    border-right-color: #4299e1;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid #e5e7eb;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+/* عرض الخصم في بطاقات العروض */
+.offer-card {
+    position: relative;
+    border: 2px solid #10b981;
+    background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+}
+
+.offer-card.has-discount {
+    border-color: #f59e0b;
+    background: linear-gradient(135deg, #fffbeb, #fef3c7);
+}
+
+/* شارة الخصم */
+.discount-badge {
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    z-index: 10;
+    animation: pulse 2s infinite;
+}
+
+/* عرض السعر مع الخصم */
+.offer-price {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.offer-price .original-price {
+    font-size: 1rem;
+    color: #6b7280;
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.offer-price .discount-price {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #f59e0b;
+}
+
+.offer-price .discount-percent {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #4299e1, #3182ce);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
+    font-weight: 600;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #3182ce, #2563eb);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #e53e3e, #c53030);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(229, 62, 62, 0.3);
+    font-weight: 600;
+}
+
+.btn-danger:hover {
+    background: linear-gradient(135deg, #c53030, #9b2c2c);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(229, 62, 62, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #38a169, #2f855a);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(56, 161, 105, 0.3);
+    font-weight: 600;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #2f855a, #276749);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(56, 161, 105, 0.4);
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 12px;
+    text-align: right;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.table th {
+    background-color: #f7fafc;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.table tr:hover {
+    background-color: #f7fafc;
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    transform: translateY(-1px);
+}
+
+.form-group input:hover,
+.form-group select:hover,
+.form-group textarea:hover {
+    border-color: #d1d5db;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.close {
+    color: #aaa;
+    float: left;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.badge-success {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.badge-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.badge-warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+}
+
+.badge-info {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.stats-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stats-card h3 {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-bottom: 10px;
+}
+
+.stats-card .value {
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #4299e1;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Sidebar Base Styles */
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    box-sizing: border-box;
+}
+
+.sidebar nav {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 10px;
+}
+
+.sidebar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+    background: #2d3748;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 3px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    /* Sidebar for mobile */
+    .sidebar {
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        width: 280px;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+
+    /* Overlay خلف القائمة الجانبية على الهاتف */
+    .sidebar-overlay {
+        display: none;
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        z-index: 49;
+    }
+
+    body.sidebar-open .sidebar-overlay {
+        display: block;
+    }
+
+    /* منع التمرير في الخلفية عند فتح القائمة */
+    body.sidebar-open {
+        overflow: hidden;
+        touch-action: none;
+    }
+    
+    /* Main content */
+    .main-content {
+        margin-right: 0 !important;
+        padding: 1rem !important;
+    }
+    
+    /* Cards */
+    .card {
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+    
+    /* Tables */
+    .table {
+        font-size: 12px;
+    }
+
+    /* سكرول أفقي للجداول في الهاتف */
+    .overflow-x-auto {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .table th,
+    .table td {
+        padding: 8px 4px;
+    }
+    
+    /* Stats cards */
+    .stats-card {
+        padding: 15px;
+    }
+    
+    .stats-card .value {
+        font-size: 24px;
+    }
+    
+    /* Modal */
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+        padding: 20px;
+        max-height: 85vh;
+    }
+    
+    /* Buttons */
+    .btn-primary,
+    .btn-danger,
+    .btn-success {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+    
+    /* Form groups */
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    /* Grid adjustments */
+    .grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Navigation items */
+    .nav-item {
+        padding: 12px 15px;
+        font-size: 14px;
+    }
+    
+    /* Header */
+    .page-header {
+        padding: 15px !important;
+    }
+    
+    .page-header h1 {
+        font-size: 24px !important;
+    }
+}
+
+/* Mobile menu button */
+.mobile-menu-btn {
+    display: none;
+    position: fixed;
+    top: 15px;
+    right: 15px;
+    z-index: 1001;
+    background: #4299e1;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: block;
+    }
+}
+
+/* Better spacing */
+.space-y-3 > * + * {
+    margin-top: 0.75rem;
+}
+
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+/* Tablet Styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .sidebar {
+        width: 240px;
+    }
+    
+    .main-content {
+        margin-right: 240px !important;
+    }
+    
+    .card {
+        padding: 18px;
+    }
+    
+    .table {
+        font-size: 13px;
+    }
+}
+
+/* Desktop Styles */
+@media (min-width: 1025px) {
+    .sidebar {
+        width: 256px;
+    }
+    
+    .main-content {
+        margin-right: 256px !important;
+    }
+}
+
+/* Large Desktop Styles */
+@media (min-width: 1440px) {
+    .main-content {
+        padding: 2rem !important;
+    }
+    
+    .card {
+        padding: 24px;
+    }
+}
+
+/* Extra Small Mobile */
+@media (max-width: 480px) {
+    .sidebar {
+        width: 100%;
+    }
+    
+    .main-content {
+        padding: 0.75rem !important;
+    }
+    
+    .card {
+        padding: 12px;
+    }
+    
+    .modal-content {
+        width: 98%;
+        padding: 15px;
+    }
+}
+
+/* Touch friendly */
+@media (max-width: 768px) {
+    button,
+    .btn-primary,
+    .btn-danger,
+    .btn-success,
+    a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+    
+    /* Better text sizing */
+    body {
+        font-size: 14px;
+    }
+    
+    h1, h2, h3 {
+        font-size: 1.2em;
+    }
+    
+    /* Login page mobile */
+    #loginPage .bg-white {
+        margin: 1rem;
+        padding: 1.5rem;
+    }
+    
+    /* (تم نقل overlay + table scroll لقسم 768px لتعمل على كل الهواتف) */
+    
+    /* Better spacing for mobile */
+    .p-8 {
+        padding: 1rem;
+    }
+    
+    .mb-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .gap-6 {
+        gap: 1rem;
+    }
+    
+    /* Stats cards mobile */
+    .stats-card {
+        margin-bottom: 1rem;
+    }
+}
+
