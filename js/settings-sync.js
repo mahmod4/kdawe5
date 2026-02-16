@@ -149,6 +149,20 @@ function updateStoreElements() {
 
     // Sync APP_SETTINGS used by legacy pages/scripts
     syncAppSettingsFromStore(store);
+
+    // Apply product grid columns (CSS variables)
+    try {
+        const desktop = Number(store.productsColsDesktop || 4);
+        const tablet = Number(store.productsColsTablet || 3);
+        const mobile = Number(store.productsColsMobile || 2);
+        const root = document.documentElement;
+        if (root && root.style) {
+            if (!Number.isNaN(desktop) && desktop > 0) root.style.setProperty('--products-cols-desktop', String(desktop));
+            if (!Number.isNaN(tablet) && tablet > 0) root.style.setProperty('--products-cols-tablet', String(tablet));
+            if (!Number.isNaN(mobile) && mobile > 0) root.style.setProperty('--products-cols-mobile', String(mobile));
+        }
+    } catch (e) {
+    }
 }
 
 function syncAppSettingsFromStore(store) {
@@ -244,6 +258,113 @@ function updateCategoriesElements() {
     
     // Update category icons container
     updateCategoryIcons();
+    updateCategoriesDrawer();
+}
+
+function toggleCategoriesDrawer(open) {
+    try {
+        if (open) {
+            document.body.classList.add('categories-drawer-open');
+        } else {
+            document.body.classList.remove('categories-drawer-open');
+        }
+    } catch (e) {
+    }
+}
+
+window.toggleCategoriesDrawer = toggleCategoriesDrawer;
+
+function updateCategoriesDrawer() {
+    const list = document.getElementById('category-drawer-list');
+    if (!list) return;
+
+    const iconMapping = {
+        'dairy': 'fa-cheese',
+        'grocery': 'fa-shopping-basket',
+        'snacks': 'fa-cookie-bite',
+        'beverages': 'fa-wine-bottle',
+        'cleaning': 'fa-soap',
+        'frozen': 'fa-snowflake',
+        'canned': 'fa-box',
+        'vegetables': 'fa-carrot',
+        'fruits': 'fa-apple-alt'
+    };
+
+    const currentActive = (() => {
+        try {
+            const filter = document.getElementById('category-filter');
+            return filter ? String(filter.value || 'all') : 'all';
+        } catch (e) {
+            return 'all';
+        }
+    })();
+
+    list.innerHTML = '';
+
+    const makeItem = (id, name, iconUrl) => {
+        const item = document.createElement('div');
+        item.className = 'categories-drawer-item' + (String(id) === String(currentActive) ? ' active' : '');
+        item.dataset.category = String(id);
+
+        const left = document.createElement('div');
+        left.className = 'left';
+
+        const iconClass = iconMapping[String(name || '').toLowerCase()] || 'fa-tag';
+        if (iconUrl) {
+            const img = document.createElement('img');
+            img.src = iconUrl;
+            img.alt = name;
+            img.onerror = function() {
+                this.style.display = 'none';
+                const i = document.createElement('i');
+                i.className = `fas ${iconClass}`;
+                left.insertBefore(i, left.firstChild);
+            };
+            left.appendChild(img);
+        } else {
+            const i = document.createElement('i');
+            i.className = `fas ${iconClass}`;
+            left.appendChild(i);
+        }
+
+        const title = document.createElement('div');
+        title.className = 'name';
+        title.textContent = name;
+        left.appendChild(title);
+
+        item.appendChild(left);
+
+        item.addEventListener('click', () => {
+            try {
+                const filter = document.getElementById('category-filter');
+                if (filter) {
+                    filter.value = String(id);
+                    if (typeof window.filterProducts === 'function') {
+                        window.filterProducts();
+                    }
+                }
+            } catch (e) {
+            }
+
+            try {
+                document.querySelectorAll('.categories-drawer-item').forEach(el => el.classList.remove('active'));
+                item.classList.add('active');
+            } catch (e) {
+            }
+
+            toggleCategoriesDrawer(false);
+        });
+
+        return item;
+    };
+
+    list.appendChild(makeItem('all', 'جميع المنتجات', null));
+
+    if (Array.isArray(siteSettings.categories)) {
+        siteSettings.categories.forEach((category) => {
+            list.appendChild(makeItem(category.id, category.name, category.iconUrl || null));
+        });
+    }
 }
 
 // Update category icons in the main page
@@ -365,10 +486,17 @@ function updateCategoryIcons() {
         const categoryElement = document.createElement('div');
         categoryElement.className = 'category';
         categoryElement.dataset.category = category.id;
-        categoryElement.innerHTML = `
-            <i class="fas ${iconClass}"></i>
-            <h3>${category.name}</h3>
-        `;
+        if (category.iconUrl) {
+            categoryElement.innerHTML = `
+                <img src="${category.iconUrl}" alt="${category.name}" onerror="this.style.display='none'; this.insertAdjacentHTML('afterend', '<i class=\"fas ${iconClass}\"></i>');" />
+                <h3>${category.name}</h3>
+            `;
+        } else {
+            categoryElement.innerHTML = `
+                <i class="fas ${iconClass}"></i>
+                <h3>${category.name}</h3>
+            `;
+        }
         categoryElement.addEventListener('click', () => {
             // Remove selection from all categories
             document.querySelectorAll('.category').forEach(el => el.classList.remove('selected'));

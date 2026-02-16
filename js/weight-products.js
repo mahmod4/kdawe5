@@ -40,16 +40,35 @@ class WeightProducts {
     // تحميل إعدادات الوزن
     async loadWeightSettings() {
         try {
+            // محاولة القراءة من localStorage أولاً (أسرع)
+            const savedSettings = localStorage.getItem('weightSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                this.weightSettings = settings;
+                console.log('تم تحميل إعدادات الوزن من localStorage:', settings);
+                return;
+            }
+            
+            // إذا لم توجد في localStorage، جلب من Firebase
             if (window.siteSettings && window.siteSettings.store) {
                 const store = window.siteSettings.store;
                 this.weightSettings = {
                     min: store.weightMin || 0.125,
                     max: store.weightMax || 1,
-                    increment: store.weightIncrement || 0.125
+                    increment: store.weightIncrement || 0.125,
+                    options: store.weightOptions || ['0.125', '0.25', '0.5', '0.75', '1']
                 };
+                console.log('تم تحميل إعدادات الوزن من Firebase:', this.weightSettings);
             }
         } catch (e) {
             console.warn('Failed to load weight settings:', e);
+            // إعدادات افتراضية في حالة الخطأ
+            this.weightSettings = {
+                min: 0.125,
+                max: 1,
+                increment: 0.125,
+                options: ['0.125', '0.25', '0.5', '0.75', '1']
+            };
         }
     }
 
@@ -163,24 +182,28 @@ class WeightProducts {
 const weightProductsInstance = new WeightProducts();
 window.weightProducts = weightProductsInstance;
 
-// بدء التهيئة عند تحميل الصفحة
 document.addEventListener('DOMContentLoaded', () => {
-    // انتظار تحميل المنتجات
-    setTimeout(() => {
-        weightProductsInstance.initializeProducts();
-    }, 1000);
+    weightProductsInstance.initializeProducts();
     
-    // إعادة تهيئة عند البحث أو الفلترة
-    const originalFilterProducts = window.filterProducts;
-    if (originalFilterProducts) {
-        window.filterProducts = function(...args) {
-            const result = originalFilterProducts.apply(this, args);
-            setTimeout(() => {
-                weightProductsInstance.initializeProducts();
-            }, 500);
-            return result;
+    // مراقبة تحديثات إعدادات الوزن من لوحة التحكم
+    document.addEventListener('weightSettingsUpdated', (event) => {
+        console.log('تم استلام تحديث إعدادات الوزن من لوحة التحكم:', event.detail);
+        
+        // تحديث الإعدادات الحالية
+        weightProductsInstance.weightSettings = {
+            min: event.detail.min,
+            max: event.detail.max,
+            increment: event.detail.increment,
+            options: event.detail.options,
+            unit: event.detail.unit
         };
-    }
+        
+        // إعادة تهيئة جميع المنتجات لإظهار خيارات الوزن الجديدة
+        weightProductsInstance.initializeProducts();
+        
+        // عرض إشعار للمستخدم
+        showNotification('تم تحديث إعدادات الوزن', 'success');
+    });
 });
 
 // استماع لتغييرات الإعدادات

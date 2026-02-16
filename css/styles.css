@@ -29,6 +29,9 @@
     --light-blue: #e6f7fc; /* لون أزرق فاتح للخلفيات */
     --border-color: #e9e9e9; /* لون الحدود (رمادي فاتح) */
     --accent-color: #4a9cc9; /* لون التأكيد للعناصر المهمة */
+    --products-cols-desktop: 4;
+    --products-cols-tablet: 3;
+    --products-cols-mobile: 2;
 }
 
 /* تنسيقات الجسم الرئيسية */
@@ -346,8 +349,122 @@ nav ul li a.active {
 
 .product-container {
     display: grid; /* عرض بنظام الشبكة */
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* أعمدة تتكيف مع العرض */
+    grid-template-columns: repeat(var(--products-cols-desktop), minmax(0, 1fr));
     gap: 25px; /* المسافة بين المنتجات */
+}
+
+/* Categories Drawer */
+.categories-drawer-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+    color: var(--primary-color);
+    cursor: pointer;
+    margin-right: 10px;
+}
+
+.categories-drawer-hint { text-align: center; margin-top: 14px; }
+
+.categories-drawer-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 1200;
+}
+
+.categories-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100vh;
+    width: min(360px, 88vw);
+    background: #fff;
+    z-index: 1201;
+    transform: translateX(110%);
+    transition: transform 0.28s ease;
+    box-shadow: -10px 0 30px rgba(0,0,0,0.18);
+    display: flex;
+    flex-direction: column;
+}
+
+body.categories-drawer-open .categories-drawer { transform: translateX(0); }
+body.categories-drawer-open .categories-drawer-overlay { display: block; }
+
+.categories-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.categories-drawer-header h3 { margin: 0; color: var(--primary-color); }
+
+.categories-drawer-close {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: #fff;
+    cursor: pointer;
+    font-size: 22px;
+    line-height: 1;
+}
+
+.categories-drawer-list {
+    padding: 12px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.categories-drawer-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 12px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.categories-drawer-item .left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.categories-drawer-item img {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    object-fit: contain;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.06);
+}
+
+.categories-drawer-item .name {
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.categories-drawer-item.active {
+    border-color: rgba(58, 141, 170, 0.55);
+    box-shadow: 0 6px 18px rgba(58, 141, 170, 0.18);
 }
 
 .product {
@@ -362,6 +479,25 @@ nav ul li a.active {
     cursor: default;
     position: relative;
 }
+
+.favorite-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    border: 1px solid rgba(0,0,0,0.08);
+    background: rgba(255,255,255,0.95);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+}
+
+.favorite-btn i { color: #9ca3af; font-size: 18px; }
+.favorite-btn.active i { color: #ef4444; }
 
 .product img {
     width: 100%;
@@ -859,6 +995,10 @@ footer:before {
     .category img {
         height: 180px;
     }
+
+    #product-container {
+        grid-template-columns: repeat(var(--products-cols-tablet), minmax(0, 1fr));
+    }
 }
 
 @media (max-width: 768px) {
@@ -948,7 +1088,7 @@ footer:before {
     }
     
     #product-container {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(var(--products-cols-mobile), minmax(0, 1fr));
         gap: 15px;
     }
     
@@ -998,7 +1138,7 @@ footer:before {
     }
     
     #product-container {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(var(--products-cols-mobile), minmax(0, 1fr));
         gap: 8px;
         margin: 0 -10px; /* Negative margin to compensate for container padding */
     }

@@ -75,6 +75,94 @@ let totalPages = 1; // إجمالي عدد الصفحات
 let currentProducts = []; // المنتجات المعروضة حالياً
 
 // ================================
+// المفضلة (Firestore per user)
+// ================================
+let favoritesSet = new Set();
+let favoritesUserId = null;
+
+function isUserLoggedIn() {
+    const u = getCurrentUser();
+    return !!(u && u.uid);
+}
+
+async function loadFavoritesForCurrentUser() {
+    favoritesSet = new Set();
+    favoritesUserId = null;
+
+    const user = getCurrentUser();
+    if (!user) return;
+
+    favoritesUserId = user.uid;
+
+    try {
+        if (!window.firebase || !window.firebaseFirestore || !window.firebase.firestore) return;
+        const db = window.firebase.firestore();
+        const favCol = window.firebaseFirestore.collection(db, 'users', user.uid, 'favorites');
+        const snap = await window.firebaseFirestore.getDocs(favCol);
+        snap.docs.forEach(d => {
+            favoritesSet.add(String(d.id));
+        });
+    } catch (e) {
+        console.warn('تعذر تحميل المفضلة:', e);
+    }
+}
+
+async function setFavorite(productId, value) {
+    const user = getCurrentUser();
+    if (!user) {
+        alert('يجب تسجيل الدخول أولاً لاستخدام المفضلة');
+        window.location.href = 'login.html';
+        return;
+    }
+
+    try {
+        if (!window.firebase || !window.firebaseFirestore || !window.firebase.firestore) return;
+        const db = window.firebase.firestore();
+        const ref = window.firebaseFirestore.doc(db, 'users', user.uid, 'favorites', String(productId));
+        if (value) {
+            await window.firebaseFirestore.setDoc(ref, { productId: String(productId), updatedAt: new Date() }, { merge: true });
+            favoritesSet.add(String(productId));
+        } else {
+            await window.firebaseFirestore.deleteDoc(ref);
+            favoritesSet.delete(String(productId));
+        }
+    } catch (e) {
+        console.warn('تعذر تحديث المفضلة:', e);
+        alert('حدث خطأ أثناء تحديث المفضلة');
+    }
+}
+
+function updateFavoriteButtonState(btn, productId) {
+    const isFav = favoritesSet.has(String(productId));
+    btn.classList.toggle('active', isFav);
+    btn.setAttribute('aria-pressed', isFav ? 'true' : 'false');
+}
+
+function createFavoriteButton(productId) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'favorite-btn';
+    btn.title = 'إضافة إلى المفضلة';
+    btn.setAttribute('aria-label', 'المفضلة');
+
+    const icon = document.createElement('i');
+    icon.className = 'fas fa-heart';
+    btn.appendChild(icon);
+
+    updateFavoriteButtonState(btn, productId);
+
+    btn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const next = !favoritesSet.has(String(productId));
+        await setFavorite(productId, next);
+        updateFavoriteButtonState(btn, productId);
+    });
+
+    return btn;
+}
+
+// ================================
 // 3. متغيرات التحديث التلقائي
 // ================================
 let autoUpdateInterval; // مؤقت التحديث التلقائي
@@ -226,6 +314,33 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('touchstart', function() {}, {passive: true});
     // بدء التحديث التلقائي
     startAutoUpdate();
+
+    // تحميل المفضلة عند تهيئة الصفحة وبعد تسجيل الدخول
+    try {
+        const attemptFavoritesSync = async () => {
+            await loadFavoritesForCurrentUser();
+            if (Array.isArray(currentProducts) && currentProducts.length) {
+                displayProducts(currentProducts);
+            }
+        };
+
+        setTimeout(() => {
+            attemptFavoritesSync();
+        }, 800);
+
+        if (window.firebaseAuth && typeof window.firebaseAuth.onAuthStateChanged === 'function' && window.firebase && typeof window.firebase.auth === 'function') {
+            window.firebaseAuth.onAuthStateChanged(window.firebase.auth(), () => {
+                attemptFavoritesSync();
+            });
+        }
+    } catch (e) {
+    }
+
+    // دعم السحب لفتح/غلق قائمة الأقسام
+    try {
+        initCategoriesDrawerSwipe();
+    } catch (e) {
+    }
     // تحميل العروض اليومية مع تأخير وتحقق من جاهزية Firebase
     setTimeout(() => {
         try {
@@ -246,6 +361,58 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 3000);
 });
+
+function initCategoriesDrawerSwipe() {
+    const drawer = document.getElementById('categoriesDrawer');
+    if (!drawer) return;
+
+    let startX = 0;
+    let currentX = 0;
+    let dragging = false;
+
+    const maxTranslate = () => drawer.getBoundingClientRect().width || 360;
+
+    const setTranslate = (px) => {
+        const w = maxTranslate();
+        const clamped = Math.max(0, Math.min(px, w));
+        drawer.style.transition = 'none';
+        drawer.style.transform = `translateX(${clamped}px)`;
+    };
+
+    const resetTranslate = () => {
+        drawer.style.transition = '';
+        drawer.style.transform = '';
+    };
+
+    drawer.addEventListener('touchstart', (e) => {
+        if (!document.body.classList.contains('categories-drawer-open')) return;
+        if (!e.touches || !e.touches.length) return;
+        dragging = true;
+        startX = e.touches[0].clientX;
+        currentX = startX;
+    }, { passive: true });
+
+    drawer.addEventListener('touchmove', (e) => {
+        if (!dragging) return;
+        if (!e.touches || !e.touches.length) return;
+        currentX = e.touches[0].clientX;
+        const delta = startX - currentX;
+        if (delta > 0) {
+            setTranslate(delta);
+        }
+    }, { passive: true });
+
+    drawer.addEventListener('touchend', () => {
+        if (!dragging) return;
+        dragging = false;
+        const delta = startX - currentX;
+        const w = maxTranslate();
+        resetTranslate();
+        if (delta > Math.min(90, w * 0.25)) {
+            if (window.toggleCategoriesDrawer) window.toggleCategoriesDrawer(false);
+        }
+    });
+}
 
 // ================================
 // 7. جلب وعرض العروض اليومية
@@ -773,6 +940,12 @@ function displayProducts(productsArray) {
         const productElement = document.createElement('div');
         productElement.classList.add('product');
         productElement.setAttribute('data-product-id', product.id);
+
+        // زر المفضلة
+        try {
+            productElement.appendChild(createFavoriteButton(product.id));
+        } catch (e) {
+        }
         
         // إنشاء الصورة
         const img = document.createElement('img');
@@ -995,6 +1168,12 @@ function filterProducts() {
     
     currentPage = 1;
     displayProducts(filteredProducts);
+}
+
+// إتاحة الفلترة عالميًا ليستدعيها categories drawer
+try {
+    window.filterProducts = filterProducts;
+} catch (e) {
 }
 
 // ================================
