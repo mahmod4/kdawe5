@@ -342,6 +342,7 @@ nav ul li a.active {
 /* Categories Section */
 .category-container {
     display: flex;
+    flex-wrap: nowrap;
     gap: 12px;
     margin-top: 18px;
     overflow-x: auto;
@@ -1185,7 +1186,7 @@ footer:before {
     
     /* تحسين عرض الأقسام على الهواتف الصغيرة */
     .categories { padding-top: 10px; }
-    .category-container { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .category-container { display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap: 10px; }
     .category { border-radius: 14px; padding: 8px; }
     .category img { height: 110px; }
     .category i { font-size: 2rem; margin-bottom: 10px; }
@@ -1451,7 +1452,7 @@ img {
     }
     
     #product-container {
-        grid-template-columns: repeat(3, 1fr); /* تعديل عدد الأعمدة إلى 3 */
+        grid-template-columns: repeat(var(--products-cols-tablet), minmax(0, 1fr));
         gap: 15px; /* تقليل المسافة بين المنتجات */
     }
 }
@@ -1864,7 +1865,7 @@ body.menu-open {
 }
 
 /* سلة المشتريات عائمة أسفل الشاشة على الجوال */
-@media (max-width: 500px) {
+@media (max-width: 900px) {
     .cart {
       position: fixed !important;
       left: 18px;
@@ -2097,7 +2098,7 @@ body.menu-open {
   }
   
   /* أقسام دائرية ثابتة على الهواتف */
-  .category-container { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+  .category-container { display:flex; flex-wrap:nowrap; overflow-x:auto; overflow-y:hidden; gap: 12px; }
   .category { padding: 8px; border-radius: 16px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
   .category img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; background:#fff; border:1px solid rgba(0,0,0,0.06); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
   .category i { font-size: 2rem; margin-bottom: 8px; }
@@ -2105,7 +2106,7 @@ body.menu-open {
 
   /* تحسين المنتجات */
   .product-container {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(var(--products-cols-mobile), minmax(0, 1fr));
     gap: 8px;
     padding: 0;
     margin: 0;
@@ -2234,9 +2235,11 @@ body.menu-open {
 ================================ */
 .categories .category-container {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 15px;
-    justify-content: center;
+    justify-content: flex-start;
+    overflow-x: auto;
+    overflow-y: hidden;
     margin-top: 20px;
 }
 

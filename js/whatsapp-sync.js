@@ -86,4 +86,3 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(updateWhatsAppCheckout, 2000);
 });
 
-export { getWhatsAppNumber, updateWhatsAppCheckout };

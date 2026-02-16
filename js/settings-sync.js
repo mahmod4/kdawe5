@@ -72,7 +72,7 @@ async function loadContentSettings() {
             updateContentElements();
         }
     } catch (error) {
-        console.error('Error loading content settings:', error);
+        console.warn('Error loading content settings:', error);
     }
 }
 
