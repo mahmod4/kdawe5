@@ -15,6 +15,15 @@ class WeightCart {
     // تحميل إعدادات الوزن من Firebase
     async loadWeightSettings() {
         try {
+            if (window.weightService && typeof window.weightService.loadSettings === 'function') {
+                await window.weightService.loadSettings();
+                this.weightSettings = {
+                    ...this.weightSettings,
+                    ...(window.weightService.settings || {}),
+                    current: this.weightSettings.current || {}
+                };
+                return;
+            }
             if (window.siteSettings && window.siteSettings.store) {
                 const store = window.siteSettings.store;
                 this.weightSettings = {
@@ -38,7 +47,7 @@ class WeightCart {
         const weight = baseWeight || 1; // الوزن الافتراضي 1 كجم
         
         // إذا لم يكن هناك وزن أساسي، نبدأ من الحد الأدنى
-        const startWeight = baseWeight || this.weightSettings.min;
+        const startWeight = (baseWeight != null ? baseWeight : this.weightSettings.min);
         
         // التحقق من الوزن الحالي للمنتج
         if (!this.weightSettings.current[productId]) {
@@ -94,6 +103,9 @@ class WeightCart {
         }
         
         const weight = cartItem.calculatedWeight || cartItem.weight || 1;
+        if (window.weightService && typeof window.weightService.calculatePrice === 'function') {
+            return window.weightService.calculatePrice(cartItem.price, weight);
+        }
         return cartItem.price * weight;
     }
 
@@ -104,11 +116,15 @@ class WeightCart {
         const currentWeight = this.getCurrentWeight(productId);
         const nextWeight = Math.min(currentWeight + this.weightSettings.increment, this.weightSettings.max);
         
+        const unit = (window.weightService && typeof window.weightService.getWeightUnit === 'function')
+            ? window.weightService.getWeightUnit(null)
+            : 'كجم';
+
         weightElement.innerHTML = `
             <div class="weight-info">
-                <span class="current-weight">الوزن الحالي: ${currentWeight} كجم</span>
-                <span class="next-weight">الوزن التالي: ${nextWeight} كجم</span>
-                <small class="weight-range">النطاق: ${this.weightSettings.min} - ${this.weightSettings.max} كجم</small>
+                <span class="current-weight">الوزن الحالي: ${currentWeight} ${unit}</span>
+                <span class="next-weight">الوزن التالي: ${nextWeight} ${unit}</span>
+                <small class="weight-range">النطاق: ${this.weightSettings.min} - ${this.weightSettings.max} ${unit}</small>
             </div>
         `;
     }

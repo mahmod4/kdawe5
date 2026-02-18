@@ -67,7 +67,9 @@ function redirectToLoginForCheckout() {
         sessionStorage.setItem('postLoginRedirect', window.location.href);
     } catch (e) {
     }
-    alert('يجب تسجيل الدخول لإكمال الطلب');
+    if (typeof window.showToast === 'function') {
+        window.showToast('يجب تسجيل الدخول لإكمال الطلب', 'error');
+    }
     // صفحات المتجر داخل نفس مجلد html
     window.location.href = 'login.html';
 }
@@ -78,117 +80,6 @@ let currentPage = 1; // الصفحة الحالية في التصفح
 const productsPerPage = 15; // عدد المنتجات في كل صفحة
 let totalPages = 1; // إجمالي عدد الصفحات
 let currentProducts = []; // المنتجات المعروضة حالياً
-
-// ================================
-// المفضلة (Guest + Logged-in Sync)
-// ================================
-// الهدف:
-// - الزائر: حفظ المفضلة في localStorage
-// - المستخدم المسجل: مزامنة المفضلة مع Firestore داخل users/{uid}
-// - عند تسجيل الدخول: دمج مفضلة localStorage مع Firestore (بدون فقد بيانات)
-let favorites = [];
-
-function loadFavoritesFromStorage() {
-    try {
-        const raw = localStorage.getItem('favorites');
-        const arr = raw ? JSON.parse(raw) : [];
-        favorites = Array.isArray(arr) ? arr.map(String) : [];
-    } catch (e) {
-        favorites = [];
-    }
-}
-
-function saveFavoritesToStorage() {
-    try {
-        localStorage.setItem('favorites', JSON.stringify(favorites));
-    } catch (e) {
-    }
-}
-
-function isFavorite(productId) {
-    return favorites.includes(String(productId));
-}
-
-function updateFavoriteButtons() {
-    try {
-        document.querySelectorAll('.favorite-btn').forEach((btn) => {
-            const id = btn.getAttribute('data-id');
-            const fav = isFavorite(id);
-            btn.classList.toggle('is-favorite', fav);
-            const icon = btn.querySelector('i');
-            if (icon) {
-                icon.className = fav ? 'fas fa-heart' : 'far fa-heart';
-            }
-        });
-    } catch (e) {
-    }
-}
-
-async function syncFavoritesToFirestore() {
-    const user = getCurrentUser();
-    if (!user) return;
-
-    try {
-        if (!window.firebase || !window.firebase.firestore || !window.firebaseFirestore) return;
-        const db = window.firebase.firestore();
-        const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
-        await window.firebaseFirestore.setDoc(userRef, {
-            favoriteProductIds: favorites,
-            updatedAt: new Date()
-        }, { merge: true });
-    } catch (e) {
-        console.warn('تعذر مزامنة المفضلة إلى Firestore:', e);
-    }
-}
-
-async function loadFavoritesFromFirestoreAndMerge() {
-    const user = getCurrentUser();
-    if (!user) return;
-
-    try {
-        if (!window.firebase || !window.firebase.firestore || !window.firebaseFirestore) return;
-        const db = window.firebase.firestore();
-        const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
-        const snap = await window.firebaseFirestore.getDoc(userRef);
-        const cloudFavs = (snap && snap.exists && snap.exists())
-            ? (snap.data().favoriteProductIds || [])
-            : [];
-        const merged = Array.from(new Set([...(Array.isArray(cloudFavs) ? cloudFavs : []).map(String), ...favorites.map(String)]));
-        favorites = merged;
-        saveFavoritesToStorage();
-        await syncFavoritesToFirestore();
-        updateFavoriteButtons();
-    } catch (e) {
-        console.warn('تعذر جلب/دمج المفضلة من Firestore:', e);
-    }
-}
-
-function toggleFavorite(productId) {
-    // تبديل حالة المنتج في المفضلة (إضافة/إزالة) ثم حفظ/مزامنة
-    const id = String(productId);
-    if (isFavorite(id)) {
-        favorites = favorites.filter((x) => x !== id);
-    } else {
-        favorites.push(id);
-    }
-    saveFavoritesToStorage();
-    updateFavoriteButtons();
-    syncFavoritesToFirestore();
-}
-
-function setupFavoritesAuthSync() {
-    // إن كانت صفحة المتجر مجهزة بـ firebaseAuth
-    try {
-        if (window.firebaseAuth && typeof window.firebaseAuth.onAuthStateChanged === 'function' && window.firebase && typeof window.firebase.auth === 'function') {
-            window.firebaseAuth.onAuthStateChanged(window.firebase.auth(), (user) => {
-                if (user) {
-                    loadFavoritesFromFirestoreAndMerge();
-                }
-            });
-        }
-    } catch (e) {
-    }
-}
 
 // ================================
 // 3. متغيرات التحديث التلقائي
@@ -281,8 +172,13 @@ async function fetchCategoriesFromFirestore() {
 // 6. أحداث تحميل الصفحة
 // ================================
 document.addEventListener('DOMContentLoaded', () => {
-    // تحميل المفضلة أولاً
-    loadFavoritesFromStorage();
+    // تهيئة نظام المفضلة (localStorage + Firestore sync)
+    try {
+        if (window.favoritesService && typeof window.favoritesService.init === 'function') {
+            window.favoritesService.init();
+        }
+    } catch (e) {
+    }
 
     // إضافة كلاس للجسم إذا كان الجهاز يدعم اللمس
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
@@ -346,8 +242,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // بدء التحديث التلقائي
     startAutoUpdate();
 
-    // مزامنة المفضلة عند تسجيل الدخول
-    setupFavoritesAuthSync();
+    // مزامنة المفضلة عند تسجيل الدخول تتم داخل favoritesService.init()
     // تحميل العروض اليومية مع تأخير وتحقق من جاهزية Firebase
     setTimeout(() => {
         try {
@@ -680,7 +575,9 @@ function setupEventListeners() {
             if (favBtn) {
                 e.preventDefault();
                 const id = favBtn.getAttribute('data-id');
-                if (id) toggleFavorite(id);
+                if (id && window.favoritesService && typeof window.favoritesService.toggleFavorite === 'function') {
+                    window.favoritesService.toggleFavorite(id, favBtn);
+                }
                 return;
             }
             const btn = e.target && e.target.closest ? e.target.closest('.add-to-cart') : null;
@@ -704,7 +601,9 @@ function setupEventListeners() {
     // إتمام الشراء
     checkoutBtn.addEventListener('click', () => {
         if (cart.length === 0) {
-            alert('سلة التسوق فارغة!');
+            if (typeof window.showToast === 'function') {
+                window.showToast('سلة التسوق فارغة!', 'error');
+            }
             return;
         }
         const user = getCurrentUser();
@@ -940,11 +839,16 @@ function displayProducts(productsArray) {
         favBtn.setAttribute('type', 'button');
         favBtn.setAttribute('data-id', product.id);
         favBtn.setAttribute('aria-label', 'إضافة إلى المفضلة');
+        favBtn.setAttribute('aria-pressed', 'false');
         const favIcon = document.createElement('i');
-        favIcon.className = isFavorite(product.id) ? 'fas fa-heart' : 'far fa-heart';
+        const favOn = (window.favoritesService && typeof window.favoritesService.isFavorite === 'function')
+            ? window.favoritesService.isFavorite(product.id)
+            : false;
+        favIcon.className = favOn ? 'fas fa-heart' : 'far fa-heart';
         favBtn.appendChild(favIcon);
-        if (isFavorite(product.id)) {
+        if (favOn) {
             favBtn.classList.add('is-favorite');
+            favBtn.setAttribute('aria-pressed', 'true');
         }
         productElement.appendChild(favBtn);
         
@@ -1464,10 +1368,15 @@ async function sendOrderToWhatsApp() {
     // حفظ الطلب في Firebase إذا كان المستخدم مسجل دخول
     try {
         if (window.firebase && window.firebase.auth) {
-            await saveOrderToFirebase(user.uid, cart, grandTotal);
+            if (window.orderService && typeof window.orderService.saveOrder === 'function') {
+                await window.orderService.saveOrder(user.uid, cart, grandTotal);
+            }
         }
     } catch (error) {
         console.error('خطأ في حفظ الطلب:', error);
+        if (typeof window.showToast === 'function') {
+            window.showToast('تعذر حفظ الطلب في قاعدة البيانات. تم إرسال الطلب عبر واتساب فقط.', 'error');
+        }
     }
     
     const encodedText = encodeURIComponent(orderText);
@@ -1478,68 +1387,8 @@ async function sendOrderToWhatsApp() {
     cart = [];
     updateCart();
     if (cartModal) { cartModal.style.display = 'none'; }
-    alert('تم إرسال طلبك إلى واتساب. شكراً لتسوقك معنا!');
-}
-
-// ================================
-// 22. حفظ الطلب في Firebase
-// ================================
-async function saveOrderToFirebase(userId, cartItems, total) {
-    try {
-        if (window.firebase && window.firebaseFirestore) {
-            const db = window.firebase.firestore();
-            const now = new Date();
-
-            // تحديث/إنشاء مستند المستخدم في Collection users لصفحة إدارة المستخدمين
-            try {
-                if (window.firebase.auth) {
-                    const auth = window.firebase.auth();
-                    const user = auth.currentUser;
-                    if (user) {
-                        const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
-                        const userSnap = await window.firebaseFirestore.getDoc(userRef);
-                        const baseData = {
-                            name: user.displayName || null,
-                            email: user.email || null,
-                            phone: user.phoneNumber || null,
-                            active: true,
-                            updatedAt: now
-                        };
-                        if (userSnap.exists()) {
-                            await window.firebaseFirestore.updateDoc(userRef, baseData);
-                        } else {
-                            await window.firebaseFirestore.setDoc(userRef, {
-                                ...baseData,
-                                createdAt: now
-                            });
-                        }
-                    }
-                }
-            } catch (userError) {
-                console.error('خطأ في تحديث بيانات المستخدم في users:', userError);
-            }
-
-            const orderData = {
-                // لتوافق كامل مع لوحة التحكم (orders.js + dashboard.js)
-                userId: userId,
-                customerId: userId,
-                items: cartItems,
-                total: total,
-                status: 'pending',
-                createdAt: now,     // تستخدمها لوحة التحكم للترتيب والإحصائيات
-                orderDate: now,     // احتفاظ بالاسم القديم للتوافق العكسي
-                timestamp: Date.now()
-            };
-            
-            await window.firebaseFirestore.addDoc(
-                window.firebaseFirestore.collection(db, 'orders'),
-                orderData
-            );
-            console.log('تم حفظ الطلب في Firebase بنجاح');
-        }
-    } catch (error) {
-        console.error('خطأ في حفظ الطلب في Firebase:', error);
-        throw error;
+    if (typeof window.showToast === 'function') {
+        window.showToast('تم إرسال طلبك إلى واتساب. شكراً لتسوقك معنا!', 'success');
     }
 }
 

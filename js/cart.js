@@ -186,7 +186,9 @@
     // 5) حفظ الطلب في Firestore (إذا المستخدم مسجل)
     const cart = readCart();
     if (!cart.length) {
-      alert('السلة فارغة!');
+      if (typeof window.showToast === 'function') {
+        window.showToast('السلة فارغة!', 'error');
+      }
       return;
     }
 
@@ -197,7 +199,9 @@
           try {
             sessionStorage.setItem('postLoginRedirect', window.location.href);
           } catch (e) {}
-          alert('يجب تسجيل الدخول لإكمال الطلب');
+          if (typeof window.showToast === 'function') {
+            window.showToast('يجب تسجيل الدخول لإكمال الطلب', 'error');
+          }
           window.location.href = 'login.html';
           return;
         }
@@ -214,7 +218,9 @@
     const address = addressEl && typeof addressEl.value === 'string' ? addressEl.value.trim() : '';
     const customerPhone = phoneEl && typeof phoneEl.value === 'string' ? phoneEl.value.trim() : '';
     if (!firstName || !lastName || !address || !customerPhone) {
-      alert('يرجى تعبئة الاسم الأول والاسم الثاني والعنوان ورقم الهاتف قبل المتابعة.');
+      if (typeof window.showToast === 'function') {
+        window.showToast('يرجى تعبئة الاسم الأول والاسم الثاني والعنوان ورقم الهاتف قبل المتابعة.', 'error');
+      }
       return;
     }
     const noteInput = document.getElementById('note-input');
@@ -245,11 +251,12 @@
 
     // حفظ الطلب في Firebase إذا كان المستخدم مسجل دخول
     try {
-      if (window.firebase && window.firebase.auth) {
-        const user = window.firebase.auth().currentUser;
-        if (user) {
-          await saveOrderToFirebase(user.uid, cart, grand, { paymentMethod, note: noteValue, customer: { firstName, lastName, address, phone: customerPhone } });
-        }
+      if (window.orderService && typeof window.orderService.saveOrderForCurrentUser === 'function') {
+        await window.orderService.saveOrderForCurrentUser(cart, grand, {
+          paymentMethod,
+          note: noteValue,
+          customer: { firstName, lastName, address, phone: customerPhone }
+        });
       }
     } catch (error) {
       console.error('خطأ في حفظ الطلب:', error);
@@ -266,75 +273,8 @@
   }
 
   /**
-   * حفظ الطلب في Firebase
+   * تهيئة الصفحة وربط الأحداث
    */
-  async function saveOrderToFirebase(userId, cartItems, total, extra) {
-    // حفظ الطلب داخل Firestore في Collection (orders)
-    // مع كتابة userId + customerId لتوافق القواعد ولوحة التحكم
-    try {
-      if (window.firebase && window.firebaseFirestore) {
-        const db = window.firebase.firestore();
-        const now = new Date();
-
-        // تحديث/إنشاء مستند المستخدم في Collection users لصفحة إدارة المستخدمين
-        try {
-          if (window.firebase.auth) {
-            const auth = window.firebase.auth();
-            const user = auth.currentUser;
-            if (user) {
-              const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
-              const userSnap = await window.firebaseFirestore.getDoc(userRef);
-
-              const baseData = {
-                name: (extra && extra.customer && extra.customer.name) || user.displayName || null,
-                email: user.email || null,
-                phone: (extra && extra.customer && extra.customer.phone) || user.phoneNumber || null,
-                active: true,
-                updatedAt: now
-              };
-
-              if (userSnap.exists()) {
-                await window.firebaseFirestore.updateDoc(userRef, baseData);
-              } else {
-                await window.firebaseFirestore.setDoc(userRef, {
-                  ...baseData,
-                  createdAt: now
-                });
-              }
-            }
-          }
-        } catch (userError) {
-          console.error('خطأ في تحديث بيانات المستخدم في users (صفحة السلة):', userError);
-        }
-
-        const orderData = {
-          // لتوافق كامل مع لوحة التحكم (orders.js + dashboard.js)
-          userId: userId,
-          customerId: userId,
-          items: cartItems,
-          total: total,
-          paymentMethod: extra && extra.paymentMethod ? extra.paymentMethod : 'cash',
-          note: extra && extra.note ? extra.note : '',
-          customer: extra && extra.customer ? extra.customer : null,
-          status: 'pending',
-          createdAt: now,
-          orderDate: now,
-          timestamp: Date.now()
-        };
-        
-        await window.firebaseFirestore.addDoc(
-          window.firebaseFirestore.collection(db, 'orders'),
-          orderData
-        );
-        console.log('تم حفظ الطلب في Firebase بنجاح');
-      }
-    } catch (error) {
-      console.error('خطأ في حفظ الطلب في Firebase:', error);
-      throw error;
-    }
-  }
-
-  // تهيئة الصفحة وربط الأحداث
   function initCartPage() {
     // ربط الأحداث وتهيئة الصفحة
     const checkoutBtn = document.getElementById('checkout-btn');

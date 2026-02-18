@@ -55,6 +55,7 @@
          ================================ -->
     <!-- ملف التنسيقات الرئيسي -->
     <link rel="stylesheet" href="../css/styles.css"> <!-- تنسيقات الموقع -->
+    <link rel="stylesheet" href="../css/weight.css">
     <!-- مكتبة Font Awesome للأيقونات -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> <!-- أيقونات Font Awesome -->
     <!-- مكتبة AOS للحركات والتأثيرات -->
@@ -96,6 +97,7 @@
          Firebase SDK - قاعدة البيانات والمصادقة
          ================================ -->
     <!-- إعداد Firebase للمصادقة وقاعدة البيانات -->
+    <script src="../js/runtime-env-client.js"></script>
     <script type="module">
       // استيراد مكتبات Firebase الأساسية
       import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
@@ -108,14 +110,15 @@
       // إعدادات مشروع Firebase
       // ================================
       // هذه الإعدادات تربط الموقع بمشروع Firebase الخاص بك
+      const env = (window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object') ? window.RUNTIME_ENV : {};
       const firebaseConfig = {
-        apiKey: "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
-        authDomain: "dashboard-27bc8.firebaseapp.com",
-        projectId: "dashboard-27bc8",
-        storageBucket: "dashboard-27bc8.firebasestorage.app",
-        messagingSenderId: "707339591256",
-        appId: "1:707339591256:web:dcc2649182e97249a2742d",
-        measurementId: "G-K8FNNYH4S1"
+        apiKey: env.FIREBASE_API_KEY || "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
+        authDomain: env.FIREBASE_AUTH_DOMAIN || "dashboard-27bc8.firebaseapp.com",
+        projectId: env.FIREBASE_PROJECT_ID || "dashboard-27bc8",
+        storageBucket: env.FIREBASE_STORAGE_BUCKET || "dashboard-27bc8.firebasestorage.app",
+        messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "707339591256",
+        appId: env.FIREBASE_APP_ID || "1:707339591256:web:dcc2649182e97249a2742d",
+        measurementId: env.FIREBASE_MEASUREMENT_ID || "G-K8FNNYH4S1"
       };
 
       // ================================
@@ -539,8 +542,11 @@
     <script src="./js/settings.js"></script>
     <script src="./js/settings-sync.js" type="module"></script>
     <script src="./js/whatsapp-sync.js" type="module"></script>
+    <script src="../js/weight-service.js"></script>
     <script src="./js/weight-cart.js"></script>
     <script src="./js/weight-products.js"></script>
+    <script src="../js/ui.js"></script>
+    <script src="../js/favorites.js"></script>
     <script src="./js/script.js"></script>
   <!-- 🔔 بانر إضافة للموبايل -->
   <div id="addToHome" style="display:none; position:fixed; bottom:20px; left:20px; right:20px; background:linear-gradient(135deg, #1a5f7a 0%, #42c5ea 100%); color:white; padding:15px; border-radius:15px; box-shadow:0 4px 20px rgba(0,0,0,0.3); z-index:9999; text-align:center; font-family:'Tajawal',sans-serif;">
@@ -574,90 +580,7 @@
        نظام تسجيل الطلبات في Firebase
        ================================ -->
   <script>
-    // ================================
-    // دالة تسجيل الطلب في Firebase
-    // ================================
-    async function saveOrderToFirebase(cartItems, totalPrice) {
-      try {
-        console.log('بدء حفظ الطلب في Firebase...');
-        
-        // التحقق من تسجيل الدخول
-        const auth = window.firebase.auth();
-        const user = auth.currentUser;
-        console.log('حالة المستخدم:', user ? 'مسجل دخول' : 'غير مسجل');
-        
-        if (!user) {
-          throw new Error('يجب تسجيل الدخول أولاً');
-        }
-
-        // إعداد بيانات الطلب
-        const now = new Date();
-        // تحديث/إنشاء مستند المستخدم في Collection users لصفحة إدارة المستخدمين
-        try {
-          const userRef = window.firebaseFirestore.doc(db, 'users', user.uid);
-          const userSnap = await window.firebaseFirestore.getDoc(userRef);
-          const baseData = {
-            name: user.displayName || null,
-            email: user.email || null,
-            phone: user.phoneNumber || null,
-            active: true,
-            updatedAt: now
-          };
-          if (userSnap.exists()) {
-            await window.firebaseFirestore.updateDoc(userRef, baseData);
-          } else {
-            await window.firebaseFirestore.setDoc(userRef, {
-              ...baseData,
-              createdAt: now
-            });
-          }
-        } catch (userError) {
-          console.error('خطأ في تحديث بيانات المستخدم في users (index.html):', userError);
-        }
-
-        const orderData = {
-          // حقول لوحة التحكم
-          customerName: user.displayName || user.email,
-          customerEmail: user.email,
-          customerId: user.uid,
-          userId: user.uid,
-          items: cartItems,
-          total: totalPrice,
-          status: 'pending',
-          createdAt: now,
-          // حقول إضافية للتوافق مع الكود السابق
-          orderItems: cartItems,
-          totalPrice: totalPrice,
-          orderDate: now.toISOString(),
-          orderTime: now.toLocaleString('ar-EG', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-            second: '2-digit'
-          }),
-          timestamp: Date.now()
-        };
-
-        // حفظ الطلب في Firebase
-        console.log('بيانات الطلب:', orderData);
-        const db = window.firebase.firestore();
-        const ordersCollection = window.firebaseFirestore.collection(db, 'orders');
-        console.log('محاولة حفظ الطلب في مجموعة orders...');
-        
-        const docRef = await window.firebaseFirestore.addDoc(ordersCollection, orderData);
-
-        console.log('تم حفظ الطلب بنجاح! رقم الطلب:', docRef.id);
-        return docRef.id;
-
-      } catch (error) {
-        console.error('خطأ في حفظ الطلب:', error);
-        throw error;
-      }
-    }
-
-    // ================================
+    // =====s )===================
     // دالة إتمام الشراء مع تسجيل الدخول الإجباري
     // ================================
     async function processCheckout() {
@@ -671,7 +594,9 @@
         
         if (!user) {
           // إظهار رسالة تسجيل الدخول
-          alert('يجب تسجيل الدخول أولاً لإتمام الطلب');
+          if (typeof window.showToast === 'function') {
+            window.showToast('يجب تسجيل الدخول أولاً لإتمام الطلب', 'error');
+          }
           // توجيه المستخدم لصفحة تسجيل الدخول
           window.location.href = 'login.html';
           return;
@@ -682,7 +607,9 @@
         const totalPrice = parseFloat(document.getElementById('total-price').textContent) || 0;
 
         if (cartItems.length === 0) {
-          alert('السلة فارغة');
+          if (typeof window.showToast === 'function') {
+            window.showToast('السلة فارغة', 'error');
+          }
           return;
         }
 
@@ -694,7 +621,7 @@
 
         // حفظ الطلب في Firebase
         console.log('استدعاء دالة saveOrderToFirebase...');
-        const orderId = await saveOrderToFirebase(cartItems, totalPrice);
+        const orderId = await window.saveOrderToFirebase(cartItems, totalPrice);
         console.log('تم الحصول على رقم الطلب:', orderId);
 
         // إعداد رسالة واتساب
@@ -724,7 +651,9 @@
         window.open(whatsappUrl, '_blank');
 
         // إظهار رسالة نجاح
-        alert('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.');
+        if (typeof window.showToast === 'function') {
+          window.showToast('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.', 'success');
+        }
 
         // مسح السلة
         localStorage.removeItem('cart');
@@ -742,7 +671,9 @@
 
       } catch (error) {
         console.error('خطأ في إتمام الطلب:', error);
-        alert('حدث خطأ في حفظ الطلب. يرجى المحاولة مرة أخرى.');
+        if (typeof window.showToast === 'function') {
+          window.showToast('حدث خطأ في حفظ الطلب. يرجى المحاولة مرة أخرى.', 'error');
+        }
       } finally {
         // استعادة زر إتمام الشراء
         const checkoutBtn = document.getElementById('checkout');
@@ -820,4 +751,5 @@
   </script>
 </body>
 </html>
+
 

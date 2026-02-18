@@ -8,14 +8,18 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebas
 import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
 
 // إعدادات Firebase - نفس الإعدادات المستخدمة في لوحة التحكم
+const env = (typeof window !== 'undefined' && window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object')
+    ? window.RUNTIME_ENV
+    : {};
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
-    authDomain: "dashboard-27bc8.firebaseapp.com",
-    projectId: "dashboard-27bc8",
-    storageBucket: "dashboard-27bc8.firebasestorage.app",
-    messagingSenderId: "707339591256",
-    appId: "1:707339591256:web:dcc2649182e97249a2742d",
-    measurementId: "G-K8FNNYH4S1"
+    apiKey: env.FIREBASE_API_KEY || "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
+    authDomain: env.FIREBASE_AUTH_DOMAIN || "dashboard-27bc8.firebaseapp.com",
+    projectId: env.FIREBASE_PROJECT_ID || "dashboard-27bc8",
+    storageBucket: env.FIREBASE_STORAGE_BUCKET || "dashboard-27bc8.firebasestorage.app",
+    messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "707339591256",
+    appId: env.FIREBASE_APP_ID || "1:707339591256:web:dcc2649182e97249a2742d",
+    measurementId: env.FIREBASE_MEASUREMENT_ID || "G-K8FNNYH4S1"
 };
 
 // تهيئة Firebase (App + Firestore)

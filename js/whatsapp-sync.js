@@ -21,13 +21,17 @@ export function updateWhatsAppCheckout() {
         const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
         
         if (cartItems.length === 0) {
-            alert('السلة فارغة!');
+            if (typeof window.showToast === 'function') {
+                window.showToast('السلة فارغة!', 'error');
+            }
             return;
         }
         
         const user = window.firebaseAuth?.auth?.currentUser;
         if (!user) {
-            alert('يرجى تسجيل الدخول أولاً!');
+            if (typeof window.showToast === 'function') {
+                window.showToast('يرجى تسجيل الدخول أولاً', 'error');
+            }
             return;
         }
         
@@ -61,7 +65,9 @@ export function updateWhatsAppCheckout() {
             window.open(whatsappUrl, '_blank');
             
             // إظهار رسالة نجاح
-            alert('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.');
+            if (typeof window.showToast === 'function') {
+                window.showToast('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.', 'success');
+            }
             
             // مسح السلة
             localStorage.removeItem('cart');
@@ -72,7 +78,9 @@ export function updateWhatsAppCheckout() {
             
         } catch (error) {
             console.error('Error during checkout:', error);
-            alert('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.');
+            if (typeof window.showToast === 'function') {
+                window.showToast('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.', 'error');
+            }
         } finally {
             checkoutBtn.innerHTML = originalText;
             checkoutBtn.style.pointerEvents = 'auto';

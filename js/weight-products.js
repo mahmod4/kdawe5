@@ -40,6 +40,13 @@ class WeightProducts {
     // تحميل إعدادات الوزن
     async loadWeightSettings() {
         try {
+            // استخدام الخدمة المركزية إذا كانت موجودة
+            if (window.weightService && typeof window.weightService.loadSettings === 'function') {
+                await window.weightService.loadSettings();
+                this.weightSettings = window.weightService.settings || this.weightSettings;
+                return;
+            }
+
             // محاولة القراءة من localStorage أولاً (أسرع)
             const savedSettings = localStorage.getItem('weightSettings');
             if (savedSettings) {
@@ -74,9 +81,13 @@ class WeightProducts {
 
     // الحصول على خيارات الوزن
     getWeightOptions() {
+        if (window.weightService && typeof window.weightService.getOptions === 'function') {
+            return window.weightService.getOptions(null).map((o) => ({ value: o.value, label: o.label, price: null }));
+        }
+
         const unit = this.getWeightUnit(null);
         const options = [];
-        
+
         // إنشاء خيارات الوزن من min إلى max
         for (let weight = this.weightSettings.min; weight <= this.weightSettings.max; weight += this.weightSettings.increment) {
             options.push({
@@ -85,7 +96,7 @@ class WeightProducts {
                 price: null // سيتم حسابها لاحقاً
             });
         }
-        
+
         return options;
     }
 
@@ -100,8 +111,12 @@ class WeightProducts {
         } catch (e) {
         }
 
-        const unit = this.getWeightUnit(product);
-        const weightOptions = this.getWeightOptions();
+        const unit = (window.weightService && typeof window.weightService.getWeightUnit === 'function')
+            ? window.weightService.getWeightUnit(product)
+            : this.getWeightUnit(product);
+        const weightOptions = (window.weightService && typeof window.weightService.getOptions === 'function')
+            ? window.weightService.getOptions(product).map((o) => ({ value: o.value, label: o.label }))
+            : this.getWeightOptions();
         
         const picker = document.createElement('div');
         picker.className = 'weight-picker-simple mt-3';
@@ -140,17 +155,22 @@ class WeightProducts {
     setupWeightPickerListeners(picker, product) {
         const select = picker.querySelector('.weight-select-simple');
         const priceElement = picker.closest('.product').querySelector('.product-price');
+        const unit = (window.weightService && typeof window.weightService.getWeightUnit === 'function')
+            ? window.weightService.getWeightUnit(product)
+            : this.getWeightUnit(product);
 
         select.addEventListener('change', () => {
             const weight = parseFloat(select.value);
             const basePrice = parseFloat(select.dataset.basePrice);
-            const newPrice = basePrice * weight;
+            const newPrice = (window.weightService && typeof window.weightService.calculatePrice === 'function')
+                ? window.weightService.calculatePrice(basePrice, weight)
+                : (basePrice * weight);
             
             // تحديث السعر المعروض
             if (priceElement) {
                 priceElement.innerHTML = `
                     <span class="current-price text-lg font-bold text-green-600">${newPrice.toFixed(2)} ج.م</span>
-                    <small class="text-xs text-gray-500 block">${this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
+                    <small class="text-xs text-gray-500 block">${(window.weightService && typeof window.weightService.formatWeightValue === 'function') ? window.weightService.formatWeightValue(weight) : this.formatWeightValue(weight)} ${unit} × ${basePrice} ج.م</small>
                 `;
             }
 
@@ -213,7 +233,12 @@ document.addEventListener('DOMContentLoaded', () => {
         weightProductsInstance.initializeProducts();
         
         // عرض إشعار للمستخدم
-        showNotification('تم تحديث إعدادات الوزن', 'success');
+        try {
+            if (typeof window.showToast === 'function') {
+                window.showToast('تم تحديث إعدادات الوزن', 'success');
+            }
+        } catch (e) {
+        }
     });
 });
 
