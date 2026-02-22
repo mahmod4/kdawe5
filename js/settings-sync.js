@@ -231,7 +231,9 @@ function syncAppSettingsFromStore(store) {
     }
 
     const phones = [];
-    if (store.storePhone) phones.push(String(store.storePhone));
+    if (store.storePhone) {
+        phones.push(String(store.storePhone));
+    }
     if (Array.isArray(store.contactPhones) && store.contactPhones.length) {
         store.contactPhones.forEach(p => phones.push(String(p)));
     }
@@ -246,6 +248,17 @@ function syncAppSettingsFromStore(store) {
 
     if (Array.isArray(store.branches)) {
         window.APP_SETTINGS.BRANCHES = store.branches;
+    }
+
+    // بيانات نموذج التواصل
+    if (store.contactName) {
+        window.APP_SETTINGS.CONTACT_NAME = String(store.contactName);
+    }
+    if (store.contactEmail) {
+        window.APP_SETTINGS.CONTACT_EMAIL = String(store.contactEmail);
+    }
+    if (store.contactMessage) {
+        window.APP_SETTINGS.CONTACT_MESSAGE = String(store.contactMessage);
     }
 
     try {

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>المفضلة</title>
+
+  <link rel="stylesheet" href="./css/styles.css" />
+  <link rel="stylesheet" href="./css/weight.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="./js/ui.js"></script>
+  <script src="./js/runtime-env-client.js"></script>
+  <script src="./js/favorites.js"></script>
+  <script src="./js/weight-service.js"></script>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      query,
+      where,
+      orderBy,
+      getDocs,
+      doc,
+      getDoc,
+      setDoc,
+      updateDoc
+    } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+    const env = (window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object') ? window.RUNTIME_ENV : {};
+    const firebaseConfig = {
+      apiKey: env.FIREBASE_API_KEY || "",
+      authDomain: env.FIREBASE_AUTH_DOMAIN || "",
+      projectId: env.FIREBASE_PROJECT_ID || "",
+      storageBucket: env.FIREBASE_STORAGE_BUCKET || "",
+      messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "",
+      appId: env.FIREBASE_APP_ID || "",
+      measurementId: env.FIREBASE_MEASUREMENT_ID || ""
+    };
+
+    try {
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const db = getFirestore(app);
+
+      window.firebase = {
+        app,
+        auth: () => auth,
+        firestore: () => db
+      };
+
+      window.firebaseAuth = {
+        onAuthStateChanged
+      };
+
+      window.firebaseFirestore = {
+        collection,
+        addDoc,
+        query,
+        where,
+        orderBy,
+        getDocs,
+        doc,
+        getDoc,
+        setDoc,
+        updateDoc
+      };
+
+      console.log('Firebase جاهز في صفحة المفضلة');
+    } catch (e) {
+      console.error('فشل تهيئة Firebase في صفحة المفضلة:', e);
+    }
+  </script>
+
+  <style>
+    .favorites-container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 18px 14px;
+    }
+
+    .favorites-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .favorites-title {
+      margin: 0;
+      font-size: 20px;
+      color: #1a5f7a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .favorites-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .fav-card {
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      overflow: hidden;
+      border: 1px solid #eef2f7;
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+    }
+
+    .fav-img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      background: #f3f4f6;
+    }
+
+    .fav-body {
+      padding: 10px 12px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      flex: 1;
+    }
+
+    .fav-name {
+      font-weight: 700;
+      color: #111827;
+      margin: 0;
+      line-height: 1.35;
+    }
+
+    .fav-price {
+      margin: 0;
+      color: #1a5f7a;
+      font-weight: 700;
+    }
+
+    .fav-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-top: auto;
+    }
+
+    .fav-actions .btn {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 12px;
+      border-radius: 12px;
+    }
+
+    .btn-danger {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid rgba(153, 27, 27, 0.18);
+    }
+
+    .btn-danger:hover {
+      filter: brightness(0.98);
+    }
+
+    .muted {
+      color: #6b7280;
+      font-size: 13px;
+    }
+
+    .top-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .top-links a {
+      text-decoration: none;
+      color: #1a5f7a;
+      font-weight: 700;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(66, 197, 234, 0.10);
+      border: 1px solid rgba(66, 197, 234, 0.20);
+    }
+
+    .empty {
+      background: #fff;
+      border: 1px dashed #d1d5db;
+      border-radius: 14px;
+      padding: 24px;
+      text-align: center;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-container">
+      <a href="index.html" style="display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit;">
+        <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo />
+        <h1 data-store-name>المتجر</h1>
+      </a>
+    </div>
+    <nav class="main-menu" id="main-menu">
+      <ul>
+        <li><a href="index.html#home" class="menu-item"><i data-lucide="home"></i> الرئيسية</a></li>
+        <li><a href="index.html#products" class="menu-item"><i data-lucide="shopping-bag"></i> المنتجات</a></li>
+        <li><a href="cart.html" class="menu-item"><i data-lucide="shopping-cart"></i> السلة</a></li>
+        <li><a href="contact.html" class="menu-item"><i data-lucide="store"></i> اتصل بنا</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="favorites-container">
+    <div class="favorites-header">
+      <h2 class="favorites-title"><i data-lucide="heart"></i> المفضلة</h2>
+      <div class="top-links">
+        <a href="login.html"><i data-lucide="user"></i> حسابي</a>
+      </div>
+    </div>
+
+    <div id="favorites-status" class="muted">جاري التحميل...</div>
+    <div id="favorites-grid" class="favorites-grid" style="margin-top:12px;"></div>
+  </main>
+
+  <script src="./js/settings.js"></script>
+  <script src="./js/settings-sync.js" type="module"></script>
+
+  <script>
+    function readCart() {
+      try {
+        return JSON.parse(localStorage.getItem('cart')) || [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function writeCart(cart) {
+      localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    function addToCartFromProduct(product, selectedWeight) {
+      const weight = (typeof selectedWeight === 'number' && Number.isFinite(selectedWeight)) ? selectedWeight : 1;
+      const cart = readCart();
+
+      const itemId = String(product.id);
+      const existing = cart.find(it => String(it.id) === itemId && Number(it.selectedWeight || 1) === Number(weight));
+
+      const basePrice = Number(product.price) || 0;
+      const finalPrice = (product.soldByWeight || product.hasWeightOptions)
+        ? (window.weightService ? window.weightService.calculatePrice(basePrice, weight) : basePrice * weight)
+        : basePrice;
+
+      if (existing) {
+        existing.quantity = Number(existing.quantity || 1) + 1;
+      } else {
+        cart.push({
+          id: itemId,
+          name: product.name || 'منتج',
+          image: product.image || '',
+          price: Number(finalPrice.toFixed ? finalPrice.toFixed(2) : finalPrice),
+          quantity: 1,
+          selectedWeight: weight,
+          weightUnit: product.weightUnit || null,
+          originalPrice: product.originalPrice || null,
+          hasDiscount: !!product.originalPrice
+        });
+      }
+
+      writeCart(cart);
+      if (typeof window.showToast === 'function') window.showToast('تمت الإضافة إلى السلة', 'success');
+
+      try {
+        window.dispatchEvent(new CustomEvent('cartUpdated', { detail: { cart } }));
+      } catch (e) {}
+    }
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    async function waitForDeps() {
+      const max = 80;
+      let i = 0;
+      while (i < max) {
+        const ok = window.firebase && window.firebase.auth && window.firebase.firestore && window.firebaseFirestore && window.favoritesService;
+        if (ok) return true;
+        await new Promise(r => setTimeout(r, 150));
+        i++;
+      }
+      return false;
+    }
+
+    async function fetchProductById(productId) {
+      const db = window.firebase.firestore();
+      const ref = window.firebaseFirestore.doc(db, 'products', String(productId));
+      const snap = await window.firebaseFirestore.getDoc(ref);
+      if (!snap || !snap.exists || !snap.exists()) return null;
+      const data = snap.data() || {};
+      return {
+        id: String(snap.id),
+        name: data.name || '',
+        image: data.image || '',
+        price: Number(data.price) || 0,
+        soldByWeight: data.soldByWeight === true || data.hasWeightOptions === true,
+        hasWeightOptions: data.hasWeightOptions === true,
+        weightUnit: data.weightUnit || null
+      };
+    }
+
+    function renderEmpty() {
+      const grid = document.getElementById('favorites-grid');
+      const status = document.getElementById('favorites-status');
+      status.textContent = '';
+      grid.innerHTML = '<div class="empty">لا توجد منتجات في المفضلة حالياً</div>';
+    }
+
+    function renderFavorites(products) {
+      const grid = document.getElementById('favorites-grid');
+      const status = document.getElementById('favorites-status');
+
+      if (!products.length) {
+        renderEmpty();
+        return;
+      }
+
+      status.textContent = `عدد المنتجات: ${products.length}`;
+      grid.innerHTML = '';
+
+      products.forEach((p) => {
+        const card = document.createElement('div');
+        card.className = 'fav-card';
+
+        const img = document.createElement('img');
+        img.className = 'fav-img';
+        img.src = p.image || '';
+        img.alt = p.name || '';
+        card.appendChild(img);
+
+        const body = document.createElement('div');
+        body.className = 'fav-body';
+
+        const name = document.createElement('p');
+        name.className = 'fav-name';
+        name.textContent = p.name || 'منتج';
+        body.appendChild(name);
+
+        const price = document.createElement('p');
+        price.className = 'fav-price';
+        price.textContent = `${Number(p.price || 0)} ج.م`;
+        body.appendChild(price);
+
+        let weightSelect = null;
+        if ((p.soldByWeight || p.hasWeightOptions) && window.weightService) {
+          const wrap = document.createElement('div');
+          wrap.className = 'weight-picker-simple';
+
+          const lbl = document.createElement('label');
+          lbl.textContent = 'اختيار الوزن:';
+          wrap.appendChild(lbl);
+
+          weightSelect = document.createElement('select');
+          weightSelect.className = 'weight-select-simple';
+
+          const opts = window.weightService.getOptions(p);
+          opts.forEach(o => {
+            const op = document.createElement('option');
+            op.value = String(o.value);
+            op.textContent = o.label;
+            weightSelect.appendChild(op);
+          });
+
+          wrap.appendChild(weightSelect);
+          body.appendChild(wrap);
+        }
+
+        const actions = document.createElement('div');
+        actions.className = 'fav-actions';
+
+        const addBtn = document.createElement('button');
+        addBtn.className = 'btn';
+        addBtn.type = 'button';
+        addBtn.innerHTML = '<i class="fas fa-shopping-cart"></i> إضافة للسلة';
+        addBtn.addEventListener('click', () => {
+          const w = weightSelect ? Number(weightSelect.value) : 1;
+          addToCartFromProduct(p, w);
+        });
+
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'btn btn-danger';
+        removeBtn.type = 'button';
+        removeBtn.innerHTML = '<i class="fas fa-heart-broken"></i> إزالة';
+        removeBtn.addEventListener('click', async () => {
+          if (!window.favoritesService || typeof window.favoritesService.toggleFavorite !== 'function') return;
+          await window.favoritesService.toggleFavorite(p.id, null);
+          await loadAndRender();
+        });
+
+        actions.appendChild(addBtn);
+        actions.appendChild(removeBtn);
+        body.appendChild(actions);
+
+        card.appendChild(body);
+        grid.appendChild(card);
+      });
+    }
+
+    async function loadAndRender() {
+      const status = document.getElementById('favorites-status');
+      status.textContent = 'جاري التحميل...';
+
+      try {
+        if (!window.favoritesService) throw new Error('favoritesService غير جاهز');
+
+        // تأكد من أن المفضلة متزامنة مع Firestore
+        try {
+          await window.favoritesService.loadFromFirestoreAndMerge();
+        } catch (e) {
+        }
+
+        const ids = Array.isArray(window.favoritesService.favorites) ? window.favoritesService.favorites : [];
+        if (!ids.length) {
+          renderEmpty();
+          return;
+        }
+
+        const results = await Promise.all(ids.map(async (id) => {
+          try {
+            return await fetchProductById(id);
+          } catch (e) {
+            return null;
+          }
+        }));
+
+        const products = results.filter(Boolean);
+        renderFavorites(products);
+      } catch (e) {
+        status.textContent = 'تعذر تحميل المفضلة';
+        if (typeof window.showToast === 'function') window.showToast('تعذر تحميل المفضلة', 'error');
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      if (window.lucide) lucide.createIcons();
+
+      const ready = await waitForDeps();
+      if (!ready) {
+        const status = document.getElementById('favorites-status');
+        status.textContent = 'تعذر تحميل الصفحة (Firebase غير جاهز)';
+        return;
+      }
+
+      // init favorites service (إن لم يتم تشغيله)
+      try {
+        if (window.favoritesService && typeof window.favoritesService.init === 'function') {
+          window.favoritesService.init();
+        }
+      } catch (e) {}
+
+      // تحميل إعدادات الوزن
+      try {
+        if (window.weightService && typeof window.weightService.loadSettings === 'function') {
+          await window.weightService.loadSettings();
+        }
+      } catch (e) {}
+
+      // احمي الصفحة: لازم تسجيل دخول
+      try {
+        if (window.firebaseAuth && window.firebaseAuth.onAuthStateChanged) {
+          window.firebaseAuth.onAuthStateChanged(window.firebase.auth(), async (user) => {
+            if (!user) {
+              if (typeof window.showToast === 'function') window.showToast('يجب تسجيل الدخول أولاً', 'error');
+              window.location.href = 'login.html';
+              return;
+            }
+            await loadAndRender();
+          });
+          return;
+        }
+      } catch (e) {
+      }
+
+      await loadAndRender();
+    });
+  </script>
+</body>
+</html>

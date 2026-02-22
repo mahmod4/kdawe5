@@ -21,6 +21,9 @@ window.APP_SETTINGS = {
   // ================================
   WHATSAPP_PHONE: '201013449050', // سيتم استبدالها بـ socialWhatsapp من لوحة التحكم (بدون +)
   CONTACT_PHONES: ['201013449050'], // سيتم استبدالها برقم/أرقام الهاتف من لوحة التحكم
+  CONTACT_NAME: '', // سيتم استبدالها من لوحة التحكم
+  CONTACT_EMAIL: '', // سيتم استبدالها من لوحة التحكم
+  CONTACT_MESSAGE: '', // سيتم استبدالها من لوحة التحكم
 
   // ================================
   // فئات المنتجات (احتياطي فقط، الفئات الأساسية تأتي من Firestore)
@@ -95,6 +98,17 @@ window.APP_SETTINGS = {
           // إزالة أي + أو مسافات
           const cleaned = String(s.socialWhatsapp).replace(/\s+/g, '').replace(/^\+/, '');
           window.APP_SETTINGS.WHATSAPP_PHONE = cleaned;
+        }
+
+        // بيانات نموذج التواصل
+        if (s.contactName) {
+          window.APP_SETTINGS.CONTACT_NAME = String(s.contactName);
+        }
+        if (s.contactEmail) {
+          window.APP_SETTINGS.CONTACT_EMAIL = String(s.contactEmail);
+        }
+        if (s.contactMessage) {
+          window.APP_SETTINGS.CONTACT_MESSAGE = String(s.contactMessage);
         }
 
         console.log('تم تحميل APP_SETTINGS من Firestore (settings/general):', window.APP_SETTINGS);

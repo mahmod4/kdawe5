@@ -28,12 +28,12 @@
     <!-- ================================
          مكتبات CSS و JavaScript
          ================================ -->
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="./css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../js/ui.js"></script>
-    <script src="../js/runtime-env-client.js"></script>
-    <script src="../js/favorites.js"></script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/runtime-env-client.js"></script>
+    <script src="./js/favorites.js"></script>
     
     <!-- إضافة رمز الموقع المختصر (favicon) -->
     <link rel="icon" type="image/png" data-store-favicon href="../images/logo22.png">
@@ -434,6 +434,10 @@
                     <img id="user-avatar" src="" alt="صورة المستخدم" class="user-avatar">
                     <div class="user-name" id="user-name"></div>
                     <div class="email" id="user-email"></div>
+                    <a href="favorites.html" class="auth-btn" style="text-decoration:none; width:100%; justify-content:center;">
+                        <i data-lucide="heart"></i>
+                        المفضلة
+                    </a>
                     <button id="logoutBtn" class="auth-btn logout-btn">
                         <i data-lucide="log-out"></i>
                         تسجيل الخروج
@@ -795,8 +799,8 @@
             }
         });
     </script>
-    <script src="../js/settings.js"></script>
-    <script src="../js/settings-sync.js" type="module"></script>
+    <script src="./js/settings.js"></script>
+    <script src="./js/settings-sync.js" type="module"></script>
 </body>
 </html>
 

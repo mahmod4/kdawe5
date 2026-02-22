@@ -11,10 +11,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="description" content="تواصل مع أسواق الشادر لأي استفسار أو مشكلة.">
-    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="stylesheet" href="./css/styles.css">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../js/ui.js"></script>
-    <script src="../js/favorites.js"></script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/favorites.js"></script>
     <!-- إضافة رمز الموقع المختصر (favicon) -->
     <link rel="icon" type="image/jpeg" data-store-favicon href="../images/default-logo.png">
     <link rel="shortcut icon" type="image/jpeg" data-store-favicon href="../images/default-logo.png">
@@ -68,9 +68,9 @@
                     </div>
                 </div>
                 <form class="contact-form">
-                    <input type="text" placeholder="الاسم" aria-label="الاسم">
-                    <input type="email" placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني">
-                    <textarea placeholder="رسالتك" aria-label="رسالتك"></textarea>
+                    <input type="text" placeholder="الاسم" aria-label="الاسم" data-contact-name>
+                    <input type="email" placeholder="البريد الإلكتروني" aria-label="البريد الإلكتروني" data-contact-email>
+                    <textarea placeholder="رسالتك" aria-label="رسالتك" data-contact-message></textarea>
                     <button type="submit" class="btn">إرسال <i class="fas fa-paper-plane"></i></button>
                 </form>
             </div>
@@ -104,8 +104,8 @@
         </div>
     </footer>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="../js/settings.js"></script>
-    <script src="../js/settings-sync.js" type="module"></script>
+    <script src="./js/settings.js"></script>
+    <script src="./js/settings-sync.js" type="module"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         if (window.lucide) lucide.createIcons();
@@ -154,6 +154,21 @@
         function renderContactFromSettings() {
             try {
                 const S = window.APP_SETTINGS || {};
+
+                // تحديث حقول النموذج من اللوحة
+                const nameField = document.querySelector('[data-contact-name]');
+                const emailField = document.querySelector('[data-contact-email]');
+                const messageField = document.querySelector('[data-contact-message]');
+                
+                if (nameField && S.contactName) {
+                    nameField.value = S.contactName;
+                }
+                if (emailField && S.contactEmail) {
+                    emailField.value = S.contactEmail;
+                }
+                if (messageField && S.contactMessage) {
+                    messageField.value = S.contactMessage;
+                }
 
                 // الفروع
                 const branchesList = document.getElementById('branches-list');
@@ -267,9 +282,9 @@
         if (contactForm) {
             contactForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                const name = contactForm.querySelector('input[placeholder="الاسم"]').value.trim();
-                const email = contactForm.querySelector('input[placeholder="البريد الإلكتروني"]').value.trim();
-                const message = contactForm.querySelector('textarea[placeholder="رسالتك"]').value.trim();
+                const name = contactForm.querySelector('[data-contact-name]').value.trim();
+                const email = contactForm.querySelector('[data-contact-email]').value.trim();
+                const message = contactForm.querySelector('[data-contact-message]').value.trim();
                 let text = 'رسالة دعم/مشكلة من الموقع:';
                 if (name) text += `\nالاسم: ${name}`;
                 if (email) text += `\nالبريد: ${email}`;
