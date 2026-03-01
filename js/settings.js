@@ -33,6 +33,13 @@ window.APP_SETTINGS = {
   DEFAULT_CUSTOMER_ADDRESS: '',
   DEFAULT_CUSTOMER_PHONE: '',
 
+  CUSTOMER_FIELDS: [
+    { label: 'الاسم الأول', type: 'text', required: true, defaultValue: '' },
+    { label: 'الاسم الثاني', type: 'text', required: true, defaultValue: '' },
+    { label: 'العنوان', type: 'text', required: true, defaultValue: '' },
+    { label: 'رقم الهاتف', type: 'tel', required: true, defaultValue: '' }
+  ],
+
   // ================================
   // فئات المنتجات (احتياطي فقط، الفئات الأساسية تأتي من Firestore)
   // ================================
@@ -133,6 +140,10 @@ window.APP_SETTINGS = {
         }
         if (s.defaultCustomerPhone) {
           window.APP_SETTINGS.DEFAULT_CUSTOMER_PHONE = String(s.defaultCustomerPhone);
+        }
+
+        if (Array.isArray(s.customerFields)) {
+          window.APP_SETTINGS.CUSTOMER_FIELDS = s.customerFields;
         }
 
         console.log('تم تحميل APP_SETTINGS من Firestore (settings/general):', window.APP_SETTINGS);

@@ -18,27 +18,91 @@
     return Number.isFinite(v) && v >= 0 ? v : 20;
   }
 
-  function applyCustomerDefaults() {
-    try {
-      const S = window.APP_SETTINGS || {};
-      const firstNameEl = document.getElementById('first-name');
-      const lastNameEl = document.getElementById('last-name');
-      const addressEl = document.getElementById('address');
-      const phoneEl = document.getElementById('phone');
+  function getCustomerFieldDefs() {
+    const S = window.APP_SETTINGS || {};
+    const defs = Array.isArray(S.CUSTOMER_FIELDS) ? S.CUSTOMER_FIELDS : null;
+    if (defs && defs.length) return defs;
+    return [
+      { label: 'الاسم الأول', type: 'text', required: true, defaultValue: '' },
+      { label: 'الاسم الثاني', type: 'text', required: true, defaultValue: '' },
+      { label: 'العنوان', type: 'text', required: true, defaultValue: '' },
+      { label: 'رقم الهاتف', type: 'tel', required: true, defaultValue: '' }
+    ];
+  }
 
-      if (firstNameEl && !String(firstNameEl.value || '').trim() && S.DEFAULT_CUSTOMER_FIRST_NAME) {
-        firstNameEl.value = String(S.DEFAULT_CUSTOMER_FIRST_NAME);
+  function normalizeFieldKey(label, index) {
+    const base = String(label || '').trim().toLowerCase().replace(/\s+/g, '_').replace(/[^a-z0-9_]/g, '');
+    return base ? base : `field_${index + 1}`;
+  }
+
+  function renderCustomerFields() {
+    const container = document.getElementById('customer-fields');
+    if (!container) return;
+    const defs = getCustomerFieldDefs();
+    container.innerHTML = '';
+
+    defs.forEach((def, idx) => {
+      const label = def && def.label ? String(def.label) : '';
+      if (!label) return;
+      const type = def && def.type ? String(def.type) : 'text';
+      const required = !!(def && def.required);
+      const defaultValue = def && typeof def.defaultValue === 'string' ? def.defaultValue : (def && def.defaultValue != null ? String(def.defaultValue) : '');
+      const key = def && def.key ? String(def.key) : normalizeFieldKey(label, idx);
+
+      const wrap = document.createElement('div');
+      const labelEl = document.createElement('label');
+      labelEl.textContent = label;
+      labelEl.style.display = 'block';
+      labelEl.style.marginBottom = '6px';
+      wrap.appendChild(labelEl);
+
+      let input;
+      if (type === 'textarea') {
+        input = document.createElement('textarea');
+        input.rows = 2;
+        input.style.resize = 'vertical';
+      } else {
+        input = document.createElement('input');
+        input.type = type === 'tel' ? 'tel' : 'text';
       }
-      if (lastNameEl && !String(lastNameEl.value || '').trim() && S.DEFAULT_CUSTOMER_LAST_NAME) {
-        lastNameEl.value = String(S.DEFAULT_CUSTOMER_LAST_NAME);
+      input.style.width = '100%';
+      input.style.padding = '10px';
+      input.style.border = '1px solid #ddd';
+      input.style.borderRadius = '8px';
+      input.dataset.customerFieldKey = key;
+      input.dataset.customerFieldLabel = label;
+      input.dataset.customerFieldRequired = required ? '1' : '0';
+      if (required) input.required = true;
+      if (!String(input.value || '').trim() && defaultValue) {
+        input.value = defaultValue;
       }
-      if (addressEl && !String(addressEl.value || '').trim() && S.DEFAULT_CUSTOMER_ADDRESS) {
-        addressEl.value = String(S.DEFAULT_CUSTOMER_ADDRESS);
+      wrap.appendChild(input);
+      container.appendChild(wrap);
+    });
+  }
+
+  function readCustomerFieldValues() {
+    const container = document.getElementById('customer-fields');
+    if (!container) return { ok: true, missingLabel: '', values: {}, lines: [], displayName: '' };
+    const inputs = Array.from(container.querySelectorAll('input[data-customer-field-key], textarea[data-customer-field-key]'));
+    const values = {};
+    const lines = [];
+    let firstText = '';
+
+    for (const el of inputs) {
+      const key = el.dataset.customerFieldKey ? String(el.dataset.customerFieldKey) : '';
+      const label = el.dataset.customerFieldLabel ? String(el.dataset.customerFieldLabel) : '';
+      const required = el.dataset.customerFieldRequired === '1';
+      const value = typeof el.value === 'string' ? el.value.trim() : '';
+      if (required && !value) {
+        return { ok: false, missingLabel: label || key, values: {}, lines: [], displayName: '' };
       }
-      if (phoneEl && !String(phoneEl.value || '').trim() && S.DEFAULT_CUSTOMER_PHONE) {
-        phoneEl.value = String(S.DEFAULT_CUSTOMER_PHONE);
-      }
-    } catch (e) {}
+      if (key) values[key] = value;
+      if (label) lines.push(`${label}: ${value || '-'}`);
+      if (!firstText && value) firstText = value;
+    }
+
+    return { ok: true, missingLabel: '', values, lines, displayName: firstText };
   }
 
   // تحديد وحدة الوزن (من عنصر السلة أو من إعدادات المتجر)
@@ -182,7 +246,7 @@
     if (cart[idx].quantity <= 0) cart.splice(idx, 1);
     writeCart(cart);
     render();
-    applyCustomerDefaults();
+    renderCustomerFields();
   }
 
   /**
@@ -233,17 +297,10 @@
     } catch (e) {
     }
 
-    const firstNameEl = document.getElementById('first-name');
-    const lastNameEl = document.getElementById('last-name');
-    const addressEl = document.getElementById('address');
-    const phoneEl = document.getElementById('phone');
-    const firstName = firstNameEl && typeof firstNameEl.value === 'string' ? firstNameEl.value.trim() : '';
-    const lastName = lastNameEl && typeof lastNameEl.value === 'string' ? lastNameEl.value.trim() : '';
-    const address = addressEl && typeof addressEl.value === 'string' ? addressEl.value.trim() : '';
-    const customerPhone = phoneEl && typeof phoneEl.value === 'string' ? phoneEl.value.trim() : '';
-    if (!firstName || !lastName || !address || !customerPhone) {
+    const customer = readCustomerFieldValues();
+    if (!customer.ok) {
       if (typeof window.showToast === 'function') {
-        window.showToast('يرجى تعبئة الاسم الأول والاسم الثاني والعنوان ورقم الهاتف قبل المتابعة.', 'error');
+        window.showToast(`يرجى تعبئة الحقل المطلوب: ${customer.missingLabel}`, 'error');
       }
       return;
     }
@@ -265,9 +322,10 @@
     text += `\n🚚 *التوصيل:* ${deliveryFee} ج.م`;
     text += `\n📦 *الإجمالي:* ${grand} ج.م\n`;
     text += `\n💳 *طريقة الدفع:* ${paymentMethod === 'visa' ? 'فيزا' : 'كاش عند الاستلام'}`;
-    text += `\n👤 *العميل:* ${firstName} ${lastName}`;
-    text += `\n📞 *الهاتف:* ${customerPhone}`;
-    text += `\n📍 *العنوان:* ${address}`;
+    text += `\n\n👤 *بيانات العميل:*`;
+    customer.lines.forEach((line) => {
+      text += `\n- ${line}`;
+    });
     if (noteValue) {
       text += `\n📝 *ملاحظة:* ${noteValue}`;
     }
@@ -279,7 +337,7 @@
         await window.orderService.saveOrderForCurrentUser(cart, grand, {
           paymentMethod,
           note: noteValue,
-          customer: { firstName, lastName, address, phone: customerPhone }
+          customerFields: customer.values
         });
       }
     } catch (error) {
@@ -309,6 +367,7 @@
     if (continueBtn && detailsSection && checkoutBtn) {
       continueBtn.addEventListener('click', () => {
         detailsSection.style.display = 'flex';
+        renderCustomerFields();
         checkoutBtn.style.display = 'block';
         continueBtn.style.display = 'none';
         try { detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
@@ -319,7 +378,7 @@
     try {
       window.addEventListener('appSettingsUpdated', () => {
         render();
-        applyCustomerDefaults();
+        renderCustomerFields();
       });
     } catch (e) {}
   }

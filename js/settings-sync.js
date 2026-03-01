@@ -282,6 +282,10 @@ function syncAppSettingsFromStore(store) {
         window.APP_SETTINGS.DEFAULT_CUSTOMER_PHONE = String(store.defaultCustomerPhone);
     }
 
+    if (Array.isArray(store.customerFields)) {
+        window.APP_SETTINGS.CUSTOMER_FIELDS = store.customerFields;
+    }
+
     try {
         window.dispatchEvent(new CustomEvent('appSettingsUpdated', { detail: { store } }));
     } catch (e) {
