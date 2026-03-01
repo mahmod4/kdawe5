@@ -114,10 +114,10 @@
     container.innerHTML = products.map(product => {
       const price = (product.discountPrice && product.discountPrice < product.price) ? Number(product.discountPrice) : Number(product.price);
       return `
-        <div class="product" style="border:1px solid #eee; border-radius:12px; padding:12px; cursor:pointer;" onclick="window.location.href='product.html?id=${product.id}'">
-          <img src="${product.image || ''}" alt="${product.name || ''}" style="width:100%; height:140px; object-fit:cover; border-radius:8px; background:#fafafa;" onerror="this.style.display='none'" />
-          <h4 style="margin:8px 0 4px; font-size:14px;">${product.name || ''}</h4>
-          <p style="margin:0; font-weight:bold; color:#2c3e50;">${formatPrice(price)} ج.م</p>
+        <div class="product" style="border:1px solid #eee; border-radius:12px; padding:12px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;" onclick="window.location.href='product.html?id=${product.id}'" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+          <img src="${product.image || ''}" alt="${product.name || ''}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; background:#fafafa;" onerror="this.style.display='none'" />
+          <h4 style="margin:8px 0 4px; font-size:13px; line-height:1.3; height:2.6em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${product.name || ''}</h4>
+          <p style="margin:0; font-weight:bold; color:#2c3e50; font-size:14px;">${formatPrice(price)} ج.م</p>
         </div>
       `;
     }).join('');
@@ -192,17 +192,17 @@
 
     wrap.innerHTML = `
       <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
-        <div style="flex:1; min-width:240px; max-width:380px;">
-          <img src="${product.image || ''}" alt="${product.name || ''}" style="width:100%; border-radius:12px; border:1px solid #eee; background:#fafafa;" onerror="this.style.display='none'" />
+        <div style="flex:1; min-width:200px; max-width:100%;">
+          <img src="${product.image || ''}" alt="${product.name || ''}" style="width:100%; border-radius:12px; border:1px solid #eee; background:#fafafa; max-height:300px; object-fit:cover;" onerror="this.style.display='none'" />
         </div>
-        <div style="flex:2; min-width:260px;">
-          <h3 style="margin:0 0 8px;">${product.name || ''}</h3>
-          ${product.description ? `<p style="margin:0 0 10px; color:#444;">${product.description}</p>` : ''}
-          <p style="margin:0 0 12px;"><strong>السعر:</strong> ${formatPrice(price)} ج.م</p>
+        <div style="flex:1; min-width:200px;">
+          <h3 style="margin:0 0 8px; font-size:20px;">${product.name || ''}</h3>
+          ${product.description ? `<p style="margin:0 0 10px; color:#444; line-height:1.5;">${product.description}</p>` : ''}
+          <p style="margin:0 0 12px; font-size:18px; font-weight:bold; color:#2c3e50;">${formatPrice(price)} ج.م</p>
 
           <div id="weight-box" style="margin:0 0 12px; display:none;"></div>
 
-          <button id="add-to-cart-btn" class="btn" style="width:100%;" ${product.stock === false ? 'disabled' : ''}>
+          <button id="add-to-cart-btn" class="btn" style="width:100%; padding:12px; font-size:16px;" ${product.stock === false ? 'disabled' : ''}>
             ${product.stock === false ? 'غير متوفر' : 'إضافة للسلة'}
           </button>
         </div>

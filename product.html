@@ -2,10 +2,14 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <title>تفاصيل المنتج</title>
   <link rel="stylesheet" href="./css/styles.css" />
   <link rel="stylesheet" href="./css/weight.css" />
+  <link rel="stylesheet" href="./css/product-responsive.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="./js/ui.js"></script>
@@ -79,11 +83,11 @@
   </header>
 
   <main class="container" style="padding: 20px 16px; max-width: 900px; margin: 0 auto;">
-    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px;">
-      <a href="index.html#products" class="btn" style="text-align:center;">رجوع</a>
-      <h2 id="product-title" style="margin:0;">تفاصيل المنتج</h2>
-      <button id="share-btn" class="btn" style="text-align:center;" title="مشاركة المنتج">
-        <i data-lucide="share-2"></i>
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:12px; flex-wrap:nowrap;">
+      <a href="index.html#products" class="btn" style="text-align:center; min-width:60px; padding:8px 12px;">رجوع</a>
+      <h2 id="product-title" style="margin:0; font-size:18px; text-align:center; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">تفاصيل المنتج</h2>
+      <button id="share-btn" class="btn" style="text-align:center; min-width:44px; padding:8px;" title="مشاركة المنتج">
+        <i data-lucide="share-2" style="width:16px; height:16px;"></i>
       </button>
     </div>
 
@@ -93,7 +97,7 @@
 
     <div id="similar-products-section" style="margin-top:24px; display:none;">
       <h3 style="margin:0 0 12px;">منتجات مشابهة</h3>
-      <div id="similar-products-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px;"></div>
+      <div id="similar-products-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:12px;"></div>
     </div>
   </main>
 
