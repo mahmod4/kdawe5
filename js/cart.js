@@ -18,6 +18,29 @@
     return Number.isFinite(v) && v >= 0 ? v : 20;
   }
 
+  function applyCustomerDefaults() {
+    try {
+      const S = window.APP_SETTINGS || {};
+      const firstNameEl = document.getElementById('first-name');
+      const lastNameEl = document.getElementById('last-name');
+      const addressEl = document.getElementById('address');
+      const phoneEl = document.getElementById('phone');
+
+      if (firstNameEl && !String(firstNameEl.value || '').trim() && S.DEFAULT_CUSTOMER_FIRST_NAME) {
+        firstNameEl.value = String(S.DEFAULT_CUSTOMER_FIRST_NAME);
+      }
+      if (lastNameEl && !String(lastNameEl.value || '').trim() && S.DEFAULT_CUSTOMER_LAST_NAME) {
+        lastNameEl.value = String(S.DEFAULT_CUSTOMER_LAST_NAME);
+      }
+      if (addressEl && !String(addressEl.value || '').trim() && S.DEFAULT_CUSTOMER_ADDRESS) {
+        addressEl.value = String(S.DEFAULT_CUSTOMER_ADDRESS);
+      }
+      if (phoneEl && !String(phoneEl.value || '').trim() && S.DEFAULT_CUSTOMER_PHONE) {
+        phoneEl.value = String(S.DEFAULT_CUSTOMER_PHONE);
+      }
+    } catch (e) {}
+  }
+
   // تحديد وحدة الوزن (من عنصر السلة أو من إعدادات المتجر)
   function getWeightUnit(item) {
     try {
@@ -159,6 +182,7 @@
     if (cart[idx].quantity <= 0) cart.splice(idx, 1);
     writeCart(cart);
     render();
+    applyCustomerDefaults();
   }
 
   /**
@@ -262,7 +286,8 @@
       console.error('خطأ في حفظ الطلب:', error);
     }
 
-    const whatsappPhone = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '201013449050';
+    const rawWhatsapp = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '201013449050';
+    const whatsappPhone = String(rawWhatsapp).replace(/\s+/g, '').replace(/^\+/, '').replace(/[^0-9]/g, '') || '201013449050';
     const url = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(text)}`;
     const win = window.open(url, '_blank', 'noopener');
     if (win) { win.opener = null; }
@@ -294,6 +319,7 @@
     try {
       window.addEventListener('appSettingsUpdated', () => {
         render();
+        applyCustomerDefaults();
       });
     } catch (e) {}
   }

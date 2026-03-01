@@ -240,10 +240,17 @@ function syncAppSettingsFromStore(store) {
     if (phones.length) window.APP_SETTINGS.CONTACT_PHONES = phones;
 
     if (store.socialWhatsapp) {
-        window.APP_SETTINGS.WHATSAPP_PHONE = String(store.socialWhatsapp)
+        const cleaned = String(store.socialWhatsapp)
             .replace(/\s+/g, '')
             .replace(/^\+/, '')
             .replace(/[^0-9]/g, '');
+        if (cleaned) window.APP_SETTINGS.WHATSAPP_PHONE = cleaned;
+    } else if (store.storePhone) {
+        const cleaned = String(store.storePhone)
+            .replace(/\s+/g, '')
+            .replace(/^\+/, '')
+            .replace(/[^0-9]/g, '');
+        if (cleaned) window.APP_SETTINGS.WHATSAPP_PHONE = cleaned;
     }
 
     if (Array.isArray(store.branches)) {
@@ -259,6 +266,20 @@ function syncAppSettingsFromStore(store) {
     }
     if (store.contactMessage) {
         window.APP_SETTINGS.CONTACT_MESSAGE = String(store.contactMessage);
+    }
+
+    // بيانات العميل الافتراضية
+    if (store.defaultCustomerFirstName) {
+        window.APP_SETTINGS.DEFAULT_CUSTOMER_FIRST_NAME = String(store.defaultCustomerFirstName);
+    }
+    if (store.defaultCustomerLastName) {
+        window.APP_SETTINGS.DEFAULT_CUSTOMER_LAST_NAME = String(store.defaultCustomerLastName);
+    }
+    if (store.defaultCustomerAddress) {
+        window.APP_SETTINGS.DEFAULT_CUSTOMER_ADDRESS = String(store.defaultCustomerAddress);
+    }
+    if (store.defaultCustomerPhone) {
+        window.APP_SETTINGS.DEFAULT_CUSTOMER_PHONE = String(store.defaultCustomerPhone);
     }
 
     try {

@@ -26,6 +26,14 @@ window.APP_SETTINGS = {
   CONTACT_MESSAGE: '', // سيتم استبدالها من لوحة التحكم
 
   // ================================
+  // بيانات العميل الافتراضية (تُدار من لوحة التحكم)
+  // ================================
+  DEFAULT_CUSTOMER_FIRST_NAME: '',
+  DEFAULT_CUSTOMER_LAST_NAME: '',
+  DEFAULT_CUSTOMER_ADDRESS: '',
+  DEFAULT_CUSTOMER_PHONE: '',
+
+  // ================================
   // فئات المنتجات (احتياطي فقط، الفئات الأساسية تأتي من Firestore)
   // ================================
   CATEGORIES: [
@@ -93,11 +101,13 @@ window.APP_SETTINGS = {
           window.APP_SETTINGS.CONTACT_PHONES = phones;
         }
 
-        // واتساب من socialWhatsapp إن وجد
+        // واتساب من socialWhatsapp إن وجد، وإلا fallback إلى storePhone
         if (s.socialWhatsapp) {
-          // إزالة أي + أو مسافات
-          const cleaned = String(s.socialWhatsapp).replace(/\s+/g, '').replace(/^\+/, '');
-          window.APP_SETTINGS.WHATSAPP_PHONE = cleaned;
+          const cleaned = String(s.socialWhatsapp).replace(/\s+/g, '').replace(/^\+/, '').replace(/[^0-9]/g, '');
+          if (cleaned) window.APP_SETTINGS.WHATSAPP_PHONE = cleaned;
+        } else if (s.storePhone) {
+          const cleaned = String(s.storePhone).replace(/\s+/g, '').replace(/^\+/, '').replace(/[^0-9]/g, '');
+          if (cleaned) window.APP_SETTINGS.WHATSAPP_PHONE = cleaned;
         }
 
         // بيانات نموذج التواصل
@@ -109,6 +119,20 @@ window.APP_SETTINGS = {
         }
         if (s.contactMessage) {
           window.APP_SETTINGS.CONTACT_MESSAGE = String(s.contactMessage);
+        }
+
+        // بيانات العميل الافتراضية
+        if (s.defaultCustomerFirstName) {
+          window.APP_SETTINGS.DEFAULT_CUSTOMER_FIRST_NAME = String(s.defaultCustomerFirstName);
+        }
+        if (s.defaultCustomerLastName) {
+          window.APP_SETTINGS.DEFAULT_CUSTOMER_LAST_NAME = String(s.defaultCustomerLastName);
+        }
+        if (s.defaultCustomerAddress) {
+          window.APP_SETTINGS.DEFAULT_CUSTOMER_ADDRESS = String(s.defaultCustomerAddress);
+        }
+        if (s.defaultCustomerPhone) {
+          window.APP_SETTINGS.DEFAULT_CUSTOMER_PHONE = String(s.defaultCustomerPhone);
         }
 
         console.log('تم تحميل APP_SETTINGS من Firestore (settings/general):', window.APP_SETTINGS);
