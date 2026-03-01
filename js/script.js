@@ -580,9 +580,25 @@ function setupEventListeners() {
                 }
                 return;
             }
+
+            const weightSelect = e.target && e.target.closest ? e.target.closest('.weight-select-simple') : null;
+            if (weightSelect) {
+                return;
+            }
+
             const btn = e.target && e.target.closest ? e.target.closest('.add-to-cart') : null;
-            if (!btn) return;
-            addToCart({ target: btn });
+            if (btn) {
+                addToCart({ target: btn });
+                return;
+            }
+
+            const card = e.target && e.target.closest ? e.target.closest('.product') : null;
+            if (card && card.getAttribute) {
+                const productId = card.getAttribute('data-product-id');
+                if (productId) {
+                    window.location.href = `product.html?id=${encodeURIComponent(productId)}`;
+                }
+            }
         });
     }
     // فتح السلة عبر المودال فقط إذا كان الرابط '#'
