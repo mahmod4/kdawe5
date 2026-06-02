@@ -1,3 +1,48 @@
+/**
+ * ========================================
+ * صفحة السلة - Shopping Cart Management
+ * ========================================
+ * 
+ * Purpose: إدارة سلة المشتريات وإتمام عملية الشراء
+ * Usage: صفحة السلة التي يعرضها المتجر للعملاء
+ * Features: إدارة السلة، حساب الأسعار، إرسال الطلبات
+ * 
+ * يحتوي هذا الملف على:
+ * - قراءة وحفظ بيانات السلة من localStorage
+ * - عرض منتجات السلة مع الصور والتفاصيل
+ * - حساب الأسعار الإجمالية مع رسوم التوصيل
+ * - تعديل كميات المنتجات وحذف العناصر
+ * - إرسال الطلبات عبر WhatsApp
+ * - حفظ الطلبات في Firestore للمستخدمين المسجلين
+ * - التحقق من تسجيل الدخول قبل إتمام الطلب
+ * - جمع بيانات العميل (اسم، عنوان، هاتف)
+ * 
+ * الوظائف الرئيسية:
+ * - loadCart(): تحميل وعرض محتويات السلة
+ * - updateCartUI(): تحديث واجهة السلة
+ * - calculateTotals(): حساب الإجماليات
+ * - updateQuantity(): تحديث الكميات
+ * - removeFromCart(): حذف منتج من السلة
+ * - checkout(): إتمام عملية الشراء
+ * - sendWhatsAppOrder(): إرسال الطلب عبر WhatsApp
+ * - saveOrderToFirestore(): حفظ الطلب في قاعدة البيانات
+ * 
+ * Features:
+ * - دعم البيع بالوزن والوحدة
+ * - حساب رسوم التوصيل ديناميكياً
+ * - حقول مخصصة لبيانات العملاء
+ * - التحقق من صحة البيانات
+ * - معالجة الأخطاء
+ * 
+ * Dependencies:
+ * - localStorage للتخزين المحلي
+ * - Firebase Firestore لحفظ الطلبات
+ * - WhatsApp API للتواصل
+ * - Bootstrap للواجهة
+ * 
+ * Author: نظام المتجر الإلكتروني
+ * Version: 1.0.0
+ */
 // ================================
 //  صفحة السلة - أسواق الشادر
 // ================================
@@ -37,8 +82,9 @@
 
   function renderCustomerFields() {
     const container = document.getElementById('customer-fields');
-    if (!container) return;
+    if (!container) return; // Defensive: return early if container doesn't exist
     const defs = getCustomerFieldDefs();
+    if (!defs || !defs.length) return;
     container.innerHTML = '';
 
     defs.forEach((def, idx) => {
@@ -49,33 +95,41 @@
       const defaultValue = def && typeof def.defaultValue === 'string' ? def.defaultValue : (def && def.defaultValue != null ? String(def.defaultValue) : '');
       const key = def && def.key ? String(def.key) : normalizeFieldKey(label, idx);
 
+      // Create wrapper with proper CSS class (compliant with styles.css)
       const wrap = document.createElement('div');
+      wrap.className = 'customer-field-group'; // CSS class for consistent styling
+      
+      // Create label element with proper CSS class
       const labelEl = document.createElement('label');
+      labelEl.className = 'customer-field-label'; // CSS class for form labels
       labelEl.textContent = label;
-      labelEl.style.display = 'block';
-      labelEl.style.marginBottom = '6px';
       wrap.appendChild(labelEl);
 
+      // Create input/textarea with proper CSS class
       let input;
       if (type === 'textarea') {
         input = document.createElement('textarea');
-        input.rows = 2;
-        input.style.resize = 'vertical';
+        input.rows = 3;
+        input.className = 'customer-field-input'; // CSS class for form inputs
       } else {
         input = document.createElement('input');
         input.type = type === 'tel' ? 'tel' : 'text';
+        input.className = 'customer-field-input'; // CSS class for form inputs
       }
-      input.style.width = '100%';
-      input.style.padding = '10px';
-      input.style.border = '1px solid #ddd';
-      input.style.borderRadius = '8px';
+      
       input.dataset.customerFieldKey = key;
       input.dataset.customerFieldLabel = label;
       input.dataset.customerFieldRequired = required ? '1' : '0';
-      if (required) input.required = true;
+      
+      if (required) {
+        input.required = true;
+        input.setAttribute('aria-required', 'true');
+      }
+      
       if (!String(input.value || '').trim() && defaultValue) {
         input.value = defaultValue;
       }
+      
       wrap.appendChild(input);
       container.appendChild(wrap);
     });
@@ -143,8 +197,18 @@
     wrapper.className = 'cart-item';
 
     const img = document.createElement('img');
-    img.src = item.image;
+    img.src = (typeof window.getProductImageDisplayUrl === 'function')
+      ? window.getProductImageDisplayUrl(item.image)
+      : (item.image || '');
     img.alt = item.name;
+    img.onerror = function () {
+      if (typeof window.onProductImageError === 'function') {
+        window.onProductImageError(this);
+      } else if (window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL) {
+        this.onerror = null;
+        this.src = window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL;
+      }
+    };
     img.width = 70;
     img.height = 70;
     wrapper.appendChild(img);
@@ -154,7 +218,11 @@
 
     const title = document.createElement('h4');
     title.className = 'cart-item-title';
-    title.textContent = `${item.name} (${item.selectedWeight} كجم)`;
+    if (item.soldByWeight) {
+      title.textContent = `${item.name} (${item.selectedWeight} ${getWeightUnit(item)})`;
+    } else {
+      title.textContent = item.name;
+    }
     info.appendChild(title);
 
     const price = document.createElement('p');
@@ -312,7 +380,9 @@
     text += '📋 *تفاصيل الطلب:*\n';
     cart.forEach((item, idx) => {
       const unit = getWeightUnit(item);
-      const weightLabel = typeof item.selectedWeight !== 'undefined' && item.selectedWeight !== null ? ` (${item.selectedWeight} ${unit})` : '';
+      const weightLabel = item.soldByWeight && typeof item.selectedWeight !== 'undefined' && item.selectedWeight !== null
+        ? ` (${item.selectedWeight} ${unit})`
+        : '';
       text += `${idx + 1}. ${item.name}${weightLabel} - ${item.price} ج.م × ${item.quantity} = ${item.price * item.quantity} ج.م\n`;
     });
     const subtotal = cart.reduce((s, it) => s + it.price * it.quantity, 0);
@@ -344,8 +414,8 @@
       console.error('خطأ في حفظ الطلب:', error);
     }
 
-    const rawWhatsapp = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '201013449050';
-    const whatsappPhone = String(rawWhatsapp).replace(/\s+/g, '').replace(/^\+/, '').replace(/[^0-9]/g, '') || '201013449050';
+    const rawWhatsapp = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '';
+    const whatsappPhone = String(rawWhatsapp).replace(/\s+/g, '').replace(/^\+/, '').replace(/[^0-9]/g, '') || '';
     const url = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(text)}`;
     const win = window.open(url, '_blank', 'noopener');
     if (win) { win.opener = null; }
@@ -356,37 +426,87 @@
   }
 
   /**
+   * Expose the checkout function globally for integration with whatsapp-sync.js
+   * This is the entry point for external scripts to trigger order submission
+   */
+  window.checkout = sendOrder;
+  
+  /**
+   * Also expose the cart module for external access
+   * Provides render() function for UI refresh and readCart() for getting current cart items
+   */
+  window.cartModule = {
+    render: render,
+    readCart: readCart,
+    sendOrder: sendOrder,
+    checkout: sendOrder
+  };
+
+  /**
    * تهيئة الصفحة وربط الأحداث
    */
   function initCartPage() {
+    // Defensive check: if we're not on the cart page, return early without throwing errors
+    const cartPageItems = document.getElementById('cart-page-items');
+    if (!cartPageItems) {
+      console.debug('Cart page not found - skipping cart initialization');
+      return;
+    }
+
     // ربط الأحداث وتهيئة الصفحة
     const checkoutBtn = document.getElementById('checkout-btn');
     const continueBtn = document.getElementById('continue-details-btn');
     const detailsSection = document.getElementById('customer-details');
-    if (checkoutBtn) checkoutBtn.addEventListener('click', sendOrder);
+    
+    // Add event listener to checkout button
+    if (checkoutBtn) {
+      checkoutBtn.addEventListener('click', sendOrder);
+    }
+    
+    // Add event listener to continue button to show customer details section
     if (continueBtn && detailsSection && checkoutBtn) {
       continueBtn.addEventListener('click', () => {
-        detailsSection.style.display = 'flex';
+        detailsSection.classList.add('show'); // Use CSS class instead of inline style
         renderCustomerFields();
         checkoutBtn.style.display = 'block';
         continueBtn.style.display = 'none';
-        try { detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) {}
+        try { 
+          detailsSection.scrollIntoView({ behavior: 'smooth', block: 'start' }); 
+        } catch (e) {
+          console.debug('Scroll error:', e);
+        }
       });
     }
+    
+    // Initial render
     render();
 
+    // Listen for app settings updates to refresh cart and customer fields
     try {
       window.addEventListener('appSettingsUpdated', () => {
         render();
         renderCustomerFields();
       });
-    } catch (e) {}
+    } catch (e) {
+      console.debug('Settings update listener error:', e);
+    }
   }
 
+  // Initialize cart page when DOM is ready, with error handling
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCartPage);
+    document.addEventListener('DOMContentLoaded', () => {
+      try {
+        initCartPage();
+      } catch (error) {
+        console.error('Error initializing cart page:', error);
+      }
+    });
   } else {
-    initCartPage();
+    try {
+      initCartPage();
+    } catch (error) {
+      console.error('Error initializing cart page:', error);
+    }
   }
 })();
 

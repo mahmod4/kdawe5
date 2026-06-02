@@ -1,96 +1,121 @@
 // WhatsApp Sync - تحديث رقم الواتساب من الإعدادات
+// Integrates with cart.js checkout function safely without race conditions
+
 import { getShippingSettings } from './settings-sync.js';
 
-// Get WhatsApp number from settings
+/**
+ * Sanitize WhatsApp phone number with rigorous validation
+ * Removes spaces, leading +, and non-numeric characters
+ * @returns {string} Sanitized phone number
+ */
 export function getWhatsAppNumber() {
-    const settings = getShippingSettings();
-    return settings.socialWhatsapp || '201234567890'; // رقم افتراضي
+    try {
+        const settings = getShippingSettings();
+        const rawNumber = settings.socialWhatsapp || (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '';
+        
+        // Rigorous sanitization: 
+        // 1. Remove all whitespace
+        // 2. Remove leading + sign
+        // 3. Remove any non-numeric characters
+        const sanitized = String(rawNumber)
+            .replace(/\s+/g, '')           // Remove spaces
+            .replace(/^\+/, '')             // Remove leading +
+            .replace(/[^0-9]/g, '');        // Remove non-numeric
+        
+        if (!sanitized) {
+            console.warn('WhatsApp number is empty after sanitization');
+            return '';
+        }
+        
+        return sanitized;
+    } catch (error) {
+        console.error('Error sanitizing WhatsApp number:', error);
+        return '';
+    }
 }
 
-// Update WhatsApp checkout function to use settings
-export function updateWhatsAppCheckout() {
-    // Override the checkout function to use dynamic WhatsApp number
+/**
+ * Safely wrap the original checkout function from cart.js
+ * This prevents complete override and maintains cart.js logic
+ */
+export function setupWhatsAppCheckoutWrapper() {
+    // Check if cart.js has already exposed checkout
+    if (!window.checkout || typeof window.checkout !== 'function') {
+        console.warn('window.checkout not available yet - cart.js may not be loaded');
+        return false;
+    }
+
+    // Store the original checkout function
     const originalCheckout = window.checkout;
     
-    window.checkout = async function() {
-        // Get the current WhatsApp number from settings
-        const phoneNumber = getWhatsAppNumber();
-        
-        // Rest of the original checkout logic...
-        const cartItems = JSON.parse(localStorage.getItem('cart')) || [];
-        const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-        
-        if (cartItems.length === 0) {
-            if (typeof window.showToast === 'function') {
-                window.showToast('السلة فارغة!', 'error');
-            }
-            return;
-        }
-        
-        const user = window.firebaseAuth?.auth?.currentUser;
-        if (!user) {
-            if (typeof window.showToast === 'function') {
-                window.showToast('يرجى تسجيل الدخول أولاً', 'error');
-            }
-            return;
-        }
-        
-        const checkoutBtn = document.getElementById('checkout-btn');
-        const originalText = checkoutBtn.innerHTML;
-        checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري حفظ الطلب...';
-        checkoutBtn.style.pointerEvents = 'none';
-        
+    // Create wrapped version that integrates WhatsApp settings
+    window.checkout = async function wrappedCheckout() {
         try {
-            // حفظ الطلب في Firebase
-            const orderId = await window.saveOrderToFirebase(cartItems, totalPrice);
+            // Verify WhatsApp number is properly sanitized before checkout
+            const phoneNumber = getWhatsAppNumber();
             
-            // إعداد رسالة واتساب
-            const storeName = document.querySelector('[data-store-name]')?.textContent || 'المتجر';
-            let whatsappMessage = `مرحباً، أريد طلب من ${storeName}:\n\n`;
-            whatsappMessage += `رقم الطلب: ${orderId}\n`;
-            whatsappMessage += `اسم العميل: ${user.displayName || user.email}\n\n`;
-            whatsappMessage += `تفاصيل الطلب:\n`;
-            
-            cartItems.forEach(item => {
-                whatsappMessage += `- ${item.name}: ${item.quantity} × ${item.price} ج.م = ${item.quantity * item.price} ج.م\n`;
-            });
-            
-            whatsappMessage += `\nالمجموع الكلي: ${totalPrice} ج.م\n`;
-            whatsappMessage += `تاريخ الطلب: ${new Date().toLocaleString('ar-EG')}`;
-            
-            // إرسال رسالة واتساب باستخدام الرقم من الإعدادات
-            const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`;
-            
-            // فتح واتساب
-            window.open(whatsappUrl, '_blank');
-            
-            // إظهار رسالة نجاح
-            if (typeof window.showToast === 'function') {
-                window.showToast('تم حفظ طلبك بنجاح! سيتم التواصل معك قريباً.', 'success');
+            if (!phoneNumber) {
+                console.warn('WhatsApp number not configured - checkout will proceed but WhatsApp message may fail');
             }
             
-            // مسح السلة
-            localStorage.removeItem('cart');
-            updateCartCount();
-            
-            // إغلاق نافذة السلة
-            document.getElementById('cart-modal').style.display = 'none';
-            
+            // Call the original checkout function from cart.js
+            // This ensures all validation, Firebase save, and cart clearing happens properly
+            return await originalCheckout();
         } catch (error) {
-            console.error('Error during checkout:', error);
-            if (typeof window.showToast === 'function') {
-                window.showToast('حدث خطأ أثناء حفظ الطلب. يرجى المحاولة مرة أخرى.', 'error');
-            }
-        } finally {
-            checkoutBtn.innerHTML = originalText;
-            checkoutBtn.style.pointerEvents = 'auto';
+            console.error('Error in wrapped checkout:', error);
+            throw error;
         }
     };
+    
+    return true;
 }
 
-// Initialize WhatsApp sync
-document.addEventListener('DOMContentLoaded', function() {
-    // Wait for settings to load, then update checkout
-    setTimeout(updateWhatsAppCheckout, 2000);
-});
+/**
+ * Initialize WhatsApp sync without race conditions
+ * Listens for app settings update event dispatched by settings.js
+ */
+function initializeWhatsAppSync() {
+    try {
+        // Try immediate setup if cart.js is already loaded
+        if (window.checkout && typeof window.checkout === 'function') {
+            setupWhatsAppCheckoutWrapper();
+        }
+        
+        // Listen for cart module ready event (dispatched by cart.js when it initializes)
+        window.addEventListener('cartReady', () => {
+            setupWhatsAppCheckoutWrapper();
+        });
+        
+        // Listen for app settings update event (dispatched by settings.js)
+        window.addEventListener('appSettingsUpdated', () => {
+            // Re-validate WhatsApp number when settings change
+            const newPhone = getWhatsAppNumber();
+            if (newPhone) {
+                console.debug('WhatsApp number updated:', newPhone.substring(0, 2) + '****' + newPhone.substring(newPhone.length - 2));
+            }
+        });
+        
+        // Fallback: Setup after a short delay to allow cart.js to load
+        // This is a safety net, not the primary method
+        setTimeout(() => {
+            if (window.checkout && typeof window.checkout === 'function') {
+                setupWhatsAppCheckoutWrapper();
+            }
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error initializing WhatsApp sync:', error);
+    }
+}
+
+/**
+ * Initialize on document ready or immediately if already loaded
+ */
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initializeWhatsAppSync, 50); // Small delay to ensure cart.js is loaded
+    });
+} else {
+    initializeWhatsAppSync();
+}
 

@@ -16,9 +16,9 @@
     <script src="./js/ui.js"></script>
     <script src="./js/favorites.js"></script>
     <!-- إضافة رمز الموقع المختصر (favicon) -->
-    <link rel="icon" type="image/jpeg" data-store-favicon href="../images/default-logo.png">
-    <link rel="shortcut icon" type="image/jpeg" data-store-favicon href="../images/default-logo.png">
-    <link rel="apple-touch-icon" data-store-favicon href="../images/default-logo.png">
+    <link rel="icon" type="image/svg+xml" data-store-favicon href="./logo.svg">
+    <link rel="shortcut icon" type="image/svg+xml" data-store-favicon href="./logo.svg">
+    <link rel="apple-touch-icon" data-store-favicon href="./logo.svg">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -33,7 +33,7 @@
     </div>
     <header>
         <div class="logo-container">
-            <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
+            <img src="./logo.svg" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
             <h1 data-store-name>المتجر</h1>
         </div>
         <div class="main-menu-toggle">
@@ -75,10 +75,16 @@
                 </form>
             </div>
         </section>
+
+        <section id="branches-maps-section" class="branches-maps-section" style="display:none;" aria-hidden="true">
+            <h3><i class="fas fa-map-marked-alt"></i> مواقع الفروع على الخريطة</h3>
+            <div id="branches-maps-container"></div>
+        </section>
+
         <section id="about" class="about" style="margin-top:40px;">
             <h2>عن <span data-store-name>المتجر</span> <i class="fas fa-store"></i></h2>
             <div class="about-content">
-                <img src="../images/default-logo.png" alt="شعار المتجر" class="about-logo" width="150" height="150" data-store-logo>
+                <img src="./logo.svg" alt="شعار المتجر" class="about-logo" width="150" height="150" data-store-logo>
                 <div class="about-text" id="about-text">
                     <div id="about-phones"></div>
                     <div id="about-branches"></div>
@@ -90,7 +96,7 @@
     <footer style="margin-top:40px;">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="80" height="80" data-store-logo>
+                <img src="./logo.svg" alt="شعار المتجر" class="logo" width="80" height="80" data-store-logo>
                 <h3 data-store-name>المتجر</h3>
             </div>
             <div class="footer-contact">
@@ -105,6 +111,7 @@
     </footer>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="./js/settings.js"></script>
+    <script src="./js/branches-utils.js"></script>
     <script src="./js/settings-sync.js" type="module"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -170,45 +177,88 @@
                     messageField.value = S.contactMessage;
                 }
 
-                // الفروع
+                // الفروع + خرائط Google
                 const branchesList = document.getElementById('branches-list');
                 const aboutBranches = document.getElementById('about-branches');
-                if (branchesList && Array.isArray(S.BRANCHES)) {
-                    branchesList.innerHTML = '';
-                    S.BRANCHES.filter(b => (b && (b.address || b.name))).forEach((b) => {
-                        const p = document.createElement('p');
-                        const label = b.name ? `${b.name} : ` : '';
-                        const text = document.createTextNode(`${label}${b.address || ''} `);
-                        p.appendChild(text);
-                        if (b.mapsUrl) {
-                            const a = document.createElement('a');
-                            a.href = b.mapsUrl;
-                            a.target = '_blank';
-                            a.rel = 'noopener';
-                            a.textContent = 'خريطة جوجل';
-                            a.style.marginRight = '8px';
-                            p.appendChild(a);
-                        }
-                        branchesList.appendChild(p);
-                    });
+                const branchesBlock = document.getElementById('branches-block');
+                const mapsSection = document.getElementById('branches-maps-section');
+                const mapsContainer = document.getElementById('branches-maps-container');
+
+                const rawBranches = Array.isArray(S.BRANCHES) ? S.BRANCHES : [];
+                const branches = (typeof window.isBranchRenderable === 'function')
+                    ? rawBranches.filter(function (b) { return window.isBranchRenderable(b); })
+                    : rawBranches.filter(function (b) { return b && (b.name || b.address || b.mapsUrl); });
+
+                function appendBranchBlock(container, b) {
+                    if (!container) return;
+                    const block = document.createElement('div');
+                    block.className = 'branch-text-block';
+                    block.style.marginBottom = '14px';
+                    const title = document.createElement('div');
+                    title.className = 'branch-line-title';
+                    title.textContent = b.name || 'فرع';
+                    block.appendChild(title);
+                    if (b.address) {
+                        const addr = document.createElement('div');
+                        addr.style.marginTop = '4px';
+                        addr.style.color = '#555';
+                        addr.textContent = b.address;
+                        block.appendChild(addr);
+                    }
+                    var mapUrl = (typeof window.resolveBranchMapsUrl === 'function')
+                        ? window.resolveBranchMapsUrl(b)
+                        : (b.mapsUrl || '');
+                    if (mapUrl) {
+                        const a = document.createElement('a');
+                        a.href = mapUrl;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        a.className = 'branch-maps-link';
+                        a.innerHTML = '<i class="fas fa-directions"></i> الاتجاهات في Google Maps';
+                        block.appendChild(a);
+                    }
+                    container.appendChild(block);
                 }
-                if (aboutBranches && Array.isArray(S.BRANCHES)) {
+
+                if (branchesBlock) {
+                    branchesBlock.style.display = branches.length ? '' : 'none';
+                }
+                if (branchesList) {
+                    branchesList.innerHTML = '';
+                    branches.forEach(function (b) { appendBranchBlock(branchesList, b); });
+                }
+                if (aboutBranches) {
                     aboutBranches.innerHTML = '';
-                    S.BRANCHES.filter(b => (b && (b.address || b.name))).forEach((b) => {
-                        const p = document.createElement('p');
-                        const label = b.name ? `${b.name} : ` : '';
-                        p.appendChild(document.createTextNode(`${label}${b.address || ''} `));
-                        if (b.mapsUrl) {
-                            const a = document.createElement('a');
-                            a.href = b.mapsUrl;
-                            a.target = '_blank';
-                            a.rel = 'noopener';
-                            a.textContent = 'خريطة جوجل';
-                            a.style.marginRight = '8px';
-                            p.appendChild(a);
-                        }
-                        aboutBranches.appendChild(p);
+                    branches.forEach(function (b) { appendBranchBlock(aboutBranches, b); });
+                }
+
+                if (mapsSection && mapsContainer) {
+                    mapsContainer.innerHTML = '';
+                    var anyEmbed = false;
+                    branches.forEach(function (b) {
+                        var embed = (typeof window.resolveBranchEmbedUrl === 'function')
+                            ? window.resolveBranchEmbedUrl(b)
+                            : '';
+                        if (!embed) return;
+                        anyEmbed = true;
+                        var card = document.createElement('div');
+                        card.className = 'branch-map-card';
+                        var h4 = document.createElement('h4');
+                        h4.textContent = b.name || 'موقع الفرع';
+                        var wrap = document.createElement('div');
+                        wrap.className = 'branch-map-embed';
+                        var iframe = document.createElement('iframe');
+                        iframe.setAttribute('loading', 'lazy');
+                        iframe.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+                        iframe.setAttribute('title', (b.name || 'خريطة') + ' — Google Maps');
+                        iframe.src = embed;
+                        wrap.appendChild(iframe);
+                        card.appendChild(h4);
+                        card.appendChild(wrap);
+                        mapsContainer.appendChild(card);
                     });
+                    mapsSection.style.display = anyEmbed ? 'block' : 'none';
+                    mapsSection.setAttribute('aria-hidden', anyEmbed ? 'false' : 'true');
                 }
 
                 // أرقام الهواتف
@@ -219,7 +269,7 @@
                 const whatsappPhone = S.WHATSAPP_PHONE || '';
                 const renderPhoneLink = (num) => {
                     const a = document.createElement('a');
-                    a.href = `https://wa.me/${whatsappPhone || '201013449050'}`;
+                    a.href = `https://wa.me/${whatsappPhone || ''}`;
                     a.target = '_blank';
                     a.rel = 'noopener';
                     a.className = 'phone-link';
@@ -290,7 +340,7 @@
                 if (email) text += `\nالبريد: ${email}`;
                 if (message) text += `\nالرسالة: ${message}`;
                 const encoded = encodeURIComponent(text);
-                const phone = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '201013449050';
+                const phone = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '';
                 const wa = `https://wa.me/${phone}?text=${encoded}`;
                 const win = window.open(wa, '_blank', 'noopener');
                 if (win) { win.opener = null; }

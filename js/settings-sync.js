@@ -1,25 +1,26 @@
 // Settings Sync - جلب الإعدادات من لوحة التحكم وتحديث الموقع
 //
 // ملاحظة مهمة:
-// هذا الملف مسؤول عن مزامنة إعدادات المتجر (settings/general) + المحتوى (content/main)
-// ثم تطبيقها على عناصر الصفحة (DOM) مثل اسم المتجر، الشعار، الروابط، وسلايدر صور الـHero
+// هذا الملف مسؤول عن مزامنة إعدادات متجر الشادر (settings/general) + المحتوى (content/main)
+// ثم تطبيقها على عناصر الصفحة (DOM) مثل اسم متجر الشادر، الشعار، الروابط، وسلايدر صور الـHero
 // كما يقوم بتطبيق إعدادات التخطيط (عدد الأعمدة) عن طريق CSS variables.
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js';
-import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js';
+import { getFirestore, doc, getDoc, collection, getDocs } from 'https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js';
 
-// إعدادات Firebase - نفس الإعدادات المستخدمة في لوحة التحكم
+// استخدام نفس Firebase configuration من config.js
+// هذا يضمن أن المتجر واللوحة يستخدمان نفس قاعدة البيانات
 const env = (typeof window !== 'undefined' && window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object')
     ? window.RUNTIME_ENV
     : {};
 
 const firebaseConfig = {
-    apiKey: env.FIREBASE_API_KEY || "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
-    authDomain: env.FIREBASE_AUTH_DOMAIN || "dashboard-27bc8.firebaseapp.com",
-    projectId: env.FIREBASE_PROJECT_ID || "dashboard-27bc8",
-    storageBucket: env.FIREBASE_STORAGE_BUCKET || "dashboard-27bc8.firebasestorage.app",
-    messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "707339591256",
-    appId: env.FIREBASE_APP_ID || "1:707339591256:web:dcc2649182e97249a2742d",
-    measurementId: env.FIREBASE_MEASUREMENT_ID || "G-K8FNNYH4S1"
+    apiKey: env.FIREBASE_API_KEY || "",
+    authDomain: env.FIREBASE_AUTH_DOMAIN || "",
+    databaseURL: env.FIREBASE_DATABASE_URL || "",
+    projectId: env.FIREBASE_PROJECT_ID || "",
+    storageBucket: env.FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "",
+    appId: env.FIREBASE_APP_ID || ""
 };
 
 // تهيئة Firebase (App + Firestore)
@@ -36,7 +37,7 @@ let siteSettings = {
 
 // تحميل كل الإعدادات من Firestore ثم تطبيقها على الصفحة
 // التسلسل مهم:
-// 1) إعدادات المتجر (الاسم/التواصل/الشعار/التخطيط)
+// 1) إعدادات متجر الشادر (الاسم/التواصل/الشعار/التخطيط)
 // 2) المحتوى (content/main)
 // 3) الأقسام
 // 4) العروض
@@ -64,7 +65,7 @@ export async function loadAllSettings() {
     }
 }
 
-// جلب إعدادات المتجر من settings/general (اسم المتجر، معلومات الاتصال، الروابط، اللوجو...)
+// جلب إعدادات متجر الشادر من settings/general (اسم المتجر، معلومات الاتصال، الروابط، اللوجو...)
 // ثم استدعاء updateStoreElements لتطبيقها على الصفحة
 async function loadStoreSettings() {
     try {
@@ -127,8 +128,8 @@ async function loadOffers() {
     }
 }
 
-// تحديث عناصر الصفحة حسب إعدادات المتجر التي تم تحميلها في siteSettings.store
-// (اسم المتجر، عنوان الصفحة، الـmeta tags، بيانات التواصل، روابط السوشيال، اللوجو...)
+// تحديث عناصر الصفحة حسب إعدادات متجر الشادر التي تم تحميلها في siteSettings.store
+// (اسم متجر الشادر، عنوان الصفحة، الـmeta tags، بيانات التواصل، روابط السوشيال، اللوجو...)
 function updateStoreElements() {
     const store = siteSettings.store;
     
@@ -284,6 +285,10 @@ function syncAppSettingsFromStore(store) {
 
     if (Array.isArray(store.customerFields)) {
         window.APP_SETTINGS.CUSTOMER_FIELDS = store.customerFields;
+    }
+
+    if (store.defaultProductImage) {
+        window.APP_SETTINGS.DEFAULT_PRODUCT_IMAGE = String(store.defaultProductImage);
     }
 
     try {
@@ -606,7 +611,7 @@ function updateStoreInfo(store) {
     // Update store name
     const storeNameElements = document.querySelectorAll('[data-store-name]');
     storeNameElements.forEach(el => {
-        el.textContent = store.storeName || 'المتجر';
+        el.textContent = store.storeName || 'متجر الشادر';
     });
     
     // Update logo
@@ -653,7 +658,7 @@ function updateStoreInfo(store) {
     const ogTitleElements = document.querySelectorAll('[data-store-og-title]');
     ogTitleElements.forEach(el => {
         if (store.storeName) {
-            el.setAttribute('content', `${store.storeName} - متجر إلكتروني`);
+            el.setAttribute('content', `${store.storeName} - متجر الشادر للخضروات والفواكه`);
         }
     });
     

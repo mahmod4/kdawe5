@@ -1,3 +1,36 @@
+<!--
+/**
+ * صفحة تسجيل الدخول - Customer Login Page
+ * ========================================
+ * 
+ * Purpose: صفحة تسجيل دخول العملاء للمتجر
+ * Usage: يصل إليها العملاء لتسجيل الدخول وحسابهم
+ * Features: تسجيل دخول جوجل، معلومات المستخدم، المشتريات
+ * 
+ * تحتوي هذه الصفحة على:
+ * - نظام تسجيل الدخول بحساب Google
+ * - عرض معلومات المستخدم الشخصية
+ * - عرض المشتريات والطلبات السابقة
+ * - إدارة الحساب الشخصي
+ * - تخصيص تجربة المستخدم
+ * 
+ * Features:
+ * - تسجيل دخول آمن عبر Google OAuth
+ * - عرض الصورة الشخصية والاسم
+ * - قائمة المشتريات السابقة
+ * - تتبع حالة الطلبات
+ * - تسجيل الخروج الآمن
+ * 
+ * التقنيات المستخدمة:
+ * - Firebase Authentication
+ * - Google Sign-In API
+ * - Bootstrap 5 للتصميم
+ * - PWA Features
+ * 
+ * Author: نظام المتجر الإلكتروني
+ * Version: 1.0.0
+ */
+-->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -36,9 +69,9 @@
     <script src="./js/favorites.js"></script>
     
     <!-- إضافة رمز الموقع المختصر (favicon) -->
-    <link rel="icon" type="image/png" data-store-favicon href="../images/logo22.png">
-    <link rel="shortcut icon" type="image/png" data-store-favicon href="../images/logo22.png">
-    <link rel="apple-touch-icon" data-store-favicon href="../images/logo22.png">
+    <link rel="icon" type="image/svg+xml" data-store-favicon href="./logo.svg">
+    <link rel="shortcut icon" type="image/svg+xml" data-store-favicon href="./logo.svg">
+    <link rel="apple-touch-icon" data-store-favicon href="./logo.svg">
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="../manifest.json">
@@ -46,20 +79,20 @@
     <!-- Firebase SDK لـ المتصفح -->
     <script type="module">
       // Import Firebase SDK
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
-      import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
+      import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
       
       // Firebase config - إعدادات مشروعك
       const env = (window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object') ? window.RUNTIME_ENV : {};
       const firebaseConfig = {
-        apiKey: env.FIREBASE_API_KEY || "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
-        authDomain: env.FIREBASE_AUTH_DOMAIN || "dashboard-27bc8.firebaseapp.com",
-        projectId: env.FIREBASE_PROJECT_ID || "dashboard-27bc8",
-        storageBucket: env.FIREBASE_STORAGE_BUCKET || "dashboard-27bc8.firebasestorage.app",
-        messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "707339591256",
-        appId: env.FIREBASE_APP_ID || "1:707339591256:web:dcc2649182e97249a2742d",
-        measurementId: env.FIREBASE_MEASUREMENT_ID || "G-K8FNNYH4S1"
+        apiKey: env.FIREBASE_API_KEY || "",
+        authDomain: env.FIREBASE_AUTH_DOMAIN || "",
+        databaseURL: env.FIREBASE_DATABASE_URL || "",
+        projectId: env.FIREBASE_PROJECT_ID || "",
+        storageBucket: env.FIREBASE_STORAGE_BUCKET || "",
+        messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "",
+        appId: env.FIREBASE_APP_ID || ""
       };
 
       // Initialize Firebase
@@ -393,7 +426,7 @@
 <body>
     <header>
         <div class="logo-container">
-            <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
+            <img src="./logo.svg" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
             <h1 data-store-name>المتجر</h1>
         </div>
         <nav class="main-menu" id="main-menu">
@@ -506,7 +539,7 @@
                 if (user.photoURL) {
                     document.getElementById('user-avatar').src = user.photoURL;
                 } else {
-                    document.getElementById('user-avatar').src = '../images/logo22.png';
+                    document.getElementById('user-avatar').src = './logo.svg';
                 }
                 
                 // تحميل الطلبات السابقة
@@ -804,11 +837,18 @@
 </body>
 </html>
 
-<!-- Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-K8FNNYH4S1"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'G-K8FNNYH4S1');
+  (function initAnalytics() {
+    const env = (window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object') ? window.RUNTIME_ENV : {};
+    const gaId = (env.VITE_GA_MEASUREMENT_ID || '').trim();
+    if (!gaId) return;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag(){ dataLayer.push(arguments); };
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', gaId);
+  })();
 </script>

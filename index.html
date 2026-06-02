@@ -1,3 +1,41 @@
+<!--
+/**
+ * المتجر الإلكتروني - الصفحة الرئيسية للعملاء
+ * ========================================
+ * 
+ * Purpose: الواجهة الأمامية للمتجر للعملاء
+ * Usage: الصفحة الرئيسية التي يستخدمها العملاء للتسوق
+ * Features: تسوق، سلة مشتريات، دفع، بحث، تصفية
+ * 
+ * يحتوي هذا الملف على:
+ * - واجهة مستخدم حديثة وسهلة الاستخدام
+ * - نظام تسجيل الدخول بحساب Google
+ * - عرض المنتجات مع الصور والأسعار
+ * - سلة مشتريات تفاعلية
+ * - نظام البحث والتصفية
+ * - دعم البيع بالوزن والوحدة
+ * - تكامل مع WhatsApp للطلبات
+ * - دفع آمن ومتابعة الطلبات
+ * 
+ * التقنيات المستخدمة:
+ * - Bootstrap 5 للتصميم المتجاوب
+ * - Firebase للمصادقة وقاعدة البيانات
+ * - Cloudinary للصور
+ * - Google Analytics للتحليلات
+ * - Service Worker للتطبيق الهجين (PWA)
+ * 
+ * Features:
+ * - تصميم متجاوب للهواتف والأجهزة اللوحية
+ * - بحث سريع مع دعم اللغة العربية
+ * - عرض المنتجات حسب الأقسام
+ * - عروض ومنتجات مميزة
+ * - نظام تقييم المنتجات
+ * - متابعة حالة الطلبات
+ * 
+ * Author: نظام المتجر الإلكتروني
+ * Version: 1.0.0
+ */
+-->
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
@@ -18,13 +56,21 @@
 <!-- كود Google Analytics لتتبع زوار الموقع وإحصائيات الاستخدام -->
 <!-- سيتم جلب ID من لوحة التحكم -->
 <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-D9262X6WVK"></script>
+<script src="./js/runtime-env-client.js"></script>
 <script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-D9262X6WVK');
+  (function initAnalytics() {
+    const env = (window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object') ? window.RUNTIME_ENV : {};
+    const gaId = (env.VITE_GA_MEASUREMENT_ID || '').trim();
+    if (!gaId) return;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function gtag(){ dataLayer.push(arguments); };
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaId)}`;
+    document.head.appendChild(s);
+    gtag('js', new Date());
+    gtag('config', gaId);
+  })();
 </script>
 
 <!-- ================================
@@ -41,6 +87,33 @@
     <meta name="theme-color" content="#1a5f7a"> <!-- لون شريط المتصفح على أندرويد -->
     <meta name="apple-mobile-web-app-status-bar-style" content="#1a5f7a"> <!-- لون شريط الحالة على آيفون -->
     <meta name="apple-mobile-web-app-capable" content="yes"> <!-- تمكين وضع التطبيق الكامل -->
+    <meta name="apple-mobile-web-app-title" content="الشادر"> <!-- اسم التطبيق على الشاشة الرئيسية -->
+    <meta name="application-name" content="متجر الشادر"> <!-- اسم التطبيق -->
+    <meta name="description" content="متجر الشادر للخضروات والفواكه الطازجة - جودة عالية وتوصيل سريع"> <!-- وصف التطبيق -->
+    <meta name="keywords" content="خضروات, فواكه, طازجة, تسوق, متجر, شادر"> <!-- كلمات مفتاحية -->
+    <meta name="author" content="متجر الشادر"> <!-- المؤلف -->
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="./manifest.json"> <!-- ملف تعريف التطبيق -->
+    
+    <!-- Favicon and Icons -->
+    <link rel="icon" type="image/svg+xml" href="./logo.svg"> <!-- أيقونة الموقع -->
+    <link rel="shortcut icon" type="image/svg+xml" href="./logo.svg"> <!-- أيقونة الاختصار -->
+    <link rel="apple-touch-icon" href="./logo.svg"> <!-- أيقونة الشاشة الرئيسية -->
+    
+    <!-- Open Graph Meta Tags for Social Sharing -->
+    <meta property="og:title" content="متجر الشادر للخضروات والفواكه">
+    <meta property="og:description" content="متجر الشادر للخضروات والفواكه الطازجة - جودة عالية وتوصيل سريع">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="/">
+    <meta property="og:image" content="./logo.svg">
+    <meta property="og:locale" content="ar_AR">
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="متجر الشادر للخضروات والفواكه">
+    <meta name="twitter:description" content="متجر الشادر للخضروات والفواكه الطازجة - جودة عالية وتوصيل سريع">
+    <meta name="twitter:image" content="./logo.svg">
     <meta name="mobile-web-app-capable" content="yes"> <!-- تمكين وضع التطبيق المحمول -->
     
     <!-- ================================
@@ -98,28 +171,28 @@
          Firebase SDK - قاعدة البيانات والمصادقة
          ================================ -->
     <!-- إعداد Firebase للمصادقة وقاعدة البيانات -->
-    <script src="./js/runtime-env-client.js"></script>
     <script type="module">
       // استيراد مكتبات Firebase الأساسية
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js";
       // استيراد مكتبات المصادقة (تسجيل الدخول بجوجل)
-      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
       // استيراد مكتبات قاعدة البيانات Firestore
-      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+      import { getFirestore, collection, addDoc, query, where, orderBy, getDocs, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
       
       // ================================
       // إعدادات مشروع Firebase
-      // ================================
-      // هذه الإعدادات تربط الموقع بمشروع Firebase الخاص بك
+      // ================================// إعدادات مشروع Firebase
+      // هذه الإعدادات تربط الموقع بنفس مشروع Firebase المستخدم في لوحة التحكم
       const env = (window.RUNTIME_ENV && typeof window.RUNTIME_ENV === 'object') ? window.RUNTIME_ENV : {};
+      
       const firebaseConfig = {
-        apiKey: env.FIREBASE_API_KEY || "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
-        authDomain: env.FIREBASE_AUTH_DOMAIN || "dashboard-27bc8.firebaseapp.com",
-        projectId: env.FIREBASE_PROJECT_ID || "dashboard-27bc8",
-        storageBucket: env.FIREBASE_STORAGE_BUCKET || "dashboard-27bc8.firebasestorage.app",
-        messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "707339591256",
-        appId: env.FIREBASE_APP_ID || "1:707339591256:web:dcc2649182e97249a2742d",
-        measurementId: env.FIREBASE_MEASUREMENT_ID || "G-K8FNNYH4S1"
+        apiKey: env.FIREBASE_API_KEY || "",
+        authDomain: env.FIREBASE_AUTH_DOMAIN || "",
+        databaseURL: env.FIREBASE_DATABASE_URL || "",
+        projectId: env.FIREBASE_PROJECT_ID || "",
+        storageBucket: env.FIREBASE_STORAGE_BUCKET || "",
+        messagingSenderId: env.FIREBASE_MESSAGING_SENDER_ID || "",
+        appId: env.FIREBASE_APP_ID || ""
       };
 
       // ================================
@@ -221,10 +294,23 @@
           const userInfo = document.getElementById('user-info');
           const userName = document.getElementById('user-name');
           const loginBtnContainer = document.getElementById('login-btn-container');
+          const mainMenuAuthLink = document.getElementById('main-menu-auth-link');
           
           if (!userInfo || !userName || !loginBtnContainer) {
             console.error('لم يتم العثور على عناصر تسجيل الدخول');
             return;
+          }
+
+          function syncMainMenuAuthLink(user) {
+            if (!mainMenuAuthLink) return;
+            if (user) {
+              mainMenuAuthLink.innerHTML = '<i data-lucide="user"></i> حسابي';
+            } else {
+              mainMenuAuthLink.innerHTML = '<i data-lucide="log-in"></i> تسجيل الدخول';
+            }
+            try {
+              if (window.lucide && typeof lucide.createIcons === 'function') lucide.createIcons();
+            } catch (e) {}
           }
 
           // ================================
@@ -233,6 +319,7 @@
           // مراقبة تغيير حالة المستخدم (دخول/خروج) وتحديث الواجهة
           window.firebaseAuth.onAuthStateChanged(window.firebase.auth(), user => {
             console.log('تغيير حالة تسجيل الدخول:', user ? 'مسجل دخول' : 'غير مسجل');
+            syncMainMenuAuthLink(user);
             if (user) {
               // المستخدم مسجل دخول - إظهار معلوماته وإخفاء زر تسجيل الدخول
               userInfo.style.display = 'flex';
@@ -364,7 +451,7 @@
     <header>
         <!-- شعار الموقع واسمه -->
         <div class="logo-container">
-            <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
+            <img src="./logo.svg" alt="شعار المتجر" class="logo" width="60" height="60" data-store-logo>
             <h1 data-store-name>المتجر</h1>
         </div>
         <!-- زر قائمة الجوال (هامبرجر) -->
@@ -379,7 +466,7 @@
                 <li><a href="#products" class="menu-item"><i data-lucide="shopping-bag"></i> المنتجات</a></li>
                 <li><a href="#daily-offers" class="menu-item"><i data-lucide="zap"></i> العروض اليومية</a></li>
                 <li><a href="contact.html" class="menu-item"><i data-lucide="store"></i> عن المتجر</a></li>
-                <li><a href="login.html" class="menu-item"><i data-lucide="log-in"></i> تسجيل الدخول</a></li>
+                <li><a href="login.html" class="menu-item" id="main-menu-auth-link"><i data-lucide="log-in"></i> تسجيل الدخول</a></li>
             </ul>
             <!-- زر تحديث المنتجات -->
             <button onclick="manualUpdate()" class="update-btn side-update-btn" title="تحديث المنتجات">
@@ -509,7 +596,7 @@
     <footer data-aos="fade-up" data-aos-delay="700">
         <div class="footer-content">
             <div class="footer-logo">
-                <img src="../images/default-logo.png" alt="شعار المتجر" class="logo" width="80" height="80" data-store-logo>
+                <img src="./logo.svg" alt="شعار المتجر" class="logo" width="80" height="80" data-store-logo>
                 <h3 data-store-name>المتجر</h3>
             </div>
             <div class="footer-links">
@@ -525,7 +612,8 @@
             <div class="footer-contact">
                 <h4>اتصل بنا</h4>
               <div id="footer-phones"></div>
-                <p><i data-lucide="facebook"></i> <a href="#" data-social-facebook target="_blank" rel="noopener">فيسبوك</a></p>
+              <div id="footer-branches"></div>
+                <p><i data-lucide="globe"></i> <a href="#" data-social-facebook target="_blank" rel="noopener">فيسبوك</a></p>
             </div>
         </div>
         <div class="copyright">
@@ -541,6 +629,8 @@
     </div>
 
     <script src="./js/settings.js"></script>
+    <script src="./js/branches-utils.js"></script>
+    <script src="./js/product-image-utils.js"></script>
     <script src="./js/settings-sync.js" type="module"></script>
     <script src="./js/whatsapp-sync.js" type="module"></script>
     <script src="./js/weight-service.js"></script>
@@ -575,6 +665,86 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
   <script>AOS.init({ once: true, duration: 900 });</script>
   <script>lucide.createIcons();</script>
+  
+  <!-- Service Worker Registration for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./js/sw.js')
+          .then(registration => {
+            console.log('✅ Service Worker registered successfully:', registration.scope);
+            
+            // Check for updates
+            registration.addEventListener('updatefound', () => {
+              const newWorker = registration.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available
+                  if (confirm('🔄 يتوفر إصدار جديد من التطبيق! هل تريد التحديث الآن؟')) {
+                    window.location.reload();
+                  }
+                }
+              });
+            });
+          })
+          .catch(error => {
+            console.error('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+
+    // PWA Install Prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      
+      // Show install banner after 3 seconds
+      setTimeout(() => {
+        if (!localStorage.getItem('hideBanner') && deferredPrompt) {
+          const installBanner = document.createElement('div');
+          installBanner.id = 'installBanner';
+          installBanner.innerHTML = `
+            <div style="position: fixed; bottom: 20px; left: 20px; right: 20px; background: linear-gradient(135deg, #1a5f7a, #2c7a7b); color: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); z-index: 9999; display: flex; align-items: center; justify-content: space-between; font-family: system-ui, -apple-system, sans-serif;">
+              <div>
+                <div style="font-weight: bold; margin-bottom: 5px;">📱 ثبّت متجر الشادر</div>
+                <div style="font-size: 14px; opacity: 0.9;">احصل على تجربة أفضل وأسرع</div>
+              </div>
+              <div>
+                <button onclick="installApp()" style="background: white; color: #1a5f7a; border: none; padding: 8px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-left: 10px;">تثبيت</button>
+                <button onclick="hideInstallBanner()" style="background: transparent; color: white; border: 1px solid white; padding: 8px 16px; border-radius: 8px; cursor: pointer;">إغلاق</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(installBanner);
+        }
+      }, 3000);
+    });
+
+    function installApp() {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('✅ User accepted the install prompt');
+            // Hide the banner after successful install
+            hideInstallBanner();
+          } else {
+            console.log('❌ User dismissed the install prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    }
+
+    function hideInstallBanner() {
+      const banner = document.getElementById('installBanner');
+      if (banner) {
+        banner.remove();
+      }
+      localStorage.setItem('hideBanner', 'true');
+    }
+  </script>
   
   <!-- تسجيل Service Worker -->
   <!-- ================================
@@ -640,7 +810,7 @@
 
         // إرسال رسالة واتساب
         // جلب رقم الواتساب من الإعدادات
-        let phoneNumber = '201234567890'; // رقم افتراضي
+        let phoneNumber = (((window.RUNTIME_ENV && window.RUNTIME_ENV.VITE_WHATSAPP_PHONE) || '')).replace(/[^0-9]/g, '');
         
         // محاولة جلب الرقم من الإعدادات
         if (window.siteSettings && window.siteSettings.store && window.siteSettings.store.storePhone) {

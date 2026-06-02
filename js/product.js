@@ -1,3 +1,46 @@
+/**
+ * ========================================
+ * صفحة المنتج الفردي - Single Product Page
+ * ========================================
+ * 
+ * Purpose: عرض تفاصيل منتج واحد وإدارته في المتجر
+ * Usage: صفحة product.html لعرض المنتجات الفردية
+ * Features: تفاصيل المنتج، إضافة للسلة، البيع بالوزن
+ * 
+ * يحتوي هذا الملف على:
+ * - عرض تفاصيل المنتج الكاملة
+ * - نظام البيع بالوزن والوحدة
+ * - إضافة المنتج للسلة المشتريات
+ * - عرض الصور والمعرض
+ * - حساب الأسعار حسب الوزن/الكمية
+ * - التكامل مع نظام السلة
+ * 
+ * الوظائف الرئيسية:
+ * - getParam(): قراءة معلمات URL
+ * - readCart()/writeCart(): إدارة السلة المحلية
+ * - formatPrice(): تنسيق الأسعار
+ * - getWeightUnit(): الحصول على وحدة الوزن
+ * - getWeightOptions(): خيارات الوزن المتاحة
+ * - addToCart(): إضافة للسلة
+ * - updatePriceUI(): تحديث واجهة السعر
+ * 
+ * Features:
+ * - دعم المنتجات المباعة بالوزن
+ * - عرض الصور المتعددة
+ * - حساب السعر ديناميكياً
+ * - التكامل مع weightService
+ * - معالجة الأخطاء
+ * 
+ * Dependencies:
+ * - localStorage للسلة المحلية
+ * - weightService للوزن
+ * - siteSettings للإعدادات
+ * - Bootstrap للواجهة
+ * 
+ * Author: نظام المتجر الإلكتروني
+ * Version: 1.0.0
+ */
+
 (function () {
   function getParam(name) {
     try {
@@ -115,7 +158,7 @@
       const price = (product.discountPrice && product.discountPrice < product.price) ? Number(product.discountPrice) : Number(product.price);
       return `
         <div class="product" style="border:1px solid #eee; border-radius:12px; padding:12px; cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;" onclick="window.location.href='product.html?id=${product.id}'" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-          <img src="${product.image || ''}" alt="${product.name || ''}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; background:#fafafa;" onerror="this.style.display='none'" />
+          <img src="${(typeof window.getProductImageDisplayUrl === 'function' ? window.getProductImageDisplayUrl(product.image) : (product.image || ''))}" alt="${product.name || ''}" style="width:100%; height:120px; object-fit:cover; border-radius:8px; background:#fafafa;" onerror="if(window.onProductImageError)window.onProductImageError(this);else{this.onerror=null;if(window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL)this.src=window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL;}" />
           <h4 style="margin:8px 0 4px; font-size:13px; line-height:1.3; height:2.6em; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">${product.name || ''}</h4>
           <p style="margin:0; font-weight:bold; color:#2c3e50; font-size:14px;">${formatPrice(price)} ج.م</p>
         </div>
@@ -193,7 +236,7 @@
     wrap.innerHTML = `
       <div style="display:flex; gap:16px; flex-wrap:wrap; align-items:flex-start;">
         <div style="flex:1; min-width:200px; max-width:100%;">
-          <img src="${product.image || ''}" alt="${product.name || ''}" style="width:100%; border-radius:12px; border:1px solid #eee; background:#fafafa; max-height:300px; object-fit:cover;" onerror="this.style.display='none'" />
+          <img src="${(typeof window.getProductImageDisplayUrl === 'function' ? window.getProductImageDisplayUrl(product.image) : (product.image || ''))}" alt="${product.name || ''}" style="width:100%; border-radius:12px; border:1px solid #eee; background:#fafafa; max-height:300px; object-fit:cover;" onerror="if(window.onProductImageError)window.onProductImageError(this);else{this.onerror=null;if(window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL)this.src=window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL;}" />
         </div>
         <div style="flex:1; min-width:200px;">
           <h3 style="margin:0 0 8px; font-size:20px;">${product.name || ''}</h3>
@@ -239,25 +282,55 @@
       addBtn.addEventListener('click', () => {
         if (product.stock === false) return;
 
+        const unitPrice = price;
+        const originalUnitPrice = (product.discountPrice && product.discountPrice < product.price) ? Number(product.price) : null;
+
+        let linePrice = unitPrice;
+        let originalLine = null;
+        if (product.soldByWeight) {
+          const w = Number.isFinite(selectedWeight) ? selectedWeight : 0.125;
+          linePrice = (window.weightService && typeof window.weightService.calculatePrice === 'function')
+            ? window.weightService.calculatePrice(unitPrice, w)
+            : unitPrice * w;
+          if (originalUnitPrice != null) {
+            originalLine = (window.weightService && typeof window.weightService.calculatePrice === 'function')
+              ? window.weightService.calculatePrice(originalUnitPrice, w)
+              : originalUnitPrice * w;
+          }
+        } else if (originalUnitPrice != null) {
+          originalLine = originalUnitPrice;
+        }
+
         const cart = readCart();
         const entry = {
           id: String(product.id),
           name: String(product.name || ''),
-          image: String(product.image || ''),
-          price: price,
-          quantity: 1
+          image: String((typeof window.getProductImageDisplayUrl === 'function'
+            ? window.getProductImageDisplayUrl(product.image)
+            : (product.image || ''))),
+          price: Number(linePrice.toFixed(2)),
+          quantity: 1,
+          originalPrice: originalLine != null ? Number(originalLine.toFixed(2)) : null,
+          hasDiscount: originalLine != null
         };
 
         if (product.soldByWeight) {
           entry.selectedWeight = Number.isFinite(selectedWeight) ? selectedWeight : 0.125;
           entry.soldByWeight = true;
-          entry.weightUnit = product.weightUnit || null;
+          entry.weightUnit = (window.weightService && typeof window.weightService.getWeightUnit === 'function')
+            ? window.weightService.getWeightUnit(product)
+            : (product.weightUnit || null);
         } else {
-          entry.selectedWeight = null;
+          entry.selectedWeight = 1;
           entry.soldByWeight = false;
+          entry.weightUnit = null;
         }
 
-        const idx = cart.findIndex(i => String(i.id) === String(entry.id) && Number(i.selectedWeight) === Number(entry.selectedWeight));
+        const idx = cart.findIndex(i =>
+          String(i.id) === String(entry.id) &&
+          Number(i.selectedWeight || 1) === Number(entry.selectedWeight || 1) &&
+          !!i.soldByWeight === !!entry.soldByWeight
+        );
         if (idx >= 0) {
           cart[idx].quantity = (Number(cart[idx].quantity) || 0) + 1;
         } else {

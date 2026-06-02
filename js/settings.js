@@ -19,8 +19,8 @@ window.APP_SETTINGS = {
   // ================================
   // إعدادات التواصل
   // ================================
-  WHATSAPP_PHONE: '201013449050', // سيتم استبدالها بـ socialWhatsapp من لوحة التحكم (بدون +)
-  CONTACT_PHONES: ['201013449050'], // سيتم استبدالها برقم/أرقام الهاتف من لوحة التحكم
+  WHATSAPP_PHONE: '', // سيتم جلبه من لوحة التحكم (بدون +)
+  CONTACT_PHONES: [], // سيتم جلبها من لوحة التحكم
   CONTACT_NAME: '', // سيتم استبدالها من لوحة التحكم
   CONTACT_EMAIL: '', // سيتم استبدالها من لوحة التحكم
   CONTACT_MESSAGE: '', // سيتم استبدالها من لوحة التحكم
@@ -54,9 +54,12 @@ window.APP_SETTINGS = {
   ],
 
   // ================================
-  // فروع المتجر (اختياري - غير مستخدم حالياً في الواجهة)
+  // فروع المتجر (تُدار من لوحة التحكم → الإعدادات → فروع المتجر)
   // ================================
-  BRANCHES: []
+  BRANCHES: [],
+
+  /** رابط صورة افتراضية للمنتجات بدون صورة (من لوحة التحكم → الإعدادات العامة) */
+  DEFAULT_PRODUCT_IMAGE: ''
 };
 
 // ================================
@@ -145,6 +148,18 @@ window.APP_SETTINGS = {
         if (Array.isArray(s.customerFields)) {
           window.APP_SETTINGS.CUSTOMER_FIELDS = s.customerFields;
         }
+
+        if (s.defaultProductImage) {
+          window.APP_SETTINGS.DEFAULT_PRODUCT_IMAGE = String(s.defaultProductImage);
+        }
+
+        if (Array.isArray(s.branches)) {
+          window.APP_SETTINGS.BRANCHES = s.branches;
+        }
+
+        try {
+          window.dispatchEvent(new CustomEvent('appSettingsUpdated', { detail: { store: s } }));
+        } catch (e) {}
 
         console.log('تم تحميل APP_SETTINGS من Firestore (settings/general):', window.APP_SETTINGS);
       }

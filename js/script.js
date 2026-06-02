@@ -1,3 +1,45 @@
+/**
+ * ========================================
+ * أسواق الخديوي - السكريبت الرئيسي للمتجر
+ * ========================================
+ * 
+ * Purpose: المنطق البرمجي الرئيسي لواجهة المتجر الأمامية
+ * Usage: يشغل جميع وظائف المتجر التفاعلية للعملاء
+ * Features: تسوق، سلة مشتريات، مستخدمين، عروض، بحث
+ * 
+ * يحتوي هذا الملف على:
+ * - إدارة وعرض المنتجات من قاعدة البيانات
+ * - نظام سلة المشتريات التفاعلية
+ * - تسجيل الدخول وإدارة المستخدمين
+ * - العروض اليومية والمنتجات المميزة
+ * - نظام البحث والتصفية المتقدم
+ * - التحديث التلقائي للبيانات
+ * - معالجة الدفع والطلبات
+ * - دعم البيع بالوزن والوحدة
+ * 
+ * الأقسام الرئيسية:
+ * 1. تعريف المتغيرات وعناصر DOM
+ * 2. وظائف المنتجات والعرض
+ * 3. نظام السلة والمشتريات
+ * 4. إدارة المستخدمين والمصادقة
+ * 5. العروض والمنتجات المميزة
+ * 6. البحث والتصفية
+ * 7. معالجة الدفع والطلبات
+ * 8. الوظائف المساعدة والأدوات
+ * 
+ * مصادر البيانات:
+ * - Firebase Firestore (أساسي)
+ * - بيانات تجريبية (للاختبار)
+ * 
+ * Dependencies:
+ * - Firebase SDK للمصادقة وقاعدة البيانات
+ * - Bootstrap 5 للواجهة
+ * - Font Awesome للأيقونات
+ * - Google Analytics للتحليلات
+ * 
+ * Author: نظام المتجر الإلكتروني
+ * Version: 1.0.0
+ */
 // ================================
 // ================================
 //      أسواق الخديوي - سكريبت رئيسي
@@ -11,7 +53,7 @@
 
 // ملاحظة تنظيمية:
 // تم تجميع الدوال هنا حسب المسؤوليات (سلة/منتجات/مفضلة/عروض/واجهة).
-// أغلب البيانات تأتي من Firestore (لوحة التحكم)، ومع وجود بدائل احتياطية (Sheets/بيانات تجريبية)
+// أغلب البيانات تأتي من Firestore (لوحة التحكم)، مع وجود بيانات تجريبية احتياطية
 // لضمان أن المتجر يعمل أثناء الاختبار المحلي حتى لو لم تتوفر البيانات.
 
 // ================================
@@ -267,7 +309,6 @@ document.addEventListener('DOMContentLoaded', () => {
 // ================================
 // 7. جلب وعرض العروض اليومية
 // ================================
-// جلب العروض اليومية من Google Sheets
 // ================================
 // 7.1. جلب العروض اليومية من Firestore (لوحة التحكم)
 // ================================
@@ -306,76 +347,17 @@ async function fetchDailyOffersFromFirestore() {
         return offersList;
     } catch (error) {
         console.error('خطأ في جلب العروض من Firestore:', error);
-        
-        // إضافة عروض تجريبية للاختبار
-        console.log('استخدام عروض تجريبية للاختبار');
-        return [
-            {
-                id: 'demo-1',
-                name: 'عرض خاص: تشكيلة الفواكه',
-                image: 'https://via.placeholder.com/240x180/ff9800/ffffff?text=Fruits+Offer',
-                price: 89.99,
-                weight: false,
-                type: 'daily'
-            },
-            {
-                id: 'demo-2', 
-                name: 'خصم على الخضروات الطازجة',
-                image: 'https://via.placeholder.com/240x180/4caf50/ffffff?text=Vegetables+Offer',
-                price: 45.50,
-                weight: false,
-                type: 'daily'
-            },
-            {
-                id: 'demo-3',
-                name: 'عروض العصائر الطبيعية',
-                image: 'https://via.placeholder.com/240x180/2196f3/ffffff?text=Juice+Offer',
-                price: 25.00,
-                weight: false,
-                type: 'daily'
-            }
-        ];
-    }
-}
-
-// ================================
-// 7.2. جلب العروض اليومية من Google Sheets (احتياطي)
-// ================================
-async function fetchDailyOffersFromSheet() {
-    try {
-        const url = '';
-        const res = await fetch(url);
-        const csv = await res.text();
-        const lines = csv.split('\n').filter(line => line.trim().length > 0);
-        const header = lines[0].split(',');
-        const data = lines.slice(1).map(line => line.split(','));
-        // تحويل البيانات لكائنات عروض
-        return data.map(cols => {
-            while (cols.length > header.length) {
-                cols[header.length - 1] += ',' + cols.pop();
-            }
-            const [id, name, image, price, weight] = cols;
-            return {
-                id: id ? Number(id) : undefined,
-                name: name || '',
-                image: image && image.startsWith('http') ? image : '',
-                price: price ? Number(price) : '',
-                weight: weight || ''
-            };
-        }).filter(offer => offer.name);
-    } catch (error) {
-        console.error('خطأ في جلب العروض من Google Sheets:', error);
         return [];
     }
 }
+
 
 // عرض العروض اليومية
 async function renderDailyOffers() {
     // رسم العروض اليومية داخل الحاوية #daily-offers-container
     // مصدر البيانات:
     // 1) Firestore (لوحة التحكم)
-    // 2) Google Sheets (احتياطي)
-    // 3) عروض تجريبية محلية عند عدم وجود بيانات
+    // 2) عروض تجريبية محلية عند عدم وجود بيانات
     const dailyOffersContainer = document.getElementById('daily-offers-container');
     if (!dailyOffersContainer) {
         console.warn('حاوية العروض اليومية غير موجودة');
@@ -398,49 +380,35 @@ async function renderDailyOffers() {
     dailyOffersContainer.appendChild(loadingDiv);
     
     try {
-        // محاولة جلب العروض من Firestore أولاً (لوحة التحكم)
+        // جلب العروض من Firestore (لوحة التحكم)
         let dailyOffers = [];
         try {
             dailyOffers = await fetchDailyOffersFromFirestore();
             console.log('✅ تم تحميل العروض من Firestore (لوحة التحكم)');
         } catch (firestoreError) {
-            console.warn('⚠️ فشل تحميل العروض من Firestore، جارٍ المحاولة من Google Sheets:', firestoreError);
-            // في حالة الفشل، استخدم Google Sheets كبديل احتياطي
-            dailyOffers = await fetchDailyOffersFromSheet();
-            console.log('✅ تم تحميل العروض من Google Sheets (احتياطي)');
+            console.error('⚠️ فشل تحميل العروض من Firestore:', firestoreError);
+            dailyOffers = [];
         }
         
         dailyOffersContainer.innerHTML = '';
         console.log(`عدد العروض المتاحة: ${dailyOffers.length}`);
         
-        if (dailyOffers.length === 0) {
-            console.log('لا توجد عروض من المصدر، استخدام 3 عروض تجريبية للاختبار المحلي');
-            dailyOffers = [
-                {
-                    id: 'demo-o-1',
-                    name: 'عرض فواكه مشكلة',
-                    image: 'https://via.placeholder.com/240x180/ff9800/ffffff?text=Fruit+Mix',
-                    price: 89.99,
-                    weight: false,
-                    type: 'daily'
-                },
-                {
-                    id: 'demo-o-2',
-                    name: 'خصم الخضروات الطازجة',
-                    image: 'https://via.placeholder.com/240x180/4caf50/ffffff?text=Fresh+Veg',
-                    price: 45.50,
-                    weight: false,
-                    type: 'daily'
-                },
-                {
-                    id: 'demo-o-3',
-                    name: 'عروض العصائر',
-                    image: 'https://via.placeholder.com/240x180/2196f3/ffffff?text=Juice',
-                    price: 25.00,
-                    weight: false,
-                    type: 'daily'
-                }
-            ];
+        if (!dailyOffers || dailyOffers.length === 0) {
+            console.log('⚠️ لا توجد عروض حالياً. الرجاء إضافة عروض من لوحة التحكم.');
+            dailyOffers = [];
+            
+            // إظهار رسالة للمستخدم في قسم العروض
+            const offersContainer = document.getElementById('daily-offers-container');
+            if (offersContainer) {
+                offersContainer.innerHTML = `
+                    <div class="col-12 text-center py-3">
+                        <div class="alert alert-warning">
+                            <h5>🎁 لا توجد عروض حالياً</h5>
+                            <p>سيتم عرض العروض عند إضافتها من لوحة التحكم.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
         
         dailyOffers.forEach((offer, index) => {
@@ -457,16 +425,21 @@ async function renderDailyOffers() {
                 offer.weight.trim().toLowerCase() === 'true'
             );
             
-            // إضافة الصورة إذا وجدت
-            if (offer.image) {
-                const img = document.createElement('img');
-                img.src = offer.image;
-                img.alt = offer.name;
-                img.onerror = function() {
-                    this.src = 'https://via.placeholder.com/240x180/e0e0e0/666666?text=No+Image';
-                };
-                offerDiv.appendChild(img);
-            }
+            const offerImg = document.createElement('img');
+            offerImg.src = (typeof window.getProductImageDisplayUrl === 'function')
+                ? window.getProductImageDisplayUrl(offer.image)
+                : (offer.image || '');
+            offerImg.alt = offer.name;
+            offerImg.loading = 'lazy';
+            offerImg.onerror = function () {
+                if (typeof window.onProductImageError === 'function') {
+                    window.onProductImageError(this);
+                } else if (window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL) {
+                    this.onerror = null;
+                    this.src = window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL;
+                }
+            };
+            offerDiv.appendChild(offerImg);
             
             // إضافة العنوان
             const titleDiv = document.createElement('div');
@@ -521,7 +494,8 @@ async function renderDailyOffers() {
 
 // إضافة عرض يومي للسلة
 function addDailyOfferToCart(e, dailyOffers) {
-    const btn = e.target;
+    const btn = e.target && e.target.closest ? e.target.closest('.add-to-cart') : e.target;
+    if (!btn) return;
     const offerId = btn.getAttribute('data-id');
     const idNum = offerId.replace('daily-', '');
     const offer = dailyOffers.find(o => String(o.id) === idNum);
@@ -538,9 +512,12 @@ function addDailyOfferToCart(e, dailyOffers) {
             id: offerId,
             name: offer.name,
             price: Number(selectedPrice),
-            image: offer.image,
+            image: (typeof window.getProductImageDisplayUrl === 'function')
+                ? window.getProductImageDisplayUrl(offer.image)
+                : (offer.image || ''),
             quantity: 1,
-            selectedWeight: selectedWeight
+            selectedWeight: selectedWeight,
+            soldByWeight: false
         });
     }
     updateCart();
@@ -642,7 +619,7 @@ function setupEventListeners() {
             if (email) text += `\nالبريد: ${email}`;
             if (message) text += `\nالرسالة: ${message}`;
             const encoded = encodeURIComponent(text);
-            const phone = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '201013449050';
+            const phone = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || '';
             const wa = `https://wa.me/${phone}?text=${encoded}`;
             const win = window.open(wa, '_blank', 'noopener');
             if (win) { win.opener = null; }
@@ -655,7 +632,7 @@ function setupEventListeners() {
             const footerPhones = document.getElementById('footer-phones');
             const S = window.APP_SETTINGS || {};
             const numbers = Array.isArray(S.CONTACT_PHONES) ? S.CONTACT_PHONES : [];
-            const whatsapp = S.WHATSAPP_PHONE || '201013449050';
+            const whatsapp = S.WHATSAPP_PHONE || '';
             if (footerPhones) {
                 footerPhones.innerHTML = '';
                 if (numbers.length) {
@@ -680,10 +657,61 @@ function setupEventListeners() {
         } catch (e) { /* noop */ }
     }
 
+    function renderFooterBranchesFromSettings() {
+        try {
+            const el = document.getElementById('footer-branches');
+            if (!el) return;
+            const S = window.APP_SETTINGS || {};
+            const raw = Array.isArray(S.BRANCHES) ? S.BRANCHES : [];
+            const list = (typeof window.isBranchRenderable === 'function')
+                ? raw.filter((b) => window.isBranchRenderable(b))
+                : raw.filter((b) => b && (b.name || b.address || b.mapsUrl));
+            el.innerHTML = '';
+            if (!list.length) return;
+            const heading = document.createElement('p');
+            heading.style.fontWeight = '600';
+            heading.style.marginBottom = '8px';
+            heading.style.marginTop = '10px';
+            heading.textContent = 'فروعنا';
+            el.appendChild(heading);
+            const maxShow = 3;
+            list.slice(0, maxShow).forEach((b) => {
+                const p = document.createElement('p');
+                p.style.fontSize = '0.9rem';
+                p.style.marginBottom = '6px';
+                const label = b.name ? `${b.name}: ` : '';
+                p.appendChild(document.createTextNode(`${label}${b.address || ''} `));
+                const url = (typeof window.resolveBranchMapsUrl === 'function')
+                    ? window.resolveBranchMapsUrl(b)
+                    : (b.mapsUrl || '');
+                if (url) {
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.target = '_blank';
+                    a.rel = 'noopener noreferrer';
+                    a.textContent = 'خرائط';
+                    a.style.marginRight = '6px';
+                    p.appendChild(a);
+                }
+                el.appendChild(p);
+            });
+            if (list.length > maxShow) {
+                const more = document.createElement('p');
+                const a = document.createElement('a');
+                a.href = 'contact.html';
+                a.textContent = 'عرض كل الفروع…';
+                more.appendChild(a);
+                el.appendChild(more);
+            }
+        } catch (e) { /* noop */ }
+    }
+
     renderFooterPhonesFromSettings();
+    renderFooterBranchesFromSettings();
     try {
         window.addEventListener('appSettingsUpdated', () => {
             renderFooterPhonesFromSettings();
+            renderFooterBranchesFromSettings();
         });
     } catch (e) {}
     // تمرير ناعم للروابط
@@ -870,15 +898,21 @@ function displayProducts(productsArray) {
         
         // إنشاء الصورة
         const img = document.createElement('img');
-        img.src = product.image || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMDAiIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2YjIjgwIj48L3RleHQ+PC9yZWN0Pjwvc3ZnPg==';
+        img.src = (typeof window.getProductImageDisplayUrl === 'function')
+            ? window.getProductImageDisplayUrl(product.image)
+            : (product.image || (window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL || ''));
         img.alt = product.name;
         img.loading = 'lazy';
         img.width = 200;
         img.height = 200;
-        
-        // معالجة أخطاء الصور
-        img.onerror = function() {
-            this.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMDAiIHZpZXdCb3g9IjAgMCAyMDAgMjAwIiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbGw9IiNlNWU3ZWIiPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmb250LWZhbWlseT0iQXJpYWwiIGZvbnQtc2l6ZT0iMTQiIGZpbGw9IiM2YjIjgwIj48L3RleHQ+PC9yZWN0Pjwvc3ZnPg==';
+
+        img.onerror = function () {
+            if (typeof window.onProductImageError === 'function') {
+                window.onProductImageError(this);
+            } else if (window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL) {
+                this.onerror = null;
+                this.src = window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL;
+            }
             this.alt = 'صورة افتراضية';
         };
         
@@ -1104,9 +1138,12 @@ function updateFilteredProductsCount(count) {
 // 15. إضافة منتج للسلة
 // ================================
 function addToCart(e) {
-    const productId = e.target.getAttribute('data-id');
+    const addBtn = e.target && e.target.closest ? e.target.closest('.add-to-cart') : null;
+    if (!addBtn) return;
+    const productId = addBtn.getAttribute('data-id');
     const product = products.find(p => String(p.id) === String(productId));
-    
+    if (!product) return;
+
     // التحقق من توفر المنتج في المخزون
     if (product.stock === false) {
         const notification = document.createElement('div');
@@ -1121,27 +1158,52 @@ function addToCart(e) {
         return;
     }
     
-    let selectedWeight = 1;
-    let selectedPrice = product.price;
-    let originalPrice = null;
-    
-    // التحقق من وجود خصم
+    const soldByWeight = !!(product.soldByWeight || product.hasWeightOptions);
+    let unitPrice = product.price;
+    let originalUnitPrice = null;
     if (product.discountPrice && product.discountPrice < product.price) {
-        originalPrice = product.price;
-        selectedPrice = product.discountPrice;
+        originalUnitPrice = product.price;
+        unitPrice = product.discountPrice;
     }
-    
-    // البحث عن وزن من نظام الوزن الجديد
-    const card = e.target.closest('.product');
+
+    const card = addBtn.closest('.product');
+    const weightSelect = card ? card.querySelector('.weight-select-simple') : null;
     const weightInput = card ? card.querySelector('.weight-input') : null;
-    if (weightInput) {
-        selectedWeight = parseFloat(weightInput.value);
-        selectedPrice = (selectedPrice * selectedWeight).toFixed(2);
-        if (originalPrice) {
-            originalPrice = (originalPrice * selectedWeight).toFixed(2);
+
+    let selectedWeight = 1;
+    let selectedPrice;
+    let originalPrice = null;
+
+    if (soldByWeight && weightSelect) {
+        selectedWeight = parseFloat(weightSelect.value, 10);
+        if (!Number.isFinite(selectedWeight) || selectedWeight <= 0) selectedWeight = 1;
+        const line = (window.weightService && typeof window.weightService.calculatePrice === 'function')
+            ? window.weightService.calculatePrice(unitPrice, selectedWeight)
+            : unitPrice * selectedWeight;
+        selectedPrice = Number(line.toFixed(2));
+        if (originalUnitPrice != null) {
+            const origLine = (window.weightService && typeof window.weightService.calculatePrice === 'function')
+                ? window.weightService.calculatePrice(originalUnitPrice, selectedWeight)
+                : originalUnitPrice * selectedWeight;
+            originalPrice = Number(origLine.toFixed(2));
         }
+    } else if (soldByWeight && weightInput) {
+        selectedWeight = parseFloat(weightInput.value, 10);
+        if (!Number.isFinite(selectedWeight) || selectedWeight <= 0) selectedWeight = 1;
+        selectedPrice = Number((unitPrice * selectedWeight).toFixed(2));
+        if (originalUnitPrice != null) {
+            originalPrice = Number((originalUnitPrice * selectedWeight).toFixed(2));
+        }
+    } else {
+        selectedWeight = 1;
+        selectedPrice = unitPrice;
+        if (originalUnitPrice != null) originalPrice = originalUnitPrice;
     }
-    
+
+    const weightUnit = soldByWeight && window.weightService && typeof window.weightService.getWeightUnit === 'function'
+        ? window.weightService.getWeightUnit(product)
+        : (product.weightUnit || null);
+
     const existingItem = cart.find(item => String(item.id) === String(productId) && Number(item.selectedWeight) === Number(selectedWeight));
     if (existingItem) {
         existingItem.quantity++;
@@ -1150,11 +1212,15 @@ function addToCart(e) {
             id: product.id,
             name: product.name,
             price: Number(selectedPrice),
-            originalPrice: originalPrice ? Number(originalPrice) : null,
-            image: product.image,
+            originalPrice: originalPrice != null ? Number(originalPrice) : null,
+            image: (typeof window.getProductImageDisplayUrl === 'function')
+                ? window.getProductImageDisplayUrl(product.image)
+                : (product.image || ''),
             quantity: 1,
             selectedWeight: selectedWeight,
-            hasDiscount: !!originalPrice
+            soldByWeight: soldByWeight,
+            weightUnit: weightUnit || null,
+            hasDiscount: originalPrice != null
         });
     }
     updateCart();
@@ -1187,10 +1253,20 @@ function updateCart() {
         
         // إنشاء الصورة
         const img = document.createElement('img');
-        img.src = item.image;
+        img.src = (typeof window.getProductImageDisplayUrl === 'function')
+            ? window.getProductImageDisplayUrl(item.image)
+            : (item.image || '');
         img.alt = item.name;
         img.width = 70;
         img.height = 70;
+        img.onerror = function () {
+            if (typeof window.onProductImageError === 'function') {
+                window.onProductImageError(this);
+            } else if (window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL) {
+                this.onerror = null;
+                this.src = window.PRODUCT_IMAGE_PLACEHOLDER_DATA_URL;
+            }
+        };
         cartItem.appendChild(img);
         
         // معلومات المنتج
@@ -1202,11 +1278,13 @@ function updateCart() {
         title.textContent = item.name;
         cartItemInfo.appendChild(title);
         
-        // عرض الوزن إذا كان المنتج يُباع بالوزن
-        if (item.selectedWeight && item.selectedWeight !== 1) {
+        if (item.soldByWeight) {
+            const wu = item.weightUnit || (window.weightService && typeof window.weightService.getWeightUnit === 'function'
+                ? window.weightService.getWeightUnit(null)
+                : (window.siteSettings && window.siteSettings.store && window.siteSettings.store.weightUnit) || 'كجم');
             const weightInfo = document.createElement('p');
             weightInfo.className = 'cart-item-weight';
-            weightInfo.textContent = `الوزن: ${item.selectedWeight} كجم`;
+            weightInfo.textContent = `الوزن: ${item.selectedWeight} ${wu}`;
             cartItemInfo.appendChild(weightInfo);
         }
         
@@ -1396,7 +1474,7 @@ async function sendOrderToWhatsApp() {
     }
     
     const encodedText = encodeURIComponent(orderText);
-    const phoneNumber = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || "201013449050";
+    const phoneNumber = (window.APP_SETTINGS && window.APP_SETTINGS.WHATSAPP_PHONE) || "";
     const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodedText}`;
     const win = window.open(whatsappLink, '_blank', 'noopener');
     if (win) { win.opener = null; }
@@ -1472,87 +1550,6 @@ async function fetchProductsFromFirestore() {
 }
 
 // ================================
-// 23.1. جلب المنتجات من Google Sheets (احتياطي)
-// ================================
-async function fetchProductsFromSheet() {
-    try {
-        const url = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTrRg0VQSCVD23jU_WyNeMtR2MrXG41Nf5bg7DXrRyX4AFIxnG_Q_-fXldce_rTwAK5ABDKUo6KeUVn/pub?output=csv';
-        const res = await fetch(url);
-        
-        if (!res.ok) {
-            throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
-        const csv = await res.text();
-        
-        if (!csv || csv.trim().length === 0) {
-            throw new Error('CSV فارغ أو غير صالح');
-        }
-        
-        const lines = csv.split('\n').filter(line => line.trim().length > 0);
-        
-        if (lines.length < 2) {
-            throw new Error('CSV يجب أن يحتوي على رأس وأقل من صف واحد من البيانات');
-        }
-        
-        const header = lines[0].split(',');
-        const data = lines.slice(1).map(line => line.split(','));
-        const productsMap = {};
-        
-        data.forEach((cols, index) => {
-            try {
-                // معالجة الأعمدة التي تحتوي على فواصل
-                while (cols.length > header.length) {
-                    cols[header.length - 1] += ',' + cols.pop();
-                }
-                
-                const [id, name, category, image, price, weight, stock, description] = cols;
-                
-                if (!id || !name) return;
-                
-                // تنظيف وتأكيد صحة البيانات
-                const cleanId = String(id).trim();
-                const cleanName = String(name).trim();
-                const cleanCategory = category ? String(category).trim() : '';
-                const cleanImage = image ? String(image).trim() : '';
-                const cleanPrice = parseFloat(price) || 0;
-                const cleanWeight = weight === 'TRUE' || weight === 'true' || weight === '1' || weight === 'صح' || weight === '✓';
-                const cleanStock = stock === 'TRUE' || stock === 'true' || stock === '1' || stock === 'صح' || stock === '✓';
-                const cleanDescription = description ? String(description).trim() : '';
-                
-                if (!productsMap[cleanId]) {
-                    productsMap[cleanId] = {
-                        id: String(cleanId),
-                        name: cleanName,
-                        category: cleanCategory,
-                        image: cleanImage,
-                        price: cleanPrice,
-                        soldByWeight: cleanWeight,
-                        weight: null,
-                        stock: cleanStock,
-                        description: cleanDescription,
-                        hasWeightOptions: cleanWeight
-                    };
-                }
-            } catch (rowError) {
-                console.warn(`خطأ في معالجة الصف ${index + 2}:`, rowError);
-            }
-        });
-        
-        const products = Object.values(productsMap);
-        
-        if (products.length === 0) {
-            throw new Error('لم يتم العثور على منتجات صالحة');
-        }
-        
-        console.log(`تم تحميل ${products.length} منتج بنجاح`);
-        return products;
-        
-    } catch (error) {
-        console.error('خطأ في جلب البيانات من Google Sheets:', error);
-        throw error;
-    }
-}
 
 // ================================
 // 24. تعبئة الفئات في الفلتر
@@ -1629,7 +1626,7 @@ function updatePageTitle(category) {
 async function loadProducts() {
     // تحميل المنتجات مع كاش محلي لتسريع الأداء:
     // - محاولة استخدام localStorage cache إن كان حديثاً
-    // - وإلا: Firestore ثم Sheets
+    // - وإلا: Firestore فقط
     // - وإذا كانت القائمة فارغة: حقن 3 منتجات تجريبية للاختبار المحلي
     try {
         showLoadingSpinner();
@@ -1656,74 +1653,40 @@ async function loadProducts() {
                     await new Promise(resolve => setTimeout(resolve, 3000));
                 }
                 
-                // محاولة جلب المنتجات من Firestore أولاً (لوحة التحكم)
+                // جلب المنتجات من Firestore (لوحة التحكم)
                 try {
                     fetchedProducts = await fetchProductsFromFirestore();
                     console.log('✅ تم تحميل المنتجات من Firestore (لوحة التحكم)');
                 } catch (firestoreError) {
-                    console.warn('⚠️ فشل تحميل المنتجات من Firestore، جارٍ المحاولة من Google Sheets:', firestoreError);
-                    // في حالة الفشل، استخدم Google Sheets كبديل احتياطي
-                    try {
-                        fetchedProducts = await fetchProductsFromSheet();
-                        console.log('✅ تم تحميل المنتجات من Google Sheets (احتياطي)');
-                    } catch (sheetError) {
-                        console.error('فشل تحميل المنتجات من Google Sheets أيضاً:', sheetError);
-                        fetchedProducts = [];
-                    }
+                    console.error('⚠️ فشل تحميل المنتجات من Firestore:', firestoreError);
+                    fetchedProducts = [];
                 }
             } catch (firebaseError) {
                 console.error('خطأ في التحقق من جاهزية Firebase:', firebaseError);
-                // محاولة استخدام Google Sheets مباشرة
-                try {
-                    fetchedProducts = await fetchProductsFromSheet();
-                    console.log('✅ تم تحميل المنتجات من Google Sheets (مباشر)');
-                } catch (sheetError) {
-                    console.error('فشل تحميل المنتجات من Google Sheets:', sheetError);
-                    fetchedProducts = [];
-                }
+                fetchedProducts = [];
             }
             localStorage.setItem(cacheKey, JSON.stringify(fetchedProducts));
             localStorage.setItem(cacheTimeKey, now.toString());
         }
 
-        // ضمان وجود بيانات للاختبار المحلي: 3 منتجات وهمية عند عدم وجود منتجات
+        // لا تستخدم منتجات تجريبية - اعرض رسالة إذا لم توجد منتجات حقيقية
         if (!Array.isArray(fetchedProducts) || fetchedProducts.length === 0) {
-            console.log('استخدام 3 منتجات تجريبية للاختبار المحلي');
-            fetchedProducts = [
-                {
-                    id: 'demo-p-1',
-                    name: 'تفاح أحمر',
-                    category: 'demo',
-                    image: 'https://via.placeholder.com/400x300/ff6b6b/ffffff?text=Apple',
-                    price: 50.0,
-                    discountPrice: 35.0,
-                    soldByWeight: true,
-                    stock: true,
-                    description: 'تفاح أحمر طازج'
-                },
-                {
-                    id: 'demo-p-2',
-                    name: 'طماطم',
-                    category: 'demo',
-                    image: 'https://via.placeholder.com/400x300/ff5722/ffffff?text=Tomato',
-                    price: 25.0,
-                    discountPrice: 19.0,
-                    soldByWeight: true,
-                    stock: true,
-                    description: 'طماطم طازجة'
-                },
-                {
-                    id: 'demo-p-3',
-                    name: 'مياه معدنية',
-                    category: 'demo',
-                    image: 'https://via.placeholder.com/400x300/2196f3/ffffff?text=Water',
-                    price: 12.0,
-                    discountPrice: null,
-                    soldByWeight: false,
-                    stock: true,
-                    description: 'عبوة 1.5 لتر'
-                }
-            ];
+            console.log('⚠️ لا توجد منتجات في قاعدة البيانات. الرجاء إضافة منتجات من لوحة التحكم.');
+            fetchedProducts = [];
+            
+            // إظهار رسالة للمستخدم
+            const productsContainer = document.getElementById('productsContainer');
+            if (productsContainer) {
+                productsContainer.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="alert alert-info">
+                            <h4>🏪 لا توجد منتجات حالياً</h4>
+                            <p>يتم الآن تحميل المنتجات من لوحة التحكم...</p>
+                            <p>إذا استمرت هذه الرسالة، الرجاء إضافة منتجات من لوحة التحكم.</p>
+                        </div>
+                    </div>
+                `;
+            }
         }
         // Normalize products (especially when coming from old cache)
         products = Array.isArray(fetchedProducts) ? fetchedProducts.map((p) => {

@@ -17,26 +17,51 @@ const __env = (typeof window !== 'undefined' && window.RUNTIME_ENV && typeof win
     : {};
 
 const firebaseConfig = {
-    apiKey: __env.FIREBASE_API_KEY || "AIzaSyAWkruoIMbTxD-5DHCpspPY8p2TtZLLmLM",
-    authDomain: __env.FIREBASE_AUTH_DOMAIN || "dashboard-27bc8.firebaseapp.com",
-    projectId: __env.FIREBASE_PROJECT_ID || "dashboard-27bc8",
-    storageBucket: __env.FIREBASE_STORAGE_BUCKET || "dashboard-27bc8.firebasestorage.app",
-    messagingSenderId: __env.FIREBASE_MESSAGING_SENDER_ID || "707339591256",
-    appId: __env.FIREBASE_APP_ID || "1:707339591256:web:dcc2649182e97249a2742d",
-    measurementId: __env.FIREBASE_MEASUREMENT_ID || "G-K8FNNYH4S1"
+    apiKey: __env.FIREBASE_API_KEY || "",
+    authDomain: __env.FIREBASE_AUTH_DOMAIN || "",
+    databaseURL: __env.FIREBASE_DATABASE_URL || "",
+    projectId: __env.FIREBASE_PROJECT_ID || "",
+    storageBucket: __env.FIREBASE_STORAGE_BUCKET || "",
+    messagingSenderId: __env.FIREBASE_MESSAGING_SENDER_ID || "",
+    appId: __env.FIREBASE_APP_ID || ""
 };
 
-// إعدادات إضافية للموقع
+// تهيئة Firebase إذا لم يكن مهيأ
+if (typeof window !== 'undefined' && !window.firebase) {
+    import('https://www.gstatic.com/firebasejs/12.11.0/firebase-app.js').then(({ initializeApp }) => {
+        import('https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js').then(({ getAuth }) => {
+            import('https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js').then(({ getFirestore }) => {
+                try {
+                    const app = initializeApp(firebaseConfig);
+                    const auth = getAuth(app);
+                    const db = getFirestore(app);
+                    
+                    // جعل Firebase متاحاً عالمياً مثل اللوحة
+                    window.firebase = {
+                        app: app,
+                        auth: () => auth,
+                        firestore: () => db
+                    };
+                    
+                    console.log('✅ تم تهيئة Firebase في المتجر بنفس إعدادات اللوحة');
+                } catch (error) {
+                    console.error('❌ خطأ في تهيئة Firebase:', error);
+                }
+            });
+        });
+    });
+}
+
+// إعدادات إضافية للموقع - متجر الشادر للخضروات والفواكه
 const siteConfig = {
-    name: "الخديوي",
-    phone: "01013449050",
-    whatsapp: "201013449050",
-    facebook: "https://www.facebook.com/share/1CizJTdEEc/",
-    addresses: [
-        "بني سويف - الشرطه العسكريه بجوار مدرسة متولي الشعراوي",
-        "بني سويف - شارع بني سويف الجديده - بجوار محل تاون تيم",
-        "بني سويف - حي الزهور - بجوار كافيه استكانة"
-    ]
+    name: "الشادر",
+    description: "متجر الشادر للخضروات والفواكه الطازجة",
+    phone: "", // سيتم جلبه من لوحة التحكم
+    whatsapp: "", // سيتم جلبه من لوحة التحكم
+    facebook: "", // سيتم جلبه من لوحة التحكم
+    addresses: [], // سيتم جلبها من لوحة التحكم
+    businessType: "خضروات وفواكه",
+    specialties: ["خضروات طازجة", "فواكه موسمية", "منتجات عضوية", "توصيل سريع"]
 };
 
 // تصدير التكوين للاستخدام في الملفات الأخرى
